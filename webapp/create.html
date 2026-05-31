@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новая сделка</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            padding: 16px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        h1 { font-size: 20px; font-weight: 700; }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.6;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000);
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+        }
+        textarea {
+            height: 100px;
+            resize: none;
+        }
+        .amount-wrapper {
+            position: relative;
+        }
+        .amount-wrapper input {
+            padding-right: 40px;
+        }
+        .currency {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+            font-size: 16px;
+        }
+        .hint {
+            font-size: 12px;
+            opacity: 0.5;
+            margin-top: 6px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 24px;
+            background: #2AABEE;
+            color: white;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .commission-info {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            margin-top: 16px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1>Новая сделка</h1>
+    </div>
+
+    <div class="form-group">
+        <label>Сумма сделки</label>
+        <div class="amount-wrapper">
+            <input type="number" id="amount" placeholder="0" min="100" oninput="updateCommission()">
+            <span class="currency">₽</span>
+        </div>
+        <div class="hint">Минимум 100 ₽</div>
+    </div>
+
+    <div class="form-group">
+        <label>Описание товара или услуги</label>
+        <textarea id="description" placeholder="Например: iPhone 14 Pro, 256GB, чёрный, новый в коробке"></textarea>
+    </div>
+
+    <div class="commission-info" id="commission-info">
+        Введите сумму чтобы увидеть комиссию
+    </div>
+
+    <button class="btn" id="create-btn" onclick="createDeal()" disabled>
+        Создать сделку
+    </button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        function getCommission(amount) {
+            if (amount <= 10000) return 0.01;
+            if (amount <= 25000) return 0.02;
+            if (amount <= 50000) return 0.03;
+            if (amount <= 100000) return 0.04;
+            return 0.05;
+        }
+
+        function updateCommission() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const btn = document.getElementById('create-btn');
+            const info = document.getElementById('commission-info');
+            const desc = document.getElementById('description').value;
+
+            if (amount >= 100 && desc.length > 0) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+
+            if (amount >= 100) {
+                const rate = getCommission(amount);
+                const commission = Math.round(amount * rate);
+                const sellerGets = amount - commission;
+                info.innerHTML = `
+                    💰 Покупатель заплатит: <b>${amount.toLocaleString()} ₽</b><br>
+                    📊 Комиссия платформы: <b>${commission.toLocaleString()} ₽</b> (${rate * 100}%)<br>
+                    ✅ Продавец получит: <b>${sellerGets.toLocaleString()} ₽</b>
+                `;
+            } else {
+                info.innerHTML = 'Введите сумму чтобы увидеть комиссию';
+            }
+        }
+
+        document.getElementById('description').addEventListener('input', updateCommission);
+
+        function createDeal() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const description = document.getElementById('description').value;
+
+            if (!amount || amount < 100 || !description) return;
+
+            // Пока просто показываем что сделка создана
+            tg.showAlert(`Сделка создана!\n\nСумма: ${amount.toLocaleString()} ₽\nТовар: ${description}\n\n(Функция сохранения будет добавлена позже)`);
+        }
+    </script>
+</body>
+</html>
