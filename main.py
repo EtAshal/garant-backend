@@ -104,7 +104,7 @@ async def deal_action(deal_id: str, data: dict):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
