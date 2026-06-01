@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 import os
 import uuid
 
+from aiogram import Bot
+bot_instance = Bot(token=os.getenv("BOT_TOKEN"))
+
 load_dotenv()
 
 app = FastAPI()
@@ -60,8 +63,19 @@ async def accept_deal(deal_id: str, data: dict):
             "buyer_id": buyer_id,
             "status": "active"
         }).eq("id", deal_id).eq("status", "pending").execute()
-        
+
         if result.data:
+            deal = result.data[0]
+            try:
+                await bot_instance.send_message(
+                    deal["seller_id"],
+                    f"✅ Покупатель принял вашу сделку!\n\n"
+                    f"Товар: {deal['description']}\n"
+                    f"Сумма: {int(deal['amount']):,} ₽\n\n"
+                    f"Ожидайте подтверждения."
+                )
+            except:
+                pass
             return {"success": True}
         return {"success": False, "error": "Сделка не найдена или уже принята"}
     except Exception as e:
