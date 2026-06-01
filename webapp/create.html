@@ -8,174 +8,132 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
- 
         :root {
-            --parchment:  #f2e8d5;
-            --paper:      #e8d5b0;
-            --paper-dark: #d4b896;
-            --cappuccino: #c4a882;
-            --latte:      #b8956a;
-            --brown:      #8b6914;
-            --ink:        #3d2b1f;
-            --ink-light:  #6b4c35;
-            --sealing:    #7a3022;
+            --bg:         #1a1208;
+            --bg2:        #241a0e;
+            --bg3:        #2e2010;
+            --border:     #4a3520;
+            --text:       #e8d5b0;
+            --text-dim:   #a08060;
             --gold:       #c9a84c;
-            --shadow:     rgba(61,43,31,0.18);
+            --gold-dim:   #8b6914;
+            --sealing:    #7a3022;
+            --sealing-lt: #9b4a35;
+            --shadow:     rgba(0,0,0,0.5);
         }
- 
         body {
             font-family: 'Crimson Text', Georgia, serif;
-            background-color: var(--parchment);
-            color: var(--ink);
+            background-color: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             padding: 0 16px 40px;
         }
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image:
-                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(139,105,20,0.04) 28px, rgba(139,105,20,0.04) 29px);
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
             pointer-events: none; z-index: 0;
         }
         body::after {
             content: '';
             position: fixed; inset: 0;
-            background: radial-gradient(ellipse at center, transparent 60%, rgba(61,43,31,0.12) 100%);
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
             pointer-events: none; z-index: 0;
         }
         * { position: relative; z-index: 1; }
  
         .header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             padding: 24px 0 20px;
-            border-bottom: 1px solid var(--cappuccino);
+            border-bottom: 1px solid var(--border);
             margin-bottom: 24px;
         }
         .back-btn {
-            background: var(--paper);
-            border: 1.5px solid var(--cappuccino);
-            border-radius: 50%;
-            width: 36px; height: 36px;
-            font-size: 18px;
-            cursor: pointer;
-            color: var(--ink);
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 6px var(--shadow);
-            transition: background .2s;
-            font-family: serif;
+            box-shadow: 0 2px 8px var(--shadow); font-family: serif;
         }
-        .back-btn:active { background: var(--paper-dark); }
+        .back-btn:active { background: var(--bg3); }
         h1 {
             font-family: 'Cinzel', serif;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: var(--ink);
+            font-size: 18px; font-weight: 700;
+            letter-spacing: 0.5px; color: var(--gold);
         }
  
-        /* ── FORM ── */
         .form-group { margin-bottom: 20px; }
         label {
             display: block;
             font-family: 'Cinzel', serif;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--latte);
-            margin-bottom: 8px;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 8px;
         }
         input, textarea {
-            width: 100%;
-            padding: 13px 14px;
+            width: 100%; padding: 13px 14px;
             border-radius: 6px;
-            border: 1px solid var(--paper-dark);
-            background: var(--paper);
-            color: var(--ink);
-            font-size: 17px;
-            font-family: 'Crimson Text', serif;
+            border: 1px solid var(--border);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 17px; font-family: 'Crimson Text', serif;
             outline: none;
-            box-shadow: inset 0 2px 5px rgba(61,43,31,0.08), 0 1px 0 rgba(255,255,255,0.5);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
             transition: border-color .2s, box-shadow .2s;
         }
         input:focus, textarea:focus {
-            border-color: var(--brown);
-            box-shadow: inset 0 2px 5px rgba(61,43,31,0.1), 0 0 0 2px rgba(139,105,20,0.15);
+            border-color: var(--gold-dim);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.3), 0 0 0 2px rgba(201,168,76,0.1);
         }
+        input::placeholder, textarea::placeholder { color: var(--text-dim); }
         textarea { height: 100px; resize: none; }
         .amount-wrapper { position: relative; }
         .amount-wrapper input { padding-right: 36px; }
         .currency {
             position: absolute; right: 13px; top: 50%;
             transform: translateY(-50%);
-            color: var(--cappuccino);
-            font-family: 'Cinzel', serif;
-            font-size: 15px;
+            color: var(--text-dim);
+            font-family: 'Cinzel', serif; font-size: 15px;
         }
-        .hint {
-            font-size: 12px;
-            font-style: italic;
-            color: var(--cappuccino);
-            margin-top: 5px;
-        }
+        .hint { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 5px; }
  
-        /* ── COMMISSION BOX ── */
         .commission-info {
-            background: var(--paper);
-            border: 1px solid var(--paper-dark);
-            border-left: 3px solid var(--brown);
-            border-radius: 6px;
-            padding: 12px 14px;
-            font-size: 14px;
-            font-style: italic;
-            color: var(--ink-light);
-            line-height: 1.7;
-            margin-top: 4px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--gold-dim);
+            border-radius: 6px; padding: 12px 14px;
+            font-size: 14px; font-style: italic;
+            color: var(--text-dim); line-height: 1.7;
         }
-        .commission-info b {
-            font-style: normal;
-            font-weight: 600;
-            color: var(--ink);
-        }
+        .commission-info b { font-style: normal; font-weight: 600; color: var(--text); }
  
-        /* ── DECORATIVE ── */
         .divider {
             display: flex; align-items: center; gap: 10px;
-            margin: 20px 0;
-            color: var(--cappuccino); font-size: 12px;
+            margin: 20px 0; color: var(--border); font-size: 12px;
         }
         .divider::before, .divider::after {
             content: ''; flex: 1; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--cappuccino), transparent);
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
         }
  
-        /* ── BUTTON ── */
         .btn {
-            display: block; width: 100%;
-            padding: 15px;
+            display: block; width: 100%; padding: 15px;
             border-radius: 6px; border: none;
             font-family: 'Cinzel', serif;
-            font-size: 14px; font-weight: 600;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            margin-top: 8px;
-            transition: all .2s;
+            font-size: 14px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; transition: all .2s;
         }
         .btn-primary {
-            background: var(--sealing);
-            color: var(--parchment);
-            box-shadow: 0 3px 10px rgba(122,48,34,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+            background: var(--sealing); color: var(--text);
+            box-shadow: 0 3px 12px rgba(122,48,34,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
         }
-        .btn-primary:active { background: var(--ink); }
-        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-primary:active { background: #5a2018; }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; }
  
         .fade-in { animation: fadeUp .35s ease both; }
-        @keyframes fadeUp {
-            from { opacity:0; transform:translateY(8px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s}
     </style>
 </head>
@@ -228,9 +186,7 @@
             const btn = document.getElementById('create-btn');
             const info = document.getElementById('commission-info');
             const desc = document.getElementById('description').value;
- 
             btn.disabled = !(amount >= 100 && desc.length > 0);
- 
             if (amount >= 100) {
                 const rate = getCommission(amount);
                 const commission = Math.round(amount * rate);
@@ -251,11 +207,9 @@
             const amount = parseFloat(document.getElementById('amount').value);
             const description = document.getElementById('description').value;
             if (!amount || amount < 100 || !description) return;
- 
             const btn = document.getElementById('create-btn');
             btn.disabled = true;
             btn.textContent = 'Составляем...';
- 
             try {
                 const response = await fetch('https://garant-backend-production.up.railway.app/deals/create', {
                     method: 'POST',
@@ -269,7 +223,7 @@
                 if (data.success) {
                     const dealUrl = `https://etashal.github.io/garant-webapp/deal.html?id=${data.deal_id}`;
                     await navigator.clipboard.writeText(dealUrl);
-                    tg.showAlert(`✅ Грамота составлена!\n\nСумма: ${amount.toLocaleString()} ₽\nТовар: ${description}\n\n🔗 Ссылка скопирована в буфер обмена!\nПередайте её покупателю.`);
+                    tg.showAlert(`✅ Грамота составлена!\n\nСумма: ${amount.toLocaleString()} ₽\nТовар: ${description}\n\n🔗 Ссылка скопирована!\nПередайте её покупателю.`);
                     window.location.href = 'index.html';
                 } else {
                     tg.showAlert('Ошибка: ' + data.error);

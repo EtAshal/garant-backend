@@ -9,82 +9,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
- 
         :root {
-            --parchment:  #f2e8d5;
-            --paper:      #e8d5b0;
-            --paper-dark: #d4b896;
-            --cappuccino: #c4a882;
-            --latte:      #b8956a;
-            --brown:      #8b6914;
-            --ink:        #3d2b1f;
-            --ink-light:  #6b4c35;
-            --sealing:    #7a3022;
-            --sealing-light: #9b4a35;
+            --bg:         #1a1208;
+            --bg2:        #241a0e;
+            --bg3:        #2e2010;
+            --border:     #4a3520;
+            --text:       #e8d5b0;
+            --text-dim:   #a08060;
             --gold:       #c9a84c;
-            --green-old:  #3a6640;
-            --shadow:     rgba(61,43,31,0.18);
+            --gold-dim:   #8b6914;
+            --sealing:    #7a3022;
+            --sealing-lt: #9b4a35;
+            --green:      #4a7a50;
+            --shadow:     rgba(0,0,0,0.5);
         }
- 
         body {
             font-family: 'Crimson Text', Georgia, serif;
-            background-color: var(--parchment);
-            color: var(--ink);
+            background-color: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             padding: 0 16px 40px;
         }
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image:
-                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(139,105,20,0.04) 28px, rgba(139,105,20,0.04) 29px),
-                repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139,105,20,0.02) 80px, rgba(139,105,20,0.02) 81px);
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
             pointer-events: none; z-index: 0;
         }
         body::after {
             content: '';
             position: fixed; inset: 0;
-            background: radial-gradient(ellipse at center, transparent 55%, rgba(61,43,31,0.14) 100%);
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
             pointer-events: none; z-index: 0;
         }
         * { position: relative; z-index: 1; }
- 
-        /* ── HEADER ── */
+
         .header {
             display: flex; align-items: center; gap: 12px;
             padding: 24px 0 20px;
-            border-bottom: 1px solid var(--cappuccino);
+            border-bottom: 1px solid var(--border);
             margin-bottom: 20px;
         }
         .back-btn {
-            background: var(--paper);
-            border: 1.5px solid var(--cappuccino);
-            border-radius: 50%;
-            width: 36px; height: 36px;
-            font-size: 18px; cursor: pointer;
-            color: var(--ink);
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 6px var(--shadow);
-            font-family: serif;
+            box-shadow: 0 2px 8px var(--shadow); font-family: serif;
         }
-        .back-btn:active { background: var(--paper-dark); }
-        .page-title {
-            font-family: 'Cinzel', serif;
-            font-size: 18px; font-weight: 700;
-            letter-spacing: 0.5px;
-        }
- 
-        /* ── AVATAR BLOCK ── */
+        .back-btn:active { background: var(--bg3); }
+        .page-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+
         .avatar-section {
             display: flex; align-items: center; gap: 16px;
-            padding: 18px;
-            background: var(--paper);
-            border-radius: 8px;
-            border: 1px solid var(--paper-dark);
-            box-shadow: 0 3px 10px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.5);
-            margin-bottom: 14px;
-            position: relative;
-            overflow: hidden;
+            padding: 16px; background: var(--bg2);
+            border-radius: 8px; border: 1px solid var(--border);
+            box-shadow: 0 3px 12px var(--shadow);
+            margin-bottom: 14px; position: relative; overflow: hidden;
         }
         .avatar-section::before {
             content: '';
@@ -92,241 +75,154 @@
             background: linear-gradient(180deg, var(--gold), var(--sealing));
         }
         .avatar {
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--sealing), var(--ink));
-            border: 2px solid var(--gold);
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--sealing), #1a0a05);
+            border: 2px solid var(--gold-dim);
             display: flex; align-items: center; justify-content: center;
             font-family: 'Cinzel', serif;
-            font-size: 22px; font-weight: 700;
-            color: var(--parchment);
+            font-size: 22px; font-weight: 700; color: var(--gold);
             flex-shrink: 0;
-            box-shadow: 0 0 0 3px rgba(201,168,76,0.2);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.1), 0 0 20px rgba(201,168,76,0.1);
         }
         .user-info { flex: 1; min-width: 0; }
         .user-name {
-            font-family: 'Cinzel', serif;
-            font-size: 17px; font-weight: 700;
-            color: var(--ink);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700;
+            color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .user-handle {
-            font-size: 13px; font-style: italic;
-            color: var(--ink-light); margin-top: 2px;
-        }
+        .user-handle { font-size: 13px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
         .status-pill {
             display: inline-flex; align-items: center; gap: 5px;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-family: 'Cinzel', serif;
-            font-size: 10px; font-weight: 600;
-            letter-spacing: 0.8px;
-            margin-top: 8px;
-            border: 1px solid;
+            padding: 3px 10px; border-radius: 4px;
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            letter-spacing: 0.8px; margin-top: 8px; border: 1px solid;
         }
-        .status-0 { background: rgba(139,105,20,0.08); color: var(--latte); border-color: var(--cappuccino); }
-        .status-1 { background: rgba(139,105,20,0.12); color: var(--brown); border-color: var(--brown); }
-        .status-2 { background: rgba(58,102,64,0.12);  color: var(--green-old); border-color: var(--green-old); }
-        .status-3 { background: rgba(201,168,76,0.15); color: #8b6914; border-color: var(--gold); }
- 
-        /* ── SECTION TITLE ── */
+        .status-0 { background: rgba(74,53,32,0.4);  color: var(--text-dim); border-color: var(--border); }
+        .status-1 { background: rgba(139,105,20,0.2); color: var(--gold-dim); border-color: var(--gold-dim); }
+        .status-2 { background: rgba(74,122,80,0.2);  color: #7acc84; border-color: var(--green); }
+        .status-3 { background: rgba(201,168,76,0.15);color: var(--gold); border-color: var(--gold); }
+
         .section-title {
-            font-family: 'Cinzel', serif;
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--latte);
-            margin-bottom: 10px;
-            margin-top: 18px;
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 10px; margin-top: 18px;
         }
- 
-        /* ── POINTS CARD ── */
+
         .points-card {
-            background: var(--paper);
-            border-radius: 8px;
-            padding: 16px;
-            border: 1px solid var(--paper-dark);
-            box-shadow: 0 2px 8px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.4);
+            background: var(--bg2); border-radius: 8px; padding: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px var(--shadow);
         }
         .points-row {
             display: flex; justify-content: space-between; align-items: flex-start;
             margin-bottom: 14px;
         }
         .points-label {
-            font-family: 'Cinzel', serif;
-            font-size: 10px; font-weight: 600;
-            letter-spacing: 1.5px; text-transform: uppercase;
-            color: var(--latte);
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-dim);
         }
         .points-value {
-            font-family: 'Cinzel', serif;
-            font-size: 34px; font-weight: 700;
-            color: var(--ink); letter-spacing: -1px;
-            margin-top: 4px;
+            font-family: 'Cinzel', serif; font-size: 34px; font-weight: 700;
+            color: var(--gold); letter-spacing: -1px; margin-top: 4px;
+            text-shadow: 0 0 20px rgba(201,168,76,0.2);
         }
         .points-next { text-align: right; }
-        .points-next-label { font-size: 11px; font-style: italic; color: var(--cappuccino); }
-        .points-next-value {
-            font-family: 'Cinzel', serif;
-            font-size: 13px; font-weight: 600;
-            color: var(--brown); margin-top: 3px;
-        }
-        .progress-wrap {
-            background: rgba(61,43,31,0.1);
-            border-radius: 4px; height: 6px; overflow: hidden;
-        }
+        .points-next-label { font-size: 11px; font-style: italic; color: var(--text-dim); }
+        .points-next-value { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: var(--gold-dim); margin-top: 3px; }
+        .progress-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; overflow: hidden; }
         .progress-fill {
             height: 100%; border-radius: 4px;
-            background: linear-gradient(90deg, var(--sealing), var(--gold));
-            transition: width 1s cubic-bezier(.4,0,.2,1);
-            width: 0%;
+            background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+            transition: width 1s cubic-bezier(.4,0,.2,1); width: 0%;
         }
         .progress-labels {
             display: flex; justify-content: space-between;
-            margin-top: 5px;
-            font-size: 11px; font-style: italic; color: var(--cappuccino);
+            margin-top: 5px; font-size: 11px; font-style: italic; color: var(--text-dim);
         }
- 
-        /* ── STATS GRID ── */
-        .stats-grid {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-        }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .stat-card {
-            background: var(--paper);
-            border-radius: 8px; padding: 13px 10px;
-            border: 1px solid var(--paper-dark);
-            box-shadow: 0 2px 6px var(--shadow);
-            text-align: center;
+            background: var(--bg2); border-radius: 8px; padding: 13px 10px;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow); text-align: center;
         }
         .stat-icon { font-size: 18px; margin-bottom: 5px; }
-        .stat-num {
-            font-family: 'Cinzel', serif;
-            font-size: 20px; font-weight: 700; color: var(--ink);
-        }
-        .stat-num.green  { color: var(--green-old); }
-        .stat-num.yellow { color: var(--brown); }
-        .stat-label { font-size: 11px; font-style: italic; color: var(--ink-light); margin-top: 2px; }
- 
-        /* ── ROLES ── */
+        .stat-num { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: var(--text); }
+        .stat-num.green  { color: #7acc84; }
+        .stat-num.yellow { color: var(--gold); }
+        .stat-label { font-size: 11px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
+
         .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .role-card {
-            background: var(--paper);
-            border-radius: 8px; padding: 14px;
-            border: 1px solid var(--paper-dark);
-            box-shadow: 0 2px 6px var(--shadow);
+            background: var(--bg2); border-radius: 8px; padding: 14px;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow);
         }
-        .role-title {
-            font-family: 'Cinzel', serif;
-            font-size: 10px; letter-spacing: 1px;
-            color: var(--latte); margin-bottom: 6px;
-        }
-        .role-pts {
-            font-family: 'Cinzel', serif;
-            font-size: 22px; font-weight: 700; color: var(--ink);
-        }
-        .role-count { font-size: 12px; font-style: italic; color: var(--ink-light); margin-top: 3px; }
- 
-        /* ── TABS ── */
+        .role-title { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; color: var(--gold-dim); margin-bottom: 6px; }
+        .role-pts { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--gold); }
+        .role-count { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 3px; }
+
         .history-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
         .tab {
             padding: 6px 14px; border-radius: 4px;
-            font-family: 'Cinzel', serif;
-            font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
-            cursor: pointer; border: 1px solid var(--cappuccino);
-            background: transparent; color: var(--latte);
-            transition: all .2s;
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; border: 1px solid var(--border);
+            background: transparent; color: var(--text-dim); transition: all .2s;
         }
-        .tab.active {
-            background: var(--ink); color: var(--parchment);
-            border-color: var(--ink);
-        }
- 
-        /* ── DEAL ITEM ── */
+        .tab.active { background: var(--sealing); color: var(--text); border-color: var(--sealing); }
+
         .deal-item {
-            background: var(--paper);
-            border-radius: 6px; padding: 13px 14px;
+            background: var(--bg2); border-radius: 6px; padding: 13px 14px;
             margin-bottom: 10px; cursor: pointer;
-            border: 1px solid var(--paper-dark);
-            box-shadow: 0 2px 6px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.4);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px var(--shadow);
             display: flex; align-items: center; gap: 12px;
-            transition: all .15s;
-            position: relative; overflow: hidden;
+            transition: all .15s; position: relative; overflow: hidden;
         }
         .deal-item::before {
-            content: '';
-            position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
         }
-        .deal-item.completed::before { background: var(--green-old); }
+        .deal-item.completed::before { background: var(--green); }
         .deal-item.cancelled::before { background: var(--sealing); }
-        .deal-item.active::before    { background: var(--brown); }
+        .deal-item.active::before    { background: var(--gold-dim); }
         .deal-item.pending::before   { background: var(--gold); }
-        .deal-item.dispute::before   { background: var(--sealing-light); }
-        .deal-item:active { opacity: 0.75; transform: translateY(1px); }
- 
+        .deal-item.dispute::before   { background: var(--sealing-lt); }
+        .deal-item:active { opacity: 0.7; transform: translateY(1px); }
+
         .deal-icon {
             width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 16px; flex-shrink: 0;
-            background: rgba(61,43,31,0.07);
-            border: 1px solid var(--paper-dark);
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
         }
         .deal-body { flex: 1; min-width: 0; }
-        .deal-desc {
-            font-size: 15px; font-weight: 600; color: var(--ink);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .deal-meta { font-size: 12px; font-style: italic; color: var(--ink-light); margin-top: 2px; }
+        .deal-desc { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .deal-meta { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
         .deal-right { text-align: right; flex-shrink: 0; }
         .deal-amount { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; }
-        .deal-amount.income  { color: var(--green-old); }
-        .deal-amount.outcome { color: var(--sealing); }
-        .deal-amount.neutral { color: var(--latte); }
-        .deal-pts { font-size: 11px; font-style: italic; color: var(--brown); margin-top: 2px; }
- 
-        .empty-state {
-            text-align: center; padding: 40px 0;
-            color: var(--cappuccino); font-style: italic; font-size: 15px;
-        }
- 
-        /* ── DIVIDER ── */
-        .divider {
-            display: flex; align-items: center; gap: 10px;
-            margin: 4px 0 14px; color: var(--cappuccino); font-size: 12px;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--cappuccino), transparent);
-        }
- 
-        /* skeleton */
+        .deal-amount.income  { color: #7acc84; }
+        .deal-amount.outcome { color: var(--sealing-lt); }
+        .deal-amount.neutral { color: var(--text-dim); }
+        .deal-pts { font-size: 11px; font-style: italic; color: var(--gold-dim); margin-top: 2px; }
+
+        .empty-state { text-align: center; padding: 40px 0; color: var(--text-dim); font-style: italic; font-size: 15px; }
+
         .skel {
-            background: linear-gradient(90deg, var(--paper) 25%, var(--paper-dark) 50%, var(--paper) 75%);
+            background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
             background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 4px;
+            animation: shimmer 1.5s infinite; border-radius: 4px;
         }
-        @keyframes shimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
- 
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
         .fade-in { animation: fadeUp .4s ease both; }
-        @keyframes fadeUp {
-            from { opacity:0; transform:translateY(8px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
-        .d1{animation-delay:.05s} .d2{animation-delay:.1s}
-        .d3{animation-delay:.15s} .d4{animation-delay:.2s} .d5{animation-delay:.25s}
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s} .d5{animation-delay:.25s}
     </style>
 </head>
 <body>
- 
+
 <div class="header fade-in">
     <button class="back-btn" onclick="window.location.href='index.html'">←</button>
     <span class="page-title">Личная книга</span>
 </div>
- 
-<!-- Аватар -->
+
 <div class="avatar-section fade-in d1">
     <div class="avatar" id="avatar">?</div>
     <div class="user-info">
@@ -335,8 +231,7 @@
         <div id="status-pill"></div>
     </div>
 </div>
- 
-<!-- Очки -->
+
 <div class="section-title fade-in d2">Очки доверия</div>
 <div class="points-card fade-in d2">
     <div class="points-row">
@@ -349,16 +244,10 @@
             <div class="points-next-value" id="pts-next">—</div>
         </div>
     </div>
-    <div class="progress-wrap">
-        <div class="progress-fill" id="pts-bar"></div>
-    </div>
-    <div class="progress-labels">
-        <span id="bar-left">0</span>
-        <span id="bar-right">—</span>
-    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="pts-bar"></div></div>
+    <div class="progress-labels"><span id="bar-left">0</span><span id="bar-right">—</span></div>
 </div>
- 
-<!-- Статистика -->
+
 <div class="section-title fade-in d3">Записи</div>
 <div class="stats-grid fade-in d3">
     <div class="stat-card">
@@ -377,8 +266,7 @@
         <div class="stat-label">оборот</div>
     </div>
 </div>
- 
-<!-- Роли -->
+
 <div class="section-title fade-in d4">Звания</div>
 <div class="roles-grid fade-in d4">
     <div class="role-card">
@@ -392,8 +280,7 @@
         <div class="role-count" id="cnt-buyer">— сделок</div>
     </div>
 </div>
- 
-<!-- История -->
+
 <div class="section-title fade-in d5">История сделок</div>
 <div class="history-tabs fade-in d5">
     <button class="tab active" onclick="filterDeals('all', this)">Все</button>
@@ -401,16 +288,15 @@
     <button class="tab" onclick="filterDeals('active', this)">Активные</button>
 </div>
 <div id="history-list" class="fade-in d5"></div>
- 
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
- 
 const BACKEND = 'https://garant-backend-production.up.railway.app';
 const user = tg.initDataUnsafe?.user || {};
 const currentUserId = user.id || 0;
 let allDeals = [];
- 
+
 const STATUSES = [
     { min: 0,    name: 'Новичок',     emoji: '🆕', cls: 'status-0' },
     { min: 100,  name: 'Проверенный', emoji: '📜', cls: 'status-1' },
@@ -418,7 +304,7 @@ const STATUSES = [
     { min: 1500, name: 'Гарант',      emoji: '⭐', cls: 'status-3' },
 ];
 const LEVELS = [0, 100, 500, 1500];
- 
+
 function getStatus(pts) {
     for (let i = STATUSES.length - 1; i >= 0; i--)
         if (pts >= STATUSES[i].min) return STATUSES[i];
@@ -427,10 +313,10 @@ function getStatus(pts) {
 function getProgress(pts) {
     const c = Math.max(0, pts);
     for (let i = 0; i < LEVELS.length - 1; i++) {
-        if (c < LEVELS[i+1]) {
-            return { pct: Math.round((c - LEVELS[i]) / (LEVELS[i+1] - LEVELS[i]) * 100),
-                     left: LEVELS[i], right: LEVELS[i+1], need: LEVELS[i+1] - c };
-        }
+        if (c < LEVELS[i+1]) return {
+            pct: Math.round((c - LEVELS[i]) / (LEVELS[i+1] - LEVELS[i]) * 100),
+            left: LEVELS[i], right: LEVELS[i+1], need: LEVELS[i+1] - c
+        };
     }
     return { pct: 100, left: 1500, right: '∞', need: 0 };
 }
@@ -441,51 +327,42 @@ function getCommission(amount) {
     if (amount <= 100000) return 0.04;
     return 0.05;
 }
- 
+
 function renderProfile(deals) {
     const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
     const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     document.getElementById('avatar').textContent = initials;
     document.getElementById('user-name').textContent = name;
     if (user.username) document.getElementById('user-handle').textContent = '@' + user.username;
- 
+
     const completed = deals.filter(d => d.status === 'completed');
     const disputes  = deals.filter(d => d.status === 'dispute');
     const asSeller  = completed.filter(d => d.seller_id == currentUserId);
     const asBuyer   = completed.filter(d => d.buyer_id  == currentUserId);
- 
     const sellerPts = asSeller.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
     const buyerPts  = asBuyer.reduce((s, d)  => s + Math.floor(parseFloat(d.amount) / 100), 0);
     const totalPts  = sellerPts + buyerPts;
     const volume    = completed.reduce((s, d) => s + parseFloat(d.amount), 0);
- 
+
     const status = getStatus(totalPts);
     const prog   = getProgress(totalPts);
- 
+
     document.getElementById('status-pill').innerHTML =
         `<span class="status-pill ${status.cls}">${status.emoji} ${status.name}</span>`;
     document.getElementById('pts-value').textContent = totalPts.toLocaleString('ru');
-    document.getElementById('pts-next').textContent  = prog.need > 0
-        ? `ещё ${prog.need.toLocaleString('ru')} очков` : 'высший статус';
+    document.getElementById('pts-next').textContent  = prog.need > 0 ? `ещё ${prog.need.toLocaleString('ru')} очков` : 'высший статус';
     document.getElementById('bar-left').textContent  = prog.left.toLocaleString('ru');
-    document.getElementById('bar-right').textContent = typeof prog.right === 'number'
-        ? prog.right.toLocaleString('ru') : prog.right;
- 
-    requestAnimationFrame(() => setTimeout(() => {
-        document.getElementById('pts-bar').style.width = prog.pct + '%';
-    }, 150));
- 
+    document.getElementById('bar-right').textContent = typeof prog.right === 'number' ? prog.right.toLocaleString('ru') : prog.right;
+    requestAnimationFrame(() => setTimeout(() => { document.getElementById('pts-bar').style.width = prog.pct + '%'; }, 150));
     document.getElementById('cnt-completed').textContent = completed.length;
     document.getElementById('cnt-dispute').textContent   = disputes.length;
-    document.getElementById('cnt-volume').textContent    = volume >= 1000
-        ? (volume / 1000).toFixed(1).replace('.0','') + 'к ₽'
-        : volume.toLocaleString('ru') + ' ₽';
+    document.getElementById('cnt-volume').textContent    = volume >= 1000 ? (volume/1000).toFixed(1).replace('.0','') + 'к ₽' : volume.toLocaleString('ru') + ' ₽';
     document.getElementById('pts-seller').textContent = sellerPts.toLocaleString('ru');
     document.getElementById('cnt-seller').textContent = asSeller.length + ' сделок';
     document.getElementById('pts-buyer').textContent  = buyerPts.toLocaleString('ru');
     document.getElementById('cnt-buyer').textContent  = asBuyer.length + ' сделок';
 }
- 
+
 const DEAL_META = {
     completed: { emoji: '📜', cls: 'completed', label: 'Завершена' },
     cancelled:  { emoji: '❌', cls: 'cancelled', label: 'Отменена'  },
@@ -493,25 +370,16 @@ const DEAL_META = {
     pending:    { emoji: '🕯', cls: 'pending',   label: 'Ожидает'   },
     dispute:    { emoji: '⚔️', cls: 'dispute',   label: 'Спор'      },
 };
- 
+
 function dealCard(deal) {
     const meta = DEAL_META[deal.status] || DEAL_META.pending;
     const amount = parseFloat(deal.amount);
     const isSeller = deal.seller_id == currentUserId;
-    const commission = isSeller ? Math.round(amount * getCommission(amount)) : 0;
-    const net = isSeller ? amount - commission : amount;
- 
+    const net = isSeller ? amount - Math.round(amount * getCommission(amount)) : amount;
     let amountClass = 'neutral', amountSign = '';
-    if (deal.status === 'completed') {
-        amountClass = isSeller ? 'income' : 'outcome';
-        amountSign  = isSeller ? '+' : '−';
-    }
- 
-    const pts = deal.status === 'completed'
-        ? '+' + Math.floor(amount / 100) + ' очков' : '';
-    const dateStr = deal.created_at
-        ? new Date(deal.created_at).toLocaleDateString('ru', { day: 'numeric', month: 'short' }) : '';
- 
+    if (deal.status === 'completed') { amountClass = isSeller ? 'income' : 'outcome'; amountSign = isSeller ? '+' : '−'; }
+    const pts = deal.status === 'completed' ? '+' + Math.floor(amount / 100) + ' очков' : '';
+    const dateStr = deal.created_at ? new Date(deal.created_at).toLocaleDateString('ru', { day: 'numeric', month: 'short' }) : '';
     return `
     <div class="deal-item ${meta.cls}" onclick="openDeal('${deal.id}')">
         <div class="deal-icon">${meta.emoji}</div>
@@ -525,11 +393,9 @@ function dealCard(deal) {
         </div>
     </div>`;
 }
- 
-function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
- 
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 let currentFilter = 'all';
 function filterDeals(filter, btn) {
     currentFilter = filter;
@@ -542,15 +408,11 @@ function renderHistory() {
     let filtered = allDeals;
     if (currentFilter === 'completed') filtered = allDeals.filter(d => d.status === 'completed');
     else if (currentFilter === 'active') filtered = allDeals.filter(d => ['active','pending','dispute'].includes(d.status));
- 
-    if (!filtered.length) {
-        list.innerHTML = `<div class="empty-state">Записей в книге нет</div>`;
-        return;
-    }
+    if (!filtered.length) { list.innerHTML = `<div class="empty-state">Записей в книге нет</div>`; return; }
     list.innerHTML = filtered.map(dealCard).join('');
 }
 function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
- 
+
 async function load() {
     document.getElementById('history-list').innerHTML = `
         <div class="deal-item pending">
@@ -560,14 +422,12 @@ async function load() {
                 <div class="skel" style="height:11px;width:40%"></div>
             </div>
         </div>`.repeat(3);
- 
     try {
         if (!currentUserId) throw new Error('no user');
         const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
         const data = await res.json();
         allDeals = data.success ? data.deals : [];
     } catch(e) { allDeals = []; }
- 
     renderProfile(allDeals);
     renderHistory();
 }
@@ -575,4 +435,3 @@ load();
 </script>
 </body>
 </html>
- 
