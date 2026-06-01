@@ -51,3 +51,60 @@ async def get_deal(deal_id: str):
 @app.get("/")
 async def root():
     return {"status": "ok"}
+
+@app.post("/deals/{deal_id}/accept")
+async def accept_deal(deal_id: str, data: dict):
+    try:
+        buyer_id = data.get("buyer_id")
+        result = supabase.table("deals").update({
+            "buyer_id": buyer_id,
+            "status": "active"
+        }).eq("id", deal_id).eq("status", "pending").execute()
+        
+        if result.data:
+            return {"success": True}
+        return {"success": False, "error": "Сделка не найдена или уже принята"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/deals/{deal_id}/action")
+async def deal_action(deal_id: str, data: dict):
+    try:
+        user_id = data.get("user_id")
+        action = data.get("action")
+
+        deal = supabase.table("deals").select("*").eq("id", deal_id).execute().data[0]
+        
+        is_seller = user_id == deal["seller_id"]
+        is_buyer = user_id == deal["buyer_id"]
+
+        if is_seller:
+            supabase.table("deals").update({"seller_action": action}).eq("id", deal_id).execute()
+        elif is_buyer:
+            supabase.table("deals").update({"buyer_action": action}).eq("id", deal_id).execute()
+        else:
+            return {"success": False, "error": "Вы не участник сделки"}
+
+        deal = supabase.table("deals").select("*").eq("id", deal_id).execute().data[0]
+        seller_action = deal["seller_action"]
+        buyer_action = deal["buyer_action"]
+
+        if seller_action == "confirm" and buyer_action == "confirm":
+            supabase.table("deals").update({"status": "completed"}).eq("id", deal_id).execute()
+            return {"success": True, "message": "✅ Сделка завершена! Деньги переведены продавцу."}
+        elif seller_action == "cancel" and buyer_action == "cancel":
+            supabase.table("deals").update({"status": "cancelled"}).eq("id", deal_id).execute()
+            return {"success": True, "message": "❌ Сделка отменена. Деньги возвращены покупателю."}
+        elif seller_action and buyer_action and seller_action != buyer_action:
+            supabase.table("deals").update({"status": "dispute"}).eq("id", deal_id).execute()
+            return {"success": True, "message": "⚠️ Открыт спор. Арбитр рассмотрит ситуацию."}
+        else:
+            return {"success": True, "message": "Действие записано. Ожидаем второй стороны."}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+    if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
