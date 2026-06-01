@@ -107,11 +107,6 @@
             color: var(--gold-dim); margin-bottom: 10px; margin-top: 18px;
         }
 
-        .points-card {
-            background: var(--bg2); border-radius: 8px; padding: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 10px var(--shadow);
-        }
         .points-row {
             display: flex; justify-content: space-between; align-items: flex-start;
             margin-bottom: 14px;
@@ -137,6 +132,60 @@
         .progress-labels {
             display: flex; justify-content: space-between;
             margin-top: 5px; font-size: 11px; font-style: italic; color: var(--text-dim);
+        }
+
+        /* ── ПЛАВАЮЩИЕ АНИМАЦИИ ── */
+        @keyframes float1 {
+            0%,100% { transform: translate(0px, 0px); }
+            25%      { transform: translate(2px, -3px); }
+            50%      { transform: translate(-1px, -5px); }
+            75%      { transform: translate(-3px, -2px); }
+        }
+        @keyframes float2 {
+            0%,100% { transform: translate(0px, 0px); }
+            25%      { transform: translate(-3px, -2px); }
+            50%      { transform: translate(2px, -4px); }
+            75%      { transform: translate(1px, -1px); }
+        }
+        @keyframes float3 {
+            0%,100% { transform: translate(0px, 0px); }
+            33%      { transform: translate(3px, -4px); }
+            66%      { transform: translate(-2px, -2px); }
+        }
+        @keyframes float4 {
+            0%,100% { transform: translate(0px, 0px); }
+            25%      { transform: translate(-2px, -4px); }
+            50%      { transform: translate(3px, -2px); }
+            75%      { transform: translate(1px, -5px); }
+        }
+
+        /* нажатие на карточку */
+        .floaty {
+            transition: box-shadow .2s, transform .1s;
+        }
+        .floaty:active {
+            transform: scale(0.97) translateY(2px) !important;
+            box-shadow: 0 1px 4px var(--shadow) !important;
+        }
+
+        /* применяем разные анимации с разными задержками */
+        .float-1 { animation: float1 6s ease-in-out infinite; }
+        .float-2 { animation: float2 7s ease-in-out infinite; animation-delay: -2s; }
+        .float-3 { animation: float3 8s ease-in-out infinite; animation-delay: -4s; }
+        .float-4 { animation: float4 5.5s ease-in-out infinite; animation-delay: -1s; }
+        .float-5 { animation: float1 9s ease-in-out infinite; animation-delay: -3s; }
+        .float-6 { animation: float2 6.5s ease-in-out infinite; animation-delay: -5s; }
+
+        /* ── ЗОЛОТОЕ СВЕЧЕНИЕ НА РЕПУТАЦИИ ── */
+        .points-card {
+            background: var(--bg2); border-radius: 8px; padding: 16px;
+            border: 1px solid var(--gold-dim);
+            box-shadow: 0 2px 10px var(--shadow), 0 0 0 1px rgba(201,168,76,0.1);
+            animation: goldGlow 3s ease-in-out infinite;
+        }
+        @keyframes goldGlow {
+            0%,100% { box-shadow: 0 2px 10px var(--shadow), 0 0 8px rgba(201,168,76,0.15), 0 0 0 1px rgba(201,168,76,0.1); }
+            50%      { box-shadow: 0 2px 16px var(--shadow), 0 0 20px rgba(201,168,76,0.3), 0 0 0 1px rgba(201,168,76,0.25); }
         }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -223,7 +272,7 @@
     <span class="page-title">Личная книга</span>
 </div>
 
-<div class="avatar-section fade-in d1">
+<div class="avatar-section fade-in d1 floaty float-1">
     <div class="avatar" id="avatar">?</div>
     <div class="user-info">
         <div class="user-name" id="user-name">Загрузка…</div>
@@ -233,7 +282,7 @@
 </div>
 
 <div class="section-title fade-in d2">Очки доверия</div>
-<div class="points-card fade-in d2" onclick="window.location.href='reputation.html'" style="cursor:pointer">
+<div class="points-card fade-in d2 floaty float-2" onclick="window.location.href='reputation.html'" style="cursor:pointer">
     <div class="points-row">
         <div>
             <div class="points-label">Репутация</div>
@@ -251,17 +300,17 @@
 
 <div class="section-title fade-in d3">Записи</div>
 <div class="stats-grid fade-in d3">
-    <div class="stat-card">
+    <div class="stat-card floaty float-3">
         <div class="stat-icon">📜</div>
         <div class="stat-num green" id="cnt-completed">—</div>
         <div class="stat-label">завершено</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card floaty float-4">
         <div class="stat-icon">⚔️</div>
         <div class="stat-num yellow" id="cnt-dispute">—</div>
         <div class="stat-label">споров</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card floaty float-5">
         <div class="stat-icon">🪙</div>
         <div class="stat-num" id="cnt-volume" style="font-size:15px">—</div>
         <div class="stat-label">оборот</div>
@@ -270,12 +319,12 @@
 
 <div class="section-title fade-in d4">Звания</div>
 <div class="roles-grid fade-in d4">
-    <div class="role-card">
+    <div class="role-card floaty float-2">
         <div class="role-title">📦 КАК ПРОДАВЕЦ</div>
         <div class="role-pts" id="pts-seller">—</div>
         <div class="role-count" id="cnt-seller">— сделок</div>
     </div>
-    <div class="role-card">
+    <div class="role-card floaty float-4">
         <div class="role-title">🛒 КАК ПОКУПАТЕЛЬ</div>
         <div class="role-pts" id="pts-buyer">—</div>
         <div class="role-count" id="cnt-buyer">— сделок</div>
