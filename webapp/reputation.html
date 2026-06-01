@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Репутация</title>
+    <meta name="ngrok-skip-browser-warning" content="true">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:         #1a1208;
+            --bg2:        #241a0e;
+            --bg3:        #2e2010;
+            --border:     #4a3520;
+            --text:       #e8d5b0;
+            --text-dim:   #a08060;
+            --gold:       #c9a84c;
+            --gold-dim:   #8b6914;
+            --sealing:    #7a3022;
+            --sealing-lt: #9b4a35;
+            --green:      #4a7a50;
+            --green-lt:   #7acc84;
+            --shadow:     rgba(0,0,0,0.5);
+        }
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0 16px 40px;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none; z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 24px 0 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow); font-family: serif;
+        }
+        .back-btn:active { background: var(--bg3); }
+        .page-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); flex: 1; }
+
+        /* кнопка ? */
+        .help-btn {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--bg2); border: 1px solid var(--gold-dim);
+            color: var(--gold); font-family: 'Cinzel', serif;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all .2s;
+        }
+        .help-btn:active { background: var(--bg3); }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 10px; margin-top: 18px;
+        }
+
+        /* ── MAIN SCORE CARD ── */
+        .score-card {
+            background: var(--bg2); border-radius: 10px; padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 3px 14px var(--shadow);
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .score-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .score-status {
+            font-family: 'Cinzel', serif;
+            font-size: 11px; font-weight: 600; letter-spacing: 2px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .score-big {
+            font-family: 'Cinzel', serif;
+            font-size: 56px; font-weight: 700;
+            color: var(--gold); letter-spacing: -2px; line-height: 1;
+            text-shadow: 0 0 30px rgba(201,168,76,0.3);
+        }
+        .score-label { font-size: 13px; font-style: italic; color: var(--text-dim); margin-top: 4px; }
+
+        /* прогресс до следующего уровня */
+        .level-progress { margin-top: 18px; }
+        .level-labels {
+            display: flex; justify-content: space-between;
+            font-size: 11px; font-style: italic; color: var(--text-dim); margin-bottom: 6px;
+        }
+        .progress-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 8px; overflow: hidden; }
+        .progress-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+            transition: width 1.2s cubic-bezier(.4,0,.2,1); width: 0%;
+        }
+        .level-next {
+            font-family: 'Cinzel', serif;
+            font-size: 12px; color: var(--gold-dim); margin-top: 6px; text-align: right;
+        }
+
+        /* ── STATS GRID ── */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-card {
+            background: var(--bg2); border-radius: 8px; padding: 14px;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow);
+        }
+        .stat-card-label {
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 6px;
+        }
+        .stat-card-value {
+            font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; color: var(--text);
+        }
+        .stat-card-value.green { color: var(--green-lt); }
+        .stat-card-value.red   { color: var(--sealing-lt); }
+        .stat-card-sub { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 3px; }
+
+        /* ── GOOD/BAD BAR ── */
+        .ratio-card {
+            background: var(--bg2); border-radius: 8px; padding: 16px;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow);
+        }
+        .ratio-bar-wrap {
+            height: 10px; border-radius: 5px; overflow: hidden;
+            background: rgba(255,255,255,0.06); margin: 10px 0 6px;
+            display: flex;
+        }
+        .ratio-bar-good {
+            height: 100%; background: var(--green);
+            transition: width 1.2s cubic-bezier(.4,0,.2,1);
+        }
+        .ratio-bar-bad {
+            height: 100%; background: var(--sealing);
+            transition: width 1.2s cubic-bezier(.4,0,.2,1);
+        }
+        .ratio-labels {
+            display: flex; justify-content: space-between;
+            font-size: 12px; font-style: italic;
+        }
+        .ratio-labels .good { color: var(--green-lt); }
+        .ratio-labels .bad  { color: var(--sealing-lt); }
+
+        /* ── SEASON / ЗАТУХАНИЕ ── */
+        .season-card {
+            background: var(--bg2); border-radius: 8px; padding: 16px;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow);
+        }
+        .season-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px;
+        }
+        .season-name {
+            font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600; color: var(--gold);
+        }
+        .season-date { font-size: 12px; font-style: italic; color: var(--text-dim); }
+        .season-bar-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 8px; }
+        .season-bar-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, var(--gold-dim), var(--sealing));
+            transition: width 1.2s cubic-bezier(.4,0,.2,1); width: 0%;
+        }
+        .season-note {
+            font-size: 13px; font-style: italic; color: var(--text-dim); line-height: 1.5;
+        }
+        .season-note b { font-style: normal; color: var(--text); }
+
+        /* ── СВИТОК ПРАВИЛ ── */
+        .rules-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.7);
+            display: flex; align-items: flex-end;
+            opacity: 0; pointer-events: none;
+            transition: opacity .3s;
+        }
+        .rules-overlay.open { opacity: 1; pointer-events: all; }
+        .rules-sheet {
+            background: var(--bg2);
+            border-radius: 16px 16px 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            padding: 20px 20px 40px;
+            width: 100%;
+            max-height: 80vh; overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 -4px 30px rgba(0,0,0,0.6);
+        }
+        .rules-overlay.open .rules-sheet { transform: translateY(0); }
+        .rules-handle {
+            width: 40px; height: 4px; border-radius: 2px;
+            background: var(--border); margin: 0 auto 16px;
+        }
+        .rules-title {
+            font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700;
+            color: var(--gold); text-align: center; margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        .rules-section { margin-bottom: 18px; }
+        .rules-section-title {
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 8px;
+            padding-bottom: 4px; border-bottom: 1px solid var(--border);
+        }
+        .rules-row {
+            display: flex; justify-content: space-between; align-items: baseline;
+            padding: 6px 0; border-bottom: 1px solid rgba(74,53,32,0.4);
+            font-size: 14px;
+        }
+        .rules-row:last-child { border-bottom: none; }
+        .rules-row-label { color: var(--text-dim); font-style: italic; flex: 1; }
+        .rules-row-value { font-family: 'Cinzel', serif; font-weight: 600; flex-shrink: 0; margin-left: 10px; }
+        .rules-row-value.gold  { color: var(--gold); }
+        .rules-row-value.green { color: var(--green-lt); }
+        .rules-row-value.red   { color: var(--sealing-lt); }
+        .rules-note {
+            background: var(--bg3); border-radius: 6px; padding: 10px 12px;
+            font-size: 13px; font-style: italic; color: var(--text-dim);
+            border-left: 3px solid var(--gold-dim); margin-top: 10px; line-height: 1.6;
+        }
+
+        /* ── ANIMATIONS ── */
+        .fade-in { animation: fadeUp .4s ease both; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s}
+    </style>
+</head>
+<body>
+
+<div class="header fade-in">
+    <button class="back-btn" onclick="window.location.href='profile.html'">←</button>
+    <span class="page-title">Репутация</span>
+    <button class="help-btn" onclick="openRules()">?</button>
+</div>
+
+<!-- Главная карточка очков -->
+<div class="score-card fade-in d1" id="score-card">
+    <div class="score-status" id="score-status">— —</div>
+    <div class="score-big" id="score-big">—</div>
+    <div class="score-label">очков доверия</div>
+    <div class="level-progress">
+        <div class="level-labels">
+            <span id="level-from">0</span>
+            <span id="level-to">—</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-fill" id="score-bar"></div></div>
+        <div class="level-next" id="level-next">—</div>
+    </div>
+</div>
+
+<!-- Статистика сделок -->
+<div class="section-title fade-in d2">Статистика сделок</div>
+<div class="stats-grid fade-in d2">
+    <div class="stat-card">
+        <div class="stat-card-label">Завершено</div>
+        <div class="stat-card-value green" id="cnt-good">—</div>
+        <div class="stat-card-sub">успешных</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-label">Отменено / Споры</div>
+        <div class="stat-card-value red" id="cnt-bad">—</div>
+        <div class="stat-card-sub">неудачных</div>
+    </div>
+</div>
+
+<!-- Шкала хороших/плохих -->
+<div class="ratio-card fade-in d2" style="margin-top:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:1px;color:var(--gold-dim);text-transform:uppercase">Успешность</span>
+        <span style="font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--gold)" id="ratio-pct">—%</span>
+    </div>
+    <div class="ratio-bar-wrap">
+        <div class="ratio-bar-good" id="ratio-good" style="width:0%"></div>
+        <div class="ratio-bar-bad"  id="ratio-bad"  style="width:0%"></div>
+    </div>
+    <div class="ratio-labels">
+        <span class="good" id="ratio-good-label">— хороших</span>
+        <span class="bad"  id="ratio-bad-label">— плохих</span>
+    </div>
+</div>
+
+<!-- Затухание / сезон -->
+<div class="section-title fade-in d3">Затухание репутации</div>
+<div class="season-card fade-in d3">
+    <div class="season-row">
+        <div>
+            <div class="season-name" id="season-name">— сезон</div>
+            <div class="season-date" id="season-date">сброс —</div>
+        </div>
+        <div style="text-align:right">
+            <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim)">до затухания</div>
+            <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--gold)" id="season-days">— дн.</div>
+        </div>
+    </div>
+    <div class="season-bar-wrap"><div class="season-bar-fill" id="season-bar"></div></div>
+    <div class="season-note" id="season-note">Загрузка…</div>
+</div>
+
+<!-- Свиток правил -->
+<div class="rules-overlay" id="rules-overlay" onclick="closeRulesOutside(event)">
+    <div class="rules-sheet" id="rules-sheet">
+        <div class="rules-handle"></div>
+        <div class="rules-title">📜 Свод правил репутации</div>
+
+        <div class="rules-section">
+            <div class="rules-section-title">Начисление очков</div>
+            <div class="rules-row">
+                <span class="rules-row-label">За каждые 100 ₽ сделки</span>
+                <span class="rules-row-value gold">+1 очко</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">Сделка на 1 000 ₽</span>
+                <span class="rules-row-value gold">+10 очков</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">Сделка на 10 000 ₽</span>
+                <span class="rules-row-value gold">+100 очков</span>
+            </div>
+            <div class="rules-note">Очки начисляются обеим сторонам после успешного завершения сделки.</div>
+        </div>
+
+        <div class="rules-section">
+            <div class="rules-section-title">Статусы</div>
+            <div class="rules-row">
+                <span class="rules-row-label">0 – 99 очков</span>
+                <span class="rules-row-value" style="color:var(--text-dim)">🆕 Новичок</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">100 – 499 очков</span>
+                <span class="rules-row-value gold">📜 Проверенный</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">500 – 1499 очков</span>
+                <span class="rules-row-value green">🛡️ Надёжный</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">1500+ очков</span>
+                <span class="rules-row-value" style="color:var(--gold)">⭐ Гарант</span>
+            </div>
+        </div>
+
+        <div class="rules-section">
+            <div class="rules-section-title">Штрафы</div>
+            <div class="rules-row">
+                <span class="rules-row-label">Проигранный спор (не мошенничество)</span>
+                <span class="rules-row-value red">−10 очков</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">Первое мошенничество</span>
+                <span class="rules-row-value red">−300 очков + заморозка 7 дн.</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">Второе мошенничество</span>
+                <span class="rules-row-value red">Вечная блокировка</span>
+            </div>
+        </div>
+
+        <div class="rules-section">
+            <div class="rules-section-title">Затухание раз в сезон</div>
+            <div class="rules-row">
+                <span class="rules-row-label">Каждые 3 месяца очки уменьшаются на</span>
+                <span class="rules-row-value" style="color:var(--sealing-lt)">−30%</span>
+            </div>
+            <div class="rules-row">
+                <span class="rules-row-label">2 000 очков → после затухания</span>
+                <span class="rules-row-value gold">1 400 очков</span>
+            </div>
+            <div class="rules-note">Затухание не обнуляет репутацию — оно делает её реальной ценностью. Бывший мошенник не получает чистый лист автоматически.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+const BACKEND = 'https://garant-backend-production.up.railway.app';
+const user = tg.initDataUnsafe?.user || {};
+const currentUserId = user.id || 0;
+
+// ── СТАТУСЫ ──────────────────────────────────────────────────
+const STATUSES = [
+    { min: 0,    name: '🆕 Новичок',     cls: '' },
+    { min: 100,  name: '📜 Проверенный', cls: '' },
+    { min: 500,  name: '🛡️ Надёжный',   cls: '' },
+    { min: 1500, name: '⭐ Гарант',      cls: '' },
+];
+const LEVELS = [0, 100, 500, 1500];
+
+function getStatus(pts) {
+    for (let i = STATUSES.length - 1; i >= 0; i--)
+        if (pts >= STATUSES[i].min) return STATUSES[i];
+    return STATUSES[0];
+}
+function getProgress(pts) {
+    const c = Math.max(0, pts);
+    for (let i = 0; i < LEVELS.length - 1; i++) {
+        if (c < LEVELS[i+1]) return {
+            pct: Math.round((c - LEVELS[i]) / (LEVELS[i+1] - LEVELS[i]) * 100),
+            left: LEVELS[i], right: LEVELS[i+1], need: LEVELS[i+1] - c
+        };
+    }
+    return { pct: 100, left: 1500, right: '∞', need: 0 };
+}
+
+// ── СЕЗОН ─────────────────────────────────────────────────────
+function getSeasonInfo() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const seasons = [
+        { name: 'Зимний',  date: new Date(year, 0,  1), emoji: '❄️' },
+        { name: 'Весенний',date: new Date(year, 3,  1), emoji: '🌿' },
+        { name: 'Летний',  date: new Date(year, 6,  1), emoji: '☀️' },
+        { name: 'Осенний', date: new Date(year, 9,  1), emoji: '🍂' },
+    ];
+    // находим следующий сброс
+    let next = null;
+    for (const s of seasons) {
+        if (s.date > now) { next = s; break; }
+    }
+    if (!next) {
+        next = { name: 'Зимний', date: new Date(year + 1, 0, 1), emoji: '❄️' };
+    }
+    // текущий сезон
+    let current = seasons[0];
+    for (const s of seasons) { if (s.date <= now) current = s; }
+
+    const daysLeft = Math.ceil((next.date - now) / 86400000);
+    // прогресс сезона (90 дней ~ 1 сезон)
+    const seasonLen = 91;
+    const daysPassed = seasonLen - daysLeft;
+    const pct = Math.min(100, Math.round(daysPassed / seasonLen * 100));
+
+    return { current, next, daysLeft, pct };
+}
+
+// ── ЗАГРУЗКА ──────────────────────────────────────────────────
+async function load() {
+    try {
+        const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
+        const data = await res.json();
+        const deals = data.success ? data.deals : [];
+
+        const completed = deals.filter(d => d.status === 'completed');
+        const bad       = deals.filter(d => d.status === 'cancelled' || d.status === 'dispute');
+        const asSeller  = completed.filter(d => d.seller_id == currentUserId);
+        const asBuyer   = completed.filter(d => d.buyer_id  == currentUserId);
+
+        const sellerPts = asSeller.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
+        const buyerPts  = asBuyer.reduce((s, d)  => s + Math.floor(parseFloat(d.amount) / 100), 0);
+        const totalPts  = sellerPts + buyerPts;
+
+        const status = getStatus(totalPts);
+        const prog   = getProgress(totalPts);
+
+        // Счётчик очков
+        document.getElementById('score-status').textContent = status.name;
+        document.getElementById('score-big').textContent    = totalPts.toLocaleString('ru');
+        document.getElementById('level-from').textContent   = prog.left.toLocaleString('ru');
+        document.getElementById('level-to').textContent     = typeof prog.right === 'number' ? prog.right.toLocaleString('ru') : prog.right;
+        document.getElementById('level-next').textContent   = prog.need > 0
+            ? `ещё ${prog.need.toLocaleString('ru')} очков до следующего звания`
+            : 'Высший статус достигнут';
+
+        requestAnimationFrame(() => setTimeout(() => {
+            document.getElementById('score-bar').style.width = prog.pct + '%';
+        }, 200));
+
+        // Статистика
+        document.getElementById('cnt-good').textContent = completed.length;
+        document.getElementById('cnt-bad').textContent  = bad.length;
+
+        // Шкала успешности
+        const total = completed.length + bad.length;
+        const goodPct = total > 0 ? Math.round(completed.length / total * 100) : 0;
+        const badPct  = 100 - goodPct;
+        document.getElementById('ratio-pct').textContent        = goodPct + '%';
+        document.getElementById('ratio-good-label').textContent = completed.length + ' хороших';
+        document.getElementById('ratio-bad-label').textContent  = bad.length + ' плохих';
+
+        requestAnimationFrame(() => setTimeout(() => {
+            document.getElementById('ratio-good').style.width = goodPct + '%';
+            document.getElementById('ratio-bad').style.width  = badPct  + '%';
+        }, 300));
+
+        // Сезон
+        const season = getSeasonInfo();
+        document.getElementById('season-name').textContent = season.current.emoji + ' ' + season.current.name + ' сезон';
+        document.getElementById('season-date').textContent = 'сброс ' + season.next.date.toLocaleDateString('ru', { day: 'numeric', month: 'long' });
+        document.getElementById('season-days').textContent = season.daysLeft + ' дн.';
+
+        const afterFade = Math.round(totalPts * 0.7);
+        document.getElementById('season-note').innerHTML =
+            `После затухания вы потеряете <b>${Math.round(totalPts * 0.3).toLocaleString('ru')} очков</b> — останется <b>${afterFade.toLocaleString('ru')}</b>. Продолжайте сделки чтобы восполнить репутацию.`;
+
+        requestAnimationFrame(() => setTimeout(() => {
+            document.getElementById('season-bar').style.width = season.pct + '%';
+        }, 400));
+
+    } catch(e) { console.log(e); }
+}
+
+// ── ПРАВИЛА ───────────────────────────────────────────────────
+function openRules() {
+    document.getElementById('rules-overlay').classList.add('open');
+}
+function closeRulesOutside(e) {
+    if (e.target === document.getElementById('rules-overlay')) {
+        document.getElementById('rules-overlay').classList.remove('open');
+    }
+}
+
+load();
+</script>
+</body>
+</html>
