@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
             --bg:         #1a1208;
             --bg2:        #241a0e;
@@ -23,9 +22,7 @@
             --sealing-lt: #9b4a35;
             --green:      #4a7a50;
             --shadow:     rgba(0,0,0,0.5);
-            --candle:     rgba(201,168,76,0.06);
         }
-
         body {
             font-family: 'Crimson Text', Georgia, serif;
             background-color: var(--bg);
@@ -33,8 +30,6 @@
             min-height: 100vh;
             padding: 0 16px 32px;
         }
-
-        /* свечное свечение сверху */
         body::before {
             content: '';
             position: fixed; inset: 0;
@@ -51,101 +46,164 @@
         }
         * { position: relative; z-index: 1; }
 
+        /* ── HEADER ── */
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 28px 0 20px;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         .header-center { text-align: center; flex: 1; }
         .header h1 {
             font-family: 'Cinzel', serif;
             font-size: 22px; font-weight: 700;
-            color: var(--gold);
-            letter-spacing: 2px;
+            color: var(--gold); letter-spacing: 2px;
             text-shadow: 0 0 20px rgba(201,168,76,0.3);
         }
-        .header p {
-            font-style: italic; font-size: 13px;
-            color: var(--text-dim); margin-top: 3px;
-        }
+        .header p { font-style: italic; font-size: 13px; color: var(--text-dim); margin-top: 3px; }
         .seal-icon { font-size: 26px; line-height: 1; }
-
         .profile-btn {
             width: 38px; height: 38px; border-radius: 50%;
-            background: var(--bg2);
-            border: 1px solid var(--border);
+            background: var(--bg2); border: 1px solid var(--border);
             font-size: 18px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 8px var(--shadow);
-            transition: background .2s;
+            box-shadow: 0 2px 8px var(--shadow); transition: background .2s;
         }
         .profile-btn:active { background: var(--bg3); }
 
-        .btn {
+        /* ── CREATE BUTTON ── */
+        .btn-create {
             display: block; width: 100%; padding: 15px;
             border-radius: 6px; border: none;
             font-family: 'Cinzel', serif;
             font-size: 14px; font-weight: 600; letter-spacing: 0.5px;
-            cursor: pointer; margin-bottom: 12px; transition: all .2s;
-        }
-        .btn-primary {
-            background: var(--sealing);
-            color: var(--text);
+            cursor: pointer; margin-bottom: 16px; transition: all .2s;
+            background: var(--sealing); color: var(--text);
             box-shadow: 0 3px 12px rgba(122,48,34,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
         }
-        .btn-primary:active { background: #5a2018; }
+        .btn-create:active { background: #5a2018; }
 
-        .divider {
-            display: flex; align-items: center; gap: 10px;
-            margin: 4px 0 20px; color: var(--border); font-size: 12px;
+        /* ── TABS ── */
+        .tabs {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px; margin-bottom: 16px;
         }
-        .divider::before, .divider::after {
-            content: ''; flex: 1; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border), transparent);
-        }
-
-        .deals-list h2 {
+        .tab {
+            padding: 10px; border-radius: 6px;
             font-family: 'Cinzel', serif;
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 2px; text-transform: uppercase;
-            color: var(--gold-dim); margin-bottom: 14px;
+            font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; border: 1px solid var(--border);
+            background: transparent; color: var(--text-dim);
+            transition: all .2s; text-align: center;
         }
-        .empty-state {
-            text-align: center; padding: 40px 0;
-            color: var(--text-dim); font-style: italic; font-size: 15px;
+        .tab.active {
+            background: var(--bg2); color: var(--gold);
+            border-color: var(--gold-dim);
         }
+        .tab:active { opacity: 0.7; }
 
+        /* ── DEAL CARD (мои сделки) ── */
         .deal-card {
             background: var(--bg2);
             border-radius: 6px; padding: 14px 16px; margin-bottom: 10px;
             border: 1px solid var(--border);
-            box-shadow: 0 2px 10px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.03);
-            cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+            box-shadow: 0 2px 10px var(--shadow);
+            cursor: pointer; transition: all .2s;
+            position: relative; overflow: hidden;
         }
         .deal-card::before {
             content: '';
             position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
             background: var(--sealing);
         }
+        .deal-card.active-deal::before { background: var(--gold-dim); }
+        .deal-card.dispute-deal::before { background: var(--sealing-lt); }
         .deal-card:active { opacity: 0.7; transform: translateY(1px); }
         .deal-card-desc { font-weight: 600; font-size: 16px; margin-bottom: 4px; color: var(--text); }
-        .deal-card-amount {
-            font-family: 'Cinzel', serif;
-            font-size: 19px; font-weight: 700; color: var(--gold);
-        }
+        .deal-card-amount { font-family: 'Cinzel', serif; font-size: 19px; font-weight: 700; color: var(--gold); }
         .deal-card-status { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 4px; }
 
+        /* ── FEED CARD (лента) ── */
+        .feed-card {
+            background: var(--bg2);
+            border-radius: 6px; padding: 12px 14px; margin-bottom: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px var(--shadow);
+            position: relative; overflow: hidden;
+            animation: fadeUp .3s ease both;
+        }
+        .feed-card::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+        }
+        .feed-card.feed-pending::before  { background: var(--gold); }
+        .feed-card.feed-active::before   { background: var(--gold-dim); }
+        .feed-card.feed-completed::before{ background: var(--green); }
+        .feed-card.feed-dispute::before  { background: var(--sealing-lt); }
+
+        .feed-row {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 10px;
+        }
+        .feed-desc {
+            font-size: 15px; font-weight: 600; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1;
+        }
+        .feed-amount {
+            font-family: 'Cinzel', serif;
+            font-size: 15px; font-weight: 700; color: var(--gold);
+            flex-shrink: 0;
+        }
+        .feed-meta {
+            display: flex; justify-content: space-between;
+            margin-top: 5px; font-size: 11px; font-style: italic; color: var(--text-dim);
+        }
+
+        /* live dot */
+        .live-dot {
+            display: inline-block;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--gold);
+            animation: pulse 2s ease-in-out infinite;
+            margin-right: 5px; vertical-align: middle;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        /* ── EMPTY ── */
+        .empty-state {
+            text-align: center; padding: 40px 0;
+            color: var(--text-dim); font-style: italic; font-size: 15px;
+        }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* ── GEAR ── */
+        .gear { display: inline-block; animation: spin 3s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* ── ANIMATIONS ── */
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s}
 
-        .gear {
-            display: inline-block;
-            animation: spin 3s linear infinite;
-            transform-origin: center;
+        /* skeleton */
+        .skel {
+            background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite; border-radius: 4px; height: 14px; margin-bottom: 6px;
         }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     </style>
 </head>
 <body>
@@ -158,16 +216,29 @@
         <button class="profile-btn" onclick="window.location.href='profile.html'">👤</button>
     </div>
 
-    <button class="btn btn-primary fade-in d1" onclick="createDeal()">
+    <button class="btn-create fade-in d1" onclick="createDeal()">
         + Составить грамоту о сделке
     </button>
 
-    <div class="divider fade-in d2">✦</div>
+    <!-- Вкладки -->
+    <div class="tabs fade-in d2">
+        <button class="tab active" id="tab-my" onclick="switchTab('my')">📋 Мои сделки</button>
+        <button class="tab" id="tab-feed" onclick="switchTab('feed')">🌐 Лента сделок</button>
+    </div>
 
-    <div class="deals-list fade-in d3">
-        <h2>Текущие сделки</h2>
-        <div class="empty-state" id="empty-state">Записей о сделках не найдено</div>
-        <div id="deals-container"></div>
+    <!-- Мои сделки -->
+    <div id="panel-my" class="fade-in d3">
+        <div class="section-title">Активные и ожидающие</div>
+        <div class="empty-state" id="my-empty">Записей о сделках не найдено</div>
+        <div id="my-container"></div>
+    </div>
+
+    <!-- Лента всех сделок -->
+    <div id="panel-feed" style="display:none">
+        <div class="section-title">
+            <span class="live-dot"></span> В реальном времени
+        </div>
+        <div id="feed-container"></div>
     </div>
 
     <script>
@@ -175,28 +246,53 @@
         tg.expand();
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const currentUserId = tg.initDataUnsafe?.user?.id || 0;
+        let feedInterval = null;
 
         function createDeal() { window.location.href = 'create.html'; }
+        function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
 
-        async function loadDeals() {
+        // ── TABS ──────────────────────────────────────────────
+        function switchTab(tab) {
+            document.getElementById('panel-my').style.display   = tab === 'my'   ? 'block' : 'none';
+            document.getElementById('panel-feed').style.display = tab === 'feed' ? 'block' : 'none';
+            document.getElementById('tab-my').classList.toggle('active',   tab === 'my');
+            document.getElementById('tab-feed').classList.toggle('active', tab === 'feed');
+
+            if (tab === 'feed') {
+                loadFeed();
+                feedInterval = setInterval(loadFeed, 30000);
+            } else {
+                clearInterval(feedInterval);
+            }
+        }
+
+        // ── МОИ СДЕЛКИ ────────────────────────────────────────
+        async function loadMyDeals() {
             if (!currentUserId) return;
             try {
-                const res = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
+                const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
                 const data = await res.json();
                 if (!data.success || !data.deals.length) return;
-                const activeDeals = data.deals.filter(d =>
+
+                const active = data.deals.filter(d =>
                     d.status === 'pending' || d.status === 'active' || d.status === 'dispute');
-                if (!activeDeals.length) return;
-                const container = document.getElementById('deals-container');
-                document.getElementById('empty-state').style.display = 'none';
+                if (!active.length) return;
+
+                document.getElementById('my-empty').style.display = 'none';
+
                 const statusMap = {
                     'pending': '🕯 Ожидает покупателя',
                     'active':  '📜 Активна',
                     'dispute': '⚔️ Спор'
                 };
-                container.innerHTML = activeDeals.map(deal => `
-                    <div class="deal-card" onclick="openDeal('${deal.id}')">
-                        <div class="deal-card-desc">${deal.description}${(deal.status === 'active' || deal.status === 'dispute') ? ' <span class="gear">⚙️</span>' : ''}</div>
+                const clsMap = { 'active': 'active-deal', 'dispute': 'dispute-deal' };
+
+                document.getElementById('my-container').innerHTML = active.map(deal => `
+                    <div class="deal-card ${clsMap[deal.status] || ''}" onclick="openDeal('${deal.id}')">
+                        <div class="deal-card-desc">
+                            ${deal.description}
+                            ${(deal.status === 'active' || deal.status === 'dispute') ? ' <span class="gear">⚙️</span>' : ''}
+                        </div>
                         <div class="deal-card-amount">${parseInt(deal.amount).toLocaleString()} ₽</div>
                         <div class="deal-card-status">${statusMap[deal.status] || deal.status}</div>
                     </div>
@@ -204,8 +300,68 @@
             } catch(e) { console.log(e); }
         }
 
-        function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
-        loadDeals();
+        // ── ЛЕНТА ─────────────────────────────────────────────
+        async function loadFeed() {
+            const container = document.getElementById('feed-container');
+
+            // скелетон при первой загрузке
+            if (!container.innerHTML) {
+                container.innerHTML = Array(5).fill(`
+                    <div class="feed-card">
+                        <div class="skel" style="width:70%"></div>
+                        <div class="skel" style="width:40%"></div>
+                    </div>`).join('');
+            }
+
+            try {
+                const res  = await fetch(`${BACKEND}/feed`);
+                const data = await res.json();
+                if (!data.success || !data.deals.length) {
+                    container.innerHTML = `<div class="empty-state">Сделок пока нет</div>`;
+                    return;
+                }
+
+                const statusMap = {
+                    'pending':   ['🕯 Ожидает покупателя', 'feed-pending'],
+                    'active':    ['📜 В процессе',         'feed-active'],
+                    'completed': ['✅ Завершена',           'feed-completed'],
+                    'dispute':   ['⚔️ Спор',               'feed-dispute'],
+                };
+
+                container.innerHTML = data.deals.map(deal => {
+                    const [statusText, cls] = statusMap[deal.status] || ['📋 Сделка', 'feed-active'];
+                    const amount = parseInt(deal.amount).toLocaleString();
+                    const date = deal.created_at
+                        ? timeAgo(new Date(deal.created_at)) : '';
+                    return `
+                    <div class="feed-card ${cls}">
+                        <div class="feed-row">
+                            <div class="feed-desc">${escHtml(deal.description)}</div>
+                            <div class="feed-amount">${amount} ₽</div>
+                        </div>
+                        <div class="feed-meta">
+                            <span>${statusText}</span>
+                            <span>${date}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) { console.log(e); }
+        }
+
+        // ── HELPERS ───────────────────────────────────────────
+        function timeAgo(date) {
+            const diff = (Date.now() - date) / 1000;
+            if (diff < 60)   return 'только что';
+            if (diff < 3600) return Math.floor(diff / 60) + ' мин назад';
+            if (diff < 86400)return Math.floor(diff / 3600) + ' ч назад';
+            return Math.floor(diff / 86400) + ' дн назад';
+        }
+        function escHtml(s) {
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ── INIT ──────────────────────────────────────────────
+        loadMyDeals();
     </script>
 </body>
 </html>
