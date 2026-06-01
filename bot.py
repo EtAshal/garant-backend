@@ -2,7 +2,7 @@ import asyncio
 import os
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -12,9 +12,10 @@ bot = Bot(token=os.getenv("BOT_TOKEN"))
 dp = Dispatcher()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SECRET"))
 
+WEBAPP_URL = os.getenv("WEBAPP_URL")
+
 @dp.message(CommandStart())
 async def start(message: Message):
-    # Сохраняем пользователя в базу
     user = message.from_user
     try:
         supabase.table("users").upsert({
@@ -24,18 +25,38 @@ async def start(message: Message):
             "last_name": user.last_name
         }).execute()
     except Exception as e:
-        print(f"Ошибка сохранения пользователя: {e}")
+        print(f"Ошибка: {e}")
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text="🔒 Открыть Гарант",
-            web_app=WebAppInfo(url=os.getenv("WEBAPP_URL"))
+            web_app=WebAppInfo(url=WEBAPP_URL)
         )]
     ])
     await message.answer(
         "Добро пожаловать в Гарант!\n\nБезопасные сделки между людьми.",
         reply_markup=keyboard
     )
+
+@dp.message()
+async def handle_message(message: Message):
+    text = message.text or ""
+    
+    # Если пользователь отправил ссылку на сделку
+    if "deal.html?id=" in text:
+        deal_id = text.split("id=")[-1].strip()
+        deal_url = f"{WEBAPP_URL.rstrip('/')}/deal.html?id={deal_id}"
+        
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="🔒 Открыть сделку",
+                web_app=WebAppInfo(url=deal_url)
+            )]
+        ])
+        await message.answer(
+            "Нажми кнопку чтобы открыть сделку:",
+            reply_markup=keyboard
+        )
 
 async def main():
     await dp.start_polling(bot)

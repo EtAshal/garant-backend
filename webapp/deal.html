@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сделка</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --parchment:  #f2e8d5;
+            --paper:      #e8d5b0;
+            --paper-dark: #d4b896;
+            --cappuccino: #c4a882;
+            --latte:      #b8956a;
+            --brown:      #8b6914;
+            --ink:        #3d2b1f;
+            --ink-light:  #6b4c35;
+            --sealing:    #7a3022;
+            --sealing-light: #9b4a35;
+            --gold:       #c9a84c;
+            --shadow:     rgba(61,43,31,0.18);
+        }
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background-color: var(--parchment);
+            color: var(--ink);
+            min-height: 100vh;
+            padding: 0 16px 40px;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(139,105,20,0.04) 28px, rgba(139,105,20,0.04) 29px);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 60%, rgba(61,43,31,0.12) 100%);
+            pointer-events: none; z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
+ 
+        .header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 24px 0 20px;
+            border-bottom: 1px solid var(--cappuccino);
+            margin-bottom: 24px;
+        }
+        .back-btn {
+            background: var(--paper); border: 1.5px solid var(--cappuccino);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--ink);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 6px var(--shadow); font-family: serif;
+        }
+        .back-btn:active { background: var(--paper-dark); }
+        h1 { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+ 
+        /* STATUS */
+        .status-badge {
+            display: inline-block; padding: 5px 14px; border-radius: 4px;
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+            margin-bottom: 18px; border: 1px solid;
+        }
+        .status-pending   { background: rgba(201,168,76,0.15); color: var(--brown); border-color: var(--gold); }
+        .status-active    { background: rgba(139,105,20,0.12); color: var(--ink); border-color: var(--brown); }
+        .status-completed { background: rgba(60,100,60,0.1);   color: #3a6640; border-color: #6aaa72; }
+        .status-cancelled { background: rgba(122,48,34,0.1);   color: var(--sealing); border-color: var(--sealing-light); }
+ 
+        /* CARDS */
+        .card {
+            background: var(--paper); border-radius: 6px; padding: 14px 16px;
+            margin-bottom: 12px; border: 1px solid var(--paper-dark);
+            box-shadow: 0 2px 8px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.45);
+        }
+        .card-label {
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--latte); margin-bottom: 5px;
+        }
+        .card-value { font-size: 17px; font-weight: 600; color: var(--ink); }
+        .amount-value { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 700; color: var(--ink); }
+        .commission-note { font-size: 13px; font-style: italic; color: var(--ink-light); margin-top: 4px; }
+ 
+        /* TIMER CARD — показывает прогресс 7 дней и статус спора */
+        .timer-card {
+            background: var(--paper); border-radius: 6px; padding: 14px 16px;
+            margin-bottom: 12px; border: 1px solid var(--paper-dark);
+            box-shadow: 0 2px 8px var(--shadow);
+            border-left: 3px solid var(--brown);
+        }
+        .timer-label {
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--latte); margin-bottom: 8px;
+        }
+        .timer-bar-wrap {
+            background: rgba(61,43,31,0.1); border-radius: 4px;
+            height: 6px; overflow: hidden; margin-bottom: 6px;
+        }
+        .timer-bar-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, var(--brown), var(--sealing));
+            transition: width .5s ease;
+        }
+        .timer-text { font-size: 13px; font-style: italic; color: var(--ink-light); }
+        .timer-text b { font-style: normal; color: var(--ink); }
+ 
+        /* DISPUTE WARNING */
+        .dispute-warning {
+            background: rgba(122,48,34,0.08);
+            border: 1px solid var(--sealing-light);
+            border-radius: 6px; padding: 12px 14px;
+            margin-bottom: 12px;
+            font-size: 14px; font-style: italic;
+            color: var(--sealing);
+            line-height: 1.5;
+        }
+ 
+        /* DIVIDER */
+        .divider {
+            display: flex; align-items: center; gap: 10px;
+            margin: 16px 0; color: var(--cappuccino); font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cappuccino), transparent);
+        }
+ 
+        /* BUTTONS */
+        .btn {
+            display: block; width: 100%; padding: 15px;
+            border-radius: 6px; border: none;
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
+            letter-spacing: 0.4px; cursor: pointer; margin-bottom: 10px;
+            transition: all .2s;
+        }
+        .btn-confirm { background: #3a6640; color: var(--parchment); box-shadow: 0 3px 10px rgba(58,102,64,0.35); }
+        .btn-confirm:active { background: #2d5032; }
+        .btn-cancel  { background: var(--sealing); color: var(--parchment); box-shadow: 0 3px 10px rgba(122,48,34,0.35); }
+        .btn-cancel:active  { background: var(--ink); }
+        .btn-accept  { background: var(--ink); color: var(--parchment); box-shadow: 0 3px 10px rgba(61,43,31,0.35); }
+        .btn-accept:active  { background: #2a1d15; }
+        .btn-dispute {
+            background: transparent; color: var(--sealing);
+            border: 1.5px solid var(--sealing-light);
+            box-shadow: none; font-size: 12px; padding: 11px;
+        }
+        .btn-dispute:active { background: rgba(122,48,34,0.08); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
+        .loading { text-align: center; padding: 50px 0; color: var(--cappuccino); font-style: italic; font-size: 16px; }
+ 
+        .fade-in { animation: fadeUp .35s ease both; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s}
+    </style>
+</head>
+<body>
+    <div class="header fade-in">
+        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <h1>Грамота о сделке</h1>
+    </div>
+ 
+    <div id="loading" class="loading">Разворачиваем свиток...</div>
+    <div id="content" style="display:none"></div>
+ 
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+ 
+        const BACKEND = 'https://garant-backend-production.up.railway.app';
+        const params = new URLSearchParams(window.location.search);
+        const dealId = params.get('id');
+        const currentUserId = tg.initDataUnsafe?.user?.id || 0;
+ 
+        async function loadDeal() {
+            if (!dealId) {
+                document.getElementById('loading').textContent = 'Грамота не найдена';
+                return;
+            }
+            try {
+                const res = await fetch(`${BACKEND}/deals/${dealId}`);
+                const data = await res.json();
+                if (!data.success) {
+                    document.getElementById('loading').textContent = 'Грамота не найдена';
+                    return;
+                }
+                renderDeal(data.deal, data.days_since_accepted);
+            } catch(e) {
+                document.getElementById('loading').textContent = 'Ошибка загрузки';
+            }
+        }
+ 
+        function getCommission(amount) {
+            if (amount <= 10000) return 0.01;
+            if (amount <= 25000) return 0.02;
+            if (amount <= 50000) return 0.03;
+            if (amount <= 100000) return 0.04;
+            return 0.05;
+        }
+ 
+        function renderDeal(deal, daysPassed) {
+            document.getElementById('loading').style.display = 'none';
+            const content = document.getElementById('content');
+            content.style.display = 'block';
+ 
+            const isSeller = currentUserId == deal.seller_id;
+            const isBuyer  = currentUserId == deal.buyer_id;
+            const amount   = parseFloat(deal.amount);
+            const commission = Math.round(amount * getCommission(amount));
+            const sellerGets = amount - commission;
+ 
+            const statusMap = {
+                'pending':   ['Ожидает покупателя', 'status-pending'],
+                'active':    ['Активна',            'status-active'],
+                'completed': ['Завершена',          'status-completed'],
+                'cancelled': ['Отменена',           'status-cancelled'],
+                'dispute':   ['Спор',               'status-cancelled'],
+            };
+            const [statusText, statusClass] = statusMap[deal.status] || ['Неизвестно', 'status-pending'];
+ 
+            // ── Таймер 7 дней ──
+            let timerHtml = '';
+            if (deal.status === 'active' && daysPassed !== null && daysPassed !== undefined) {
+                const pct = Math.min(100, Math.round((daysPassed / 7) * 100));
+                const daysLeft = Math.max(0, 7 - daysPassed);
+                const hoursLeft = Math.round(daysLeft * 24);
+                const timeStr = daysLeft >= 1
+                    ? `осталось ~${Math.ceil(daysLeft)} дн.`
+                    : `осталось ~${hoursLeft} ч.`;
+ 
+                timerHtml = `
+                    <div class="timer-card fade-in d1">
+                        <div class="timer-label">Автозавершение</div>
+                        <div class="timer-bar-wrap">
+                            <div class="timer-bar-fill" style="width:${pct}%"></div>
+                        </div>
+                        <div class="timer-text">
+                            День <b>${Math.floor(daysPassed) + 1}</b> из 7 — ${timeStr}
+                        </div>
+                    </div>`;
+            }
+ 
+            // ── Кнопки действий ──
+            let buttonsHtml = '';
+ 
+            if (deal.status === 'pending' && !isSeller) {
+                buttonsHtml = `
+                    <button class="btn btn-accept" onclick="acceptDeal()">
+                        📜 Принять сделку — внести ${amount.toLocaleString()} ₽
+                    </button>`;
+            }
+ 
+            if (deal.status === 'active') {
+                if (isSeller && !deal.seller_action) {
+                    buttonsHtml += `
+                        <button class="btn btn-confirm" onclick="takeAction('confirm')">✅ Всё исполнено, подтверждаю</button>
+                        <button class="btn btn-cancel"  onclick="takeAction('cancel')">❌ Отказываюсь от сделки</button>`;
+                }
+                if (isBuyer && !deal.buyer_action) {
+                    buttonsHtml += `
+                        <button class="btn btn-confirm" onclick="takeAction('confirm')">✅ Всё получено, подтверждаю</button>
+                        <button class="btn btn-cancel"  onclick="takeAction('cancel')">❌ Отказываюсь от сделки</button>`;
+                }
+ 
+                // Кнопка спора — только покупателю если прошло 2+ дня
+                if (isBuyer && daysPassed >= 2 && !deal.seller_action) {
+                    buttonsHtml += `
+                        <div class="dispute-warning">
+                            ⚠️ Продавец не реагирует уже ${Math.floor(daysPassed)} дн.
+                            Вы можете открыть спор и передать дело арбитру.
+                        </div>
+                        <button class="btn btn-dispute" onclick="openDispute()">
+                            ⚔️ Открыть спор (продавец молчит)
+                        </button>`;
+                }
+            }
+ 
+            content.innerHTML = `
+                <span class="status-badge ${statusClass} fade-in">${statusText}</span>
+ 
+                ${timerHtml}
+ 
+                <div class="card fade-in d1">
+                    <div class="card-label">Сумма сделки</div>
+                    <div class="amount-value">${amount.toLocaleString()} ₽</div>
+                    <div class="commission-note">Продавец получит: ${sellerGets.toLocaleString()} ₽ (мзда: ${commission.toLocaleString()} ₽)</div>
+                </div>
+ 
+                <div class="card fade-in d1">
+                    <div class="card-label">Предмет сделки</div>
+                    <div class="card-value">${deal.description}</div>
+                </div>
+ 
+                <div class="card fade-in d1" style="border-left: 3px solid var(--cappuccino);">
+                    <div class="card-label">Номер грамоты</div>
+                    <div style="font-size:11px; color:var(--ink-light); word-break:break-all; font-family:monospace;">${deal.id}</div>
+                </div>
+ 
+                <div class="divider fade-in d2">⚖️</div>
+ 
+                ${buttonsHtml}
+            `;
+        }
+ 
+        async function acceptDeal() {
+            try {
+                const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ buyer_id: currentUserId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    tg.showAlert('Сделка принята! Средства надёжно заблокированы.');
+                    loadDeal();
+                } else {
+                    tg.showAlert('Ошибка: ' + data.error);
+                }
+            } catch(e) { tg.showAlert('Ошибка соединения'); }
+        }
+ 
+        async function takeAction(action) {
+            try {
+                const res = await fetch(`${BACKEND}/deals/${dealId}/action`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUserId, action })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    tg.showAlert(data.message);
+                    loadDeal();
+                } else {
+                    tg.showAlert('Ошибка: ' + data.error);
+                }
+            } catch(e) { tg.showAlert('Ошибка соединения'); }
+        }
+ 
+        async function openDispute() {
+            tg.showConfirm(
+                '⚔️ Открыть спор?\n\nДело будет передано арбитру. Деньги заморозятся до его решения.',
+                async (confirmed) => {
+                    if (!confirmed) return;
+                    try {
+                        const res = await fetch(`${BACKEND}/deals/${dealId}/dispute`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: currentUserId })
+                        });
+                        const data = await res.json();
+                        tg.showAlert(data.success ? data.message : 'Ошибка: ' + data.error);
+                        if (data.success) loadDeal();
+                    } catch(e) { tg.showAlert('Ошибка соединения'); }
+                }
+            );
+        }
+ 
+        loadDeal();
+    </script>
+</body>
+</html>
+ 
