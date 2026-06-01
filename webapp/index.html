@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
- 
+
         :root {
             --bg:         #1a1208;
             --bg2:        #241a0e;
@@ -25,7 +25,7 @@
             --shadow:     rgba(0,0,0,0.5);
             --candle:     rgba(201,168,76,0.06);
         }
- 
+
         body {
             font-family: 'Crimson Text', Georgia, serif;
             background-color: var(--bg);
@@ -33,7 +33,7 @@
             min-height: 100vh;
             padding: 0 16px 32px;
         }
- 
+
         /* свечное свечение сверху */
         body::before {
             content: '';
@@ -50,7 +50,7 @@
             pointer-events: none; z-index: 0;
         }
         * { position: relative; z-index: 1; }
- 
+
         .header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 28px 0 20px;
@@ -70,7 +70,7 @@
             color: var(--text-dim); margin-top: 3px;
         }
         .seal-icon { font-size: 26px; line-height: 1; }
- 
+
         .profile-btn {
             width: 38px; height: 38px; border-radius: 50%;
             background: var(--bg2);
@@ -81,7 +81,7 @@
             transition: background .2s;
         }
         .profile-btn:active { background: var(--bg3); }
- 
+
         .btn {
             display: block; width: 100%; padding: 15px;
             border-radius: 6px; border: none;
@@ -95,7 +95,7 @@
             box-shadow: 0 3px 12px rgba(122,48,34,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .btn-primary:active { background: #5a2018; }
- 
+
         .divider {
             display: flex; align-items: center; gap: 10px;
             margin: 4px 0 20px; color: var(--border); font-size: 12px;
@@ -104,7 +104,7 @@
             content: ''; flex: 1; height: 1px;
             background: linear-gradient(90deg, transparent, var(--border), transparent);
         }
- 
+
         .deals-list h2 {
             font-family: 'Cinzel', serif;
             font-size: 11px; font-weight: 600;
@@ -115,7 +115,7 @@
             text-align: center; padding: 40px 0;
             color: var(--text-dim); font-style: italic; font-size: 15px;
         }
- 
+
         .deal-card {
             background: var(--bg2);
             border-radius: 6px; padding: 14px 16px; margin-bottom: 10px;
@@ -135,10 +135,17 @@
             font-size: 19px; font-weight: 700; color: var(--gold);
         }
         .deal-card-status { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 4px; }
- 
+
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s}
+
+        .gear {
+            display: inline-block;
+            animation: spin 3s linear infinite;
+            transform-origin: center;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -150,27 +157,27 @@
         </div>
         <button class="profile-btn" onclick="window.location.href='profile.html'">👤</button>
     </div>
- 
+
     <button class="btn btn-primary fade-in d1" onclick="createDeal()">
         + Составить грамоту о сделке
     </button>
- 
+
     <div class="divider fade-in d2">✦</div>
- 
+
     <div class="deals-list fade-in d3">
         <h2>Текущие сделки</h2>
         <div class="empty-state" id="empty-state">Записей о сделках не найдено</div>
         <div id="deals-container"></div>
     </div>
- 
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const currentUserId = tg.initDataUnsafe?.user?.id || 0;
- 
+
         function createDeal() { window.location.href = 'create.html'; }
- 
+
         async function loadDeals() {
             if (!currentUserId) return;
             try {
@@ -189,17 +196,16 @@
                 };
                 container.innerHTML = activeDeals.map(deal => `
                     <div class="deal-card" onclick="openDeal('${deal.id}')">
-                        <div class="deal-card-desc">${deal.description}</div>
+                        <div class="deal-card-desc">${deal.description}${(deal.status === 'active' || deal.status === 'dispute') ? ' <span class="gear">⚙️</span>' : ''}</div>
                         <div class="deal-card-amount">${parseInt(deal.amount).toLocaleString()} ₽</div>
                         <div class="deal-card-status">${statusMap[deal.status] || deal.status}</div>
                     </div>
                 `).join('');
             } catch(e) { console.log(e); }
         }
- 
+
         function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
         loadDeals();
     </script>
 </body>
 </html>
- 
