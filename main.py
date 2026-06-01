@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 from dotenv import load_dotenv
 import os
 import uuid
