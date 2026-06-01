@@ -116,6 +116,14 @@ async def deal_action(deal_id: str, data: dict):
         elif seller_action == "cancel" and buyer_action == "cancel":
             supabase.table("deals").update({"status": "cancelled"}).eq("id", deal_id).execute()
             try:
+                await bot_instance.send_message(deal["seller_id"], "❌ Сделка отменена.")
+                await bot_instance.send_message(deal["buyer_id"], "❌ Сделка отменена. Деньги возвращены.")
+            except:
+                pass
+            return {"success": True, "message": "❌ Сделка отменена. Деньги возвращены покупателю."}
+        elif seller_action and buyer_action and seller_action != buyer_action:
+            supabase.table("deals").update({"status": "dispute"}).eq("id", deal_id).execute()
+            try:
                 await bot_instance.send_message(deal["seller_id"], "⚠️ Открыт спор по вашей сделке. Арбитр рассмотрит ситуацию.")
                 await bot_instance.send_message(deal["buyer_id"], "⚠️ Открыт спор по вашей сделке. Арбитр рассмотрит ситуацию.")
             except:
