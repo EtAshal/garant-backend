@@ -134,76 +134,109 @@
             margin-top: 5px; font-size: 11px; font-style: italic; color: var(--text-dim);
         }
 
-        /* ── ПЛАВАЮЩИЕ АНИМАЦИИ ── */
-        @keyframes float1 {
-            0%,100% { transform: translate(0px, 0px); }
-            25%      { transform: translate(2px, -3px); }
-            50%      { transform: translate(-1px, -5px); }
-            75%      { transform: translate(-3px, -2px); }
-        }
-        @keyframes float2 {
-            0%,100% { transform: translate(0px, 0px); }
-            25%      { transform: translate(-3px, -2px); }
-            50%      { transform: translate(2px, -4px); }
-            75%      { transform: translate(1px, -1px); }
-        }
-        @keyframes float3 {
-            0%,100% { transform: translate(0px, 0px); }
-            33%      { transform: translate(3px, -4px); }
-            66%      { transform: translate(-2px, -2px); }
-        }
-        @keyframes float4 {
-            0%,100% { transform: translate(0px, 0px); }
-            25%      { transform: translate(-2px, -4px); }
-            50%      { transform: translate(3px, -2px); }
-            75%      { transform: translate(1px, -5px); }
-        }
+        /* ══════════════════════════════════════
+           УНИКАЛЬНЫЕ АНИМАЦИИ ДЛЯ КАЖДОГО БЛОКА
+           ══════════════════════════════════════ */
 
-        /* нажатие на карточку */
-        .floaty {
-            transition: box-shadow .2s, transform .1s;
+        /* Аватар — покачивается как маятник, 1-3px */
+        @keyframes floatAvatar {
+            0%,100% { transform: translate(0,0) rotate(0deg); }
+            20%      { transform: translate(1px,-2px) rotate(0.3deg); }
+            40%      { transform: translate(-2px,-1px) rotate(-0.2deg); }
+            60%      { transform: translate(2px,-3px) rotate(0.4deg); }
+            80%      { transform: translate(-1px,-1px) rotate(-0.1deg); }
         }
-        .floaty:active {
-            transform: scale(0.97) translateY(2px) !important;
-            box-shadow: 0 1px 4px var(--shadow) !important;
+        .avatar-section {
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px; background: var(--bg2);
+            border-radius: 8px; border: 1px solid var(--border);
+            box-shadow: 0 3px 12px var(--shadow);
+            margin-bottom: 14px; position: relative; overflow: hidden;
+            animation: floatAvatar 7s ease-in-out infinite;
+            transition: transform .1s, box-shadow .1s;
         }
+        .avatar-section:active { transform: scale(0.97) !important; box-shadow: 0 1px 4px var(--shadow) !important; }
 
-        /* применяем разные анимации с разными задержками */
-        .float-1 { animation: float1 6s ease-in-out infinite; }
-        .float-2 { animation: float2 7s ease-in-out infinite; animation-delay: -2s; }
-        .float-3 { animation: float3 8s ease-in-out infinite; animation-delay: -4s; }
-        .float-4 { animation: float4 5.5s ease-in-out infinite; animation-delay: -1s; }
-        .float-5 { animation: float1 9s ease-in-out infinite; animation-delay: -3s; }
-        .float-6 { animation: float2 6.5s ease-in-out infinite; animation-delay: -5s; }
-
-        /* ── ЗОЛОТОЕ СВЕЧЕНИЕ НА РЕПУТАЦИИ ── */
+        /* Репутация — медленно дышит вверх-вниз, 4px + золотое свечение */
+        @keyframes floatPoints {
+            0%,100% { transform: translateY(0px); }
+            50%      { transform: translateY(-4px); }
+        }
+        @keyframes goldGlow {
+            0%,100% {
+                box-shadow: 0 2px 10px var(--shadow),
+                            0 0 12px rgba(201,168,76,0.25),
+                            0 0 24px rgba(201,168,76,0.12),
+                            0 0 0 1px rgba(201,168,76,0.2);
+            }
+            50% {
+                box-shadow: 0 6px 20px var(--shadow),
+                            0 0 25px rgba(201,168,76,0.55),
+                            0 0 50px rgba(201,168,76,0.25),
+                            0 0 0 1px rgba(201,168,76,0.5);
+            }
+        }
         .points-card {
             background: var(--bg2); border-radius: 8px; padding: 16px;
             border: 1px solid var(--gold-dim);
-            box-shadow: 0 2px 10px var(--shadow), 0 0 0 1px rgba(201,168,76,0.1);
-            animation: goldGlow 3s ease-in-out infinite;
+            animation: floatPoints 5s ease-in-out infinite, goldGlow 2.5s ease-in-out infinite;
+            transition: transform .1s;
         }
-        @keyframes goldGlow {
-            0%,100% { box-shadow: 0 2px 10px var(--shadow), 0 0 8px rgba(201,168,76,0.15), 0 0 0 1px rgba(201,168,76,0.1); }
-            50%      { box-shadow: 0 2px 16px var(--shadow), 0 0 20px rgba(201,168,76,0.3), 0 0 0 1px rgba(201,168,76,0.25); }
-        }
+        .points-card:active { transform: scale(0.97) translateY(2px) !important; }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        /* Статистика — каждая карточка своя траектория */
+        @keyframes floatStat1 {
+            0%,100% { transform: translate(0,0); }
+            30%      { transform: translate(2px,-3px); }
+            70%      { transform: translate(-1px,-2px); }
+        }
+        @keyframes floatStat2 {
+            0%,100% { transform: translate(0,0); }
+            25%      { transform: translate(-2px,-4px); }
+            60%      { transform: translate(1px,-1px); }
+            85%      { transform: translate(-1px,-3px); }
+        }
+        @keyframes floatStat3 {
+            0%,100% { transform: translate(0,0); }
+            40%      { transform: translate(3px,-2px); }
+            75%      { transform: translate(-2px,-4px); }
+        }
         .stat-card {
             background: var(--bg2); border-radius: 8px; padding: 13px 10px;
             border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow); text-align: center;
+            transition: transform .1s, box-shadow .1s;
         }
+        .stat-card:active { transform: scale(0.93) !important; box-shadow: 0 1px 3px var(--shadow) !important; }
+        .stat-card:nth-child(1) { animation: floatStat1 6s ease-in-out infinite; }
+        .stat-card:nth-child(2) { animation: floatStat2 8s ease-in-out infinite; animation-delay: -2s; }
+        .stat-card:nth-child(3) { animation: floatStat3 7s ease-in-out infinite; animation-delay: -4s; }
+
         .stat-icon { font-size: 18px; margin-bottom: 5px; }
         .stat-num { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: var(--text); }
         .stat-num.green  { color: #7acc84; }
         .stat-num.yellow { color: var(--gold); }
         .stat-label { font-size: 11px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
 
+        /* Роли — левая уходит влево-вверх, правая вправо-вниз */
+        @keyframes floatRoleLeft {
+            0%,100% { transform: translate(0,0); }
+            33%      { transform: translate(-3px,-3px); }
+            66%      { transform: translate(1px,-1px); }
+        }
+        @keyframes floatRoleRight {
+            0%,100% { transform: translate(0,0); }
+            33%      { transform: translate(2px,-4px); }
+            66%      { transform: translate(-2px,-2px); }
+        }
         .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .role-card {
             background: var(--bg2); border-radius: 8px; padding: 14px;
             border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow);
+            transition: transform .1s, box-shadow .1s;
         }
+        .role-card:active { transform: scale(0.95) !important; box-shadow: 0 1px 3px var(--shadow) !important; }
+        .role-card:nth-child(1) { animation: floatRoleLeft  9s ease-in-out infinite; }
+        .role-card:nth-child(2) { animation: floatRoleRight 7s ease-in-out infinite; animation-delay: -3s; }
         .role-title { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; color: var(--gold-dim); margin-bottom: 6px; }
         .role-pts { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--gold); }
         .role-count { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 3px; }
@@ -216,6 +249,18 @@
             background: transparent; color: var(--text-dim); transition: all .2s;
         }
         .tab.active { background: var(--sealing); color: var(--text); border-color: var(--sealing); }
+
+        /* История сделок — каждая карточка плавает по-своему через JS */
+        @keyframes floatDeal1 { 0%,100%{transform:translate(0,0)} 40%{transform:translate(2px,-2px)} 80%{transform:translate(-1px,-1px)} }
+        @keyframes floatDeal2 { 0%,100%{transform:translate(0,0)} 30%{transform:translate(-2px,-3px)} 70%{transform:translate(1px,-1px)} }
+        @keyframes floatDeal3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(3px,-2px)} }
+        @keyframes floatDeal4 { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-1px,-3px)} 75%{transform:translate(2px,-1px)} }
+        @keyframes floatDeal5 { 0%,100%{transform:translate(0,0)} 35%{transform:translate(1px,-4px)} 65%{transform:translate(-2px,-1px)} }
+        .deal-anim-1 { animation: floatDeal1 6s  ease-in-out infinite; }
+        .deal-anim-2 { animation: floatDeal2 8s  ease-in-out infinite; animation-delay:-1s; }
+        .deal-anim-3 { animation: floatDeal3 7s  ease-in-out infinite; animation-delay:-3s; }
+        .deal-anim-4 { animation: floatDeal4 9s  ease-in-out infinite; animation-delay:-2s; }
+        .deal-anim-5 { animation: floatDeal5 5s  ease-in-out infinite; animation-delay:-4s; }
 
         .deal-item {
             background: var(--bg2); border-radius: 6px; padding: 13px 14px;
@@ -272,7 +317,7 @@
     <span class="page-title">Личная книга</span>
 </div>
 
-<div class="avatar-section fade-in d1 floaty float-1">
+<div class="avatar-section fade-in d1">
     <div class="avatar" id="avatar">?</div>
     <div class="user-info">
         <div class="user-name" id="user-name">Загрузка…</div>
@@ -282,7 +327,7 @@
 </div>
 
 <div class="section-title fade-in d2">Очки доверия</div>
-<div class="points-card fade-in d2 floaty float-2" onclick="window.location.href='reputation.html'" style="cursor:pointer">
+<div class="points-card fade-in d2" onclick="window.location.href='reputation.html'" style="cursor:pointer">
     <div class="points-row">
         <div>
             <div class="points-label">Репутация</div>
@@ -300,17 +345,17 @@
 
 <div class="section-title fade-in d3">Записи</div>
 <div class="stats-grid fade-in d3">
-    <div class="stat-card floaty float-3">
+    <div class="stat-card">
         <div class="stat-icon">📜</div>
         <div class="stat-num green" id="cnt-completed">—</div>
         <div class="stat-label">завершено</div>
     </div>
-    <div class="stat-card floaty float-4">
+    <div class="stat-card">
         <div class="stat-icon">⚔️</div>
         <div class="stat-num yellow" id="cnt-dispute">—</div>
         <div class="stat-label">споров</div>
     </div>
-    <div class="stat-card floaty float-5">
+    <div class="stat-card">
         <div class="stat-icon">🪙</div>
         <div class="stat-num" id="cnt-volume" style="font-size:15px">—</div>
         <div class="stat-label">оборот</div>
@@ -319,12 +364,12 @@
 
 <div class="section-title fade-in d4">Звания</div>
 <div class="roles-grid fade-in d4">
-    <div class="role-card floaty float-2">
+    <div class="role-card">
         <div class="role-title">📦 КАК ПРОДАВЕЦ</div>
         <div class="role-pts" id="pts-seller">—</div>
         <div class="role-count" id="cnt-seller">— сделок</div>
     </div>
-    <div class="role-card floaty float-4">
+    <div class="role-card">
         <div class="role-title">🛒 КАК ПОКУПАТЕЛЬ</div>
         <div class="role-pts" id="pts-buyer">—</div>
         <div class="role-count" id="cnt-buyer">— сделок</div>
@@ -421,7 +466,7 @@ const DEAL_META = {
     dispute:    { emoji: '⚔️', cls: 'dispute',   label: 'Спор'      },
 };
 
-function dealCard(deal) {
+function dealCard(deal, idx) {
     const meta = DEAL_META[deal.status] || DEAL_META.pending;
     const amount = parseFloat(deal.amount);
     const isSeller = deal.seller_id == currentUserId;
@@ -430,8 +475,9 @@ function dealCard(deal) {
     if (deal.status === 'completed') { amountClass = isSeller ? 'income' : 'outcome'; amountSign = isSeller ? '+' : '−'; }
     const pts = deal.status === 'completed' ? '+' + Math.floor(amount / 100) + ' очков' : '';
     const dateStr = deal.created_at ? new Date(deal.created_at).toLocaleDateString('ru', { day: 'numeric', month: 'short' }) : '';
+    const animCls = 'deal-anim-' + ((idx % 5) + 1);
     return `
-    <div class="deal-item ${meta.cls}" onclick="openDeal('${deal.id}')">
+    <div class="deal-item ${meta.cls} ${animCls}" onclick="openDeal('${deal.id}')">
         <div class="deal-icon">${meta.emoji}</div>
         <div class="deal-body">
             <div class="deal-desc">${escHtml(deal.description)}</div>
@@ -459,7 +505,7 @@ function renderHistory() {
     if (currentFilter === 'completed') filtered = allDeals.filter(d => d.status === 'completed');
     else if (currentFilter === 'active') filtered = allDeals.filter(d => ['active','pending','dispute'].includes(d.status));
     if (!filtered.length) { list.innerHTML = `<div class="empty-state">Записей в книге нет</div>`; return; }
-    list.innerHTML = filtered.map(dealCard).join('');
+    list.innerHTML = filtered.map((deal, i) => dealCard(deal, i)).join('');
 }
 function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
 
