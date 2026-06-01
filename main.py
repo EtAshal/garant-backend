@@ -107,18 +107,32 @@ async def deal_action(deal_id: str, data: dict):
 
         if seller_action == "confirm" and buyer_action == "confirm":
             supabase.table("deals").update({"status": "completed"}).eq("id", deal_id).execute()
+            try:
+                await bot_instance.send_message(deal["seller_id"], "✅ Сделка завершена! Деньги будут переведены вам.")
+                await bot_instance.send_message(deal["buyer_id"], "✅ Сделка завершена! Спасибо за использование Гаранта.")
+            except:
+                pass
             return {"success": True, "message": "✅ Сделка завершена! Деньги переведены продавцу."}
         elif seller_action == "cancel" and buyer_action == "cancel":
             supabase.table("deals").update({"status": "cancelled"}).eq("id", deal_id).execute()
-            return {"success": True, "message": "❌ Сделка отменена. Деньги возвращены покупателю."}
-        elif seller_action and buyer_action and seller_action != buyer_action:
-            supabase.table("deals").update({"status": "dispute"}).eq("id", deal_id).execute()
+            try:
+                await bot_instance.send_message(deal["seller_id"], "⚠️ Открыт спор по вашей сделке. Арбитр рассмотрит ситуацию.")
+                await bot_instance.send_message(deal["buyer_id"], "⚠️ Открыт спор по вашей сделке. Арбитр рассмотрит ситуацию.")
+            except:
+                pass
             return {"success": True, "message": "⚠️ Открыт спор. Арбитр рассмотрит ситуацию."}
         else:
+            if is_seller:
+                try:
+                    await bot_instance.send_message(deal["buyer_id"], "🔔 Продавец принял решение по сделке. Войдите и подтвердите.")
+                except:
+                    pass
+            else:
+                try:
+                    await bot_instance.send_message(deal["seller_id"], "🔔 Покупатель принял решение по сделке. Войдите и подтвердите.")
+                except:
+                    pass
             return {"success": True, "message": "Действие записано. Ожидаем второй стороны."}
-
-    except Exception as e:
-        return {"success": False, "error": str(e)}
 
 @app.get("/users/{user_id}/deals")
 async def get_user_deals(user_id: int):
