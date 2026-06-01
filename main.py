@@ -2,16 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client
+from dotenv import load_dotenv
+from aiogram import Bot
+import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
-from dotenv import load_dotenv
-import os
-import uuid
-
-from aiogram import Bot
-bot_instance = Bot(token=os.getenv("BOT_TOKEN"))
 
 load_dotenv()
+
+bot_instance = Bot(token=os.getenv("BOT_TOKEN"))
 
 app = FastAPI()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SECRET"))
@@ -28,6 +27,10 @@ class DealCreate(BaseModel):
     amount: float
     description: str
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
 @app.post("/deals/create")
 async def create_deal(deal: DealCreate):
     try:
@@ -37,7 +40,6 @@ async def create_deal(deal: DealCreate):
             "description": deal.description,
             "status": "pending"
         }).execute()
-        
         deal_id = result.data[0]["id"]
         return {"success": True, "deal_id": deal_id}
     except Exception as e:
@@ -53,10 +55,6 @@ async def get_deal(deal_id: str):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@app.get("/")
-async def root():
-    return {"status": "ok"}
-
 @app.post("/deals/{deal_id}/accept")
 async def accept_deal(deal_id: str, data: dict):
     try:
@@ -65,7 +63,6 @@ async def accept_deal(deal_id: str, data: dict):
             "buyer_id": buyer_id,
             "status": "active"
         }).eq("id", deal_id).eq("status", "pending").execute()
-
         if result.data:
             deal = result.data[0]
             try:
@@ -88,23 +85,18 @@ async def deal_action(deal_id: str, data: dict):
     try:
         user_id = data.get("user_id")
         action = data.get("action")
-
         deal = supabase.table("deals").select("*").eq("id", deal_id).execute().data[0]
-        
         is_seller = user_id == deal["seller_id"]
         is_buyer = user_id == deal["buyer_id"]
-
         if is_seller:
             supabase.table("deals").update({"seller_action": action}).eq("id", deal_id).execute()
         elif is_buyer:
             supabase.table("deals").update({"buyer_action": action}).eq("id", deal_id).execute()
         else:
             return {"success": False, "error": "Вы не участник сделки"}
-
         deal = supabase.table("deals").select("*").eq("id", deal_id).execute().data[0]
         seller_action = deal["seller_action"]
         buyer_action = deal["buyer_action"]
-
         if seller_action == "confirm" and buyer_action == "confirm":
             supabase.table("deals").update({"status": "completed"}).eq("id", deal_id).execute()
             try:
@@ -132,15 +124,17 @@ async def deal_action(deal_id: str, data: dict):
         else:
             if is_seller:
                 try:
-                    await bot_instance.send_message(deal["buyer_id"], "🔔 Продавец принял решение по сделке. Войдите и подтвердите.")
+                    await bot_instance.send_message(deal["buyer_id"], "🔔 Продавец принял решение. Войдите и подтвердите.")
                 except:
                     pass
             else:
                 try:
-                    await bot_instance.send_message(deal["seller_id"], "🔔 Покупатель принял решение по сделке. Войдите и подтвердите.")
+                    await bot_instance.send_message(deal["seller_id"], "🔔 Покупатель принял решение. Войдите и подтвердите.")
                 except:
                     pass
             return {"success": True, "message": "Действие записано. Ожидаем второй стороны."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 @app.get("/users/{user_id}/deals")
 async def get_user_deals(user_id: int):
@@ -151,7 +145,6 @@ async def get_user_deals(user_id: int):
         return {"success": True, "deals": result.data}
     except Exception as e:
         return {"success": False, "error": str(e)}
-
 
 if __name__ == "__main__":
     import uvicorn
