@@ -292,6 +292,20 @@ async def deal_action(deal_id: str, data: dict):
         return {"success": False, "error": str(e)}
 
 
+@app.get("/users/{user_id}/photo")
+async def get_user_photo(user_id: int):
+    """Получаем фото профиля пользователя через Telegram Bot API."""
+    try:
+        photos = await bot_instance.get_user_profile_photos(user_id, limit=1)
+        if photos.total_count == 0:
+            return {"photo_url": None}
+        file = await bot_instance.get_file(photos.photos[0][0].file_id)
+        url = f"https://api.telegram.org/file/bot{os.getenv('BOT_TOKEN')}/{file.file_path}"
+        return {"photo_url": url}
+    except Exception as e:
+        return {"photo_url": None}
+
+
 @app.get("/feed")
 async def get_feed():
     """Лента последних активных сделок всех пользователей — без личных данных."""

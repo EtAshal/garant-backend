@@ -74,6 +74,12 @@
             position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
             background: linear-gradient(180deg, var(--gold), var(--sealing));
         }
+        /* ── ПУЛЬСАЦИЯ АВАТАРА ── */
+        @keyframes avatarPulse {
+            0%,100% { transform: scale(1);    box-shadow: 0 0 0 3px rgba(201,168,76,0.15), 0 0 12px rgba(201,168,76,0.1); }
+            30%      { transform: scale(1.06); box-shadow: 0 0 0 5px rgba(201,168,76,0.25), 0 0 22px rgba(201,168,76,0.2); }
+            60%      { transform: scale(0.96); box-shadow: 0 0 0 2px rgba(201,168,76,0.1),  0 0 8px  rgba(201,168,76,0.08); }
+        }
         .avatar {
             width: 60px; height: 60px; border-radius: 50%;
             background: linear-gradient(135deg, var(--sealing), #1a0a05);
@@ -82,7 +88,12 @@
             font-family: 'Cinzel', serif;
             font-size: 22px; font-weight: 700; color: var(--gold);
             flex-shrink: 0;
-            box-shadow: 0 0 0 3px rgba(201,168,76,0.1), 0 0 20px rgba(201,168,76,0.1);
+            overflow: hidden;
+            animation: avatarPulse 4s ease-in-out infinite;
+        }
+        .avatar img {
+            width: 100%; height: 100%;
+            object-fit: cover; border-radius: 50%;
         }
         .user-info { flex: 1; min-width: 0; }
         .user-name {
@@ -426,9 +437,22 @@ function getCommission(amount) {
 function renderProfile(deals) {
     const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
     const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-    document.getElementById('avatar').textContent = initials;
     document.getElementById('user-name').textContent = name;
     if (user.username) document.getElementById('user-handle').textContent = '@' + user.username;
+
+    // Загружаем фото — если есть подставляем, иначе инициалы
+    const avatarEl = document.getElementById('avatar');
+    avatarEl.textContent = initials;
+    if (currentUserId) {
+        fetch(`${BACKEND}/users/${currentUserId}/photo`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.photo_url) {
+                    avatarEl.innerHTML = `<img src="${data.photo_url}" alt="${initials}">`;
+                }
+            })
+            .catch(() => {});
+    }
 
     const completed = deals.filter(d => d.status === 'completed');
     const disputes  = deals.filter(d => d.status === 'dispute');
