@@ -120,6 +120,17 @@ async def deal_action(deal_id: str, data: dict):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@app.get("/users/{user_id}/deals")
+async def get_user_deals(user_id: int):
+    try:
+        result = supabase.table("deals").select("*").or_(
+            f"seller_id.eq.{user_id},buyer_id.eq.{user_id}"
+        ).order("created_at", desc=True).execute()
+        return {"success": True, "deals": result.data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
