@@ -431,6 +431,21 @@
         }
         .seal-icon:active { transform: scale(0.93) !important; }
 
+        /* ── КНОПКА МУЗЫКИ ── */
+        .music-btn {
+            position: fixed; bottom: 24px; right: 16px;
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--bg2); border: 1px solid var(--border);
+            font-size: 18px; cursor: pointer; z-index: 50;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px var(--shadow);
+            transition: all .2s;
+            animation: profilePulse 4s ease-in-out infinite;
+            animation-delay: -2s;
+        }
+        .music-btn:active { transform: scale(0.9) !important; }
+        .music-btn.playing { border-color: var(--gold-dim); }
+
         /* ── ANIMATIONS ── */
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -449,6 +464,14 @@
 
 <!-- Затемнение -->
 <div class="scroll-overlay" id="scroll-overlay" onclick="closeScroll()"></div>
+
+<!-- Фоновая музыка -->
+<audio id="bg-music" loop preload="none">
+    <source src="medieval.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Кнопка музыки -->
+<button class="music-btn" id="music-btn" onclick="toggleMusic()" title="Музыка">🔇</button>
 
 <!-- Свиток -->
 <div class="scroll-panel" id="scroll-panel">
@@ -713,6 +736,7 @@
             document.getElementById('scroll-panel').classList.add('open');
             document.getElementById('scroll-overlay').classList.add('open');
             document.getElementById('page-wrap').classList.add('scrolled');
+            soundScroll();
             loadStats();
         }
         function closeScroll() {
@@ -720,6 +744,7 @@
             document.getElementById('scroll-panel').classList.remove('open');
             document.getElementById('scroll-overlay').classList.remove('open');
             document.getElementById('page-wrap').classList.remove('scrolled');
+            soundClick();
         }
         function toggleSection(el) {
             el.classList.toggle('expanded');
@@ -810,10 +835,143 @@
             } catch(e) {}
         }
 
+        // ── ЗВУКИ ─────────────────────────────────────────────
+        let audioCtx = null;
+
+        function getCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            return audioCtx;
+        }
+
+        function playTone(freq, type, duration, volume = 0.3, delay = 0) {
+            try {
+                const ctx = getCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+                gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + duration);
+            } catch(e) {}
+        }
+
+        function playNoise(duration, volume = 0.05) {
+            try {
+                const ctx = getCtx();
+                const bufferSize = ctx.sampleRate * duration;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const source = ctx.createBufferSource();
+                source.buffer = buffer;
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 800;
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                gain.gain.setValueAtTime(volume, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                source.start();
+                source.stop(ctx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        // Колокол — создание сделки / успех
+        function soundBell() {
+            playTone(523, 'sine', 1.2, 0.25);
+            playTone(659, 'sine', 0.8, 0.15, 0.1);
+            playTone(784, 'sine', 1.0, 0.2, 0.2);
+            playTone(1047,'sine', 1.5, 0.3, 0.3);
+        }
+
+        // Фанфары — конфетти
+        function soundFanfare() {
+            playTone(523, 'triangle', 0.15, 0.2);
+            playTone(659, 'triangle', 0.15, 0.2, 0.15);
+            playTone(784, 'triangle', 0.15, 0.2, 0.30);
+            playTone(1047,'triangle', 0.4,  0.3, 0.45);
+            playTone(1319,'triangle', 0.6,  0.25, 0.55);
+        }
+
+        // Шелест пергамента — открытие свитка
+        function soundScroll() {
+            playNoise(0.4, 0.08);
+            playTone(220, 'sine', 0.5, 0.1, 0.1);
+        }
+
+        // Щелчок — переключение вкладок
+        function soundClick() {
+            playTone(440, 'square', 0.06, 0.08);
+            playTone(330, 'square', 0.05, 0.06, 0.06);
+        }
+
+        // Тревога — спор / отмена
+        function soundAlert() {
+            playTone(220, 'sawtooth', 0.3, 0.15);
+            playTone(185, 'sawtooth', 0.4, 0.15, 0.2);
+            playTone(165, 'sawtooth', 0.5, 0.1, 0.4);
+        }
+
+        // Подтверждение — лёгкий позитив
+        function soundConfirm() {
+            playTone(440, 'sine', 0.3, 0.15);
+            playTone(554, 'sine', 0.4, 0.15, 0.15);
+            playTone(659, 'sine', 0.6, 0.2, 0.3);
+        }
+
+        // Печать сургуча — принятие сделки
+        function soundSeal() {
+            playNoise(0.08, 0.3);
+            playTone(110, 'sine', 0.4, 0.2, 0.05);
+            playTone(80,  'sine', 0.6, 0.15, 0.15);
+        }
+
+        // ── ФОНОВАЯ МУЗЫКА ────────────────────────────────────
+        let musicPlaying = false;
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.25;
+
+        // Запускаем при первом касании экрана
+        function startMusicOnce() {
+            if (musicPlaying) return;
+            bgMusic.play().then(() => {
+                musicPlaying = true;
+                document.getElementById('music-btn').textContent = '🎵';
+                document.getElementById('music-btn').classList.add('playing');
+            }).catch(() => {});
+            document.removeEventListener('touchstart', startMusicOnce);
+            document.removeEventListener('click', startMusicOnce);
+        }
+        document.addEventListener('touchstart', startMusicOnce, { once: true });
+        document.addEventListener('click', startMusicOnce, { once: true });
+
+        function toggleMusic() {
+            if (musicPlaying) {
+                bgMusic.pause();
+                musicPlaying = false;
+                document.getElementById('music-btn').textContent = '🔇';
+                document.getElementById('music-btn').classList.remove('playing');
+            } else {
+                bgMusic.play().then(() => {
+                    musicPlaying = true;
+                    document.getElementById('music-btn').textContent = '🎵';
+                    document.getElementById('music-btn').classList.add('playing');
+                }).catch(() => {});
+            }
+        }
+
         loadQuote();
 
         // ── TABS ──────────────────────────────────────────────
         function switchTab(tab) {
+            soundClick();
             document.getElementById('panel-my').style.display   = tab === 'my'   ? 'block' : 'none';
             document.getElementById('panel-feed').style.display = tab === 'feed' ? 'block' : 'none';
             document.getElementById('tab-my').classList.toggle('active',   tab === 'my');
@@ -835,6 +993,7 @@
 
         function setSubPanel(idx) {
             currentSubTab = idx;
+            soundClick();
             document.getElementById('swipe-track').style.transform = `translateX(-${idx * 100}%)`;
             document.getElementById('dot-active').classList.toggle('active', idx === 0);
             document.getElementById('dot-completed').classList.toggle('active', idx === 1);
