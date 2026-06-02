@@ -68,8 +68,13 @@
             font-size: 18px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 2px 8px var(--shadow); transition: background .2s;
+            animation: profilePulse 3s ease-in-out infinite;
         }
-        .profile-btn:active { background: var(--bg3); }
+        @keyframes profilePulse {
+            0%,100% { box-shadow: 0 2px 8px var(--shadow), 0 0 0 0 rgba(201,168,76,0); transform: scale(1); }
+            50%      { box-shadow: 0 2px 8px var(--shadow), 0 0 0 4px rgba(201,168,76,0.15); transform: scale(1.06); }
+        }
+        .profile-btn:active { background: var(--bg3); transform: scale(0.93) !important; }
 
         /* ── CREATE BUTTON ── */
         .btn-create {
@@ -473,13 +478,26 @@
                             if (deal.payout_sent) {
                                 payoutNote = `<div style="font-size:11px;color:var(--green);margin-top:3px">💰 Деньги переведены</div>`;
                             } else {
-                                const updStr = deal.completed_at || deal.updated_at;
+                                // Берём любую дату — completed_at, updated_at или created_at
+                                const updStr = deal.completed_at || deal.updated_at || deal.created_at;
                                 if (updStr) {
-                                    const hrs = Math.max(0, 12 - (Date.now() - new Date(updStr)) / 3600000);
-                                    const h = Math.floor(hrs), m = Math.floor((hrs - h) * 60);
-                                    payoutNote = hrs > 0
-                                        ? `<div style="font-size:11px;color:var(--gold-dim);margin-top:3px">⏳ Выплата через ${h}ч ${m}м</div>`
-                                        : `<div style="font-size:11px;color:var(--green);margin-top:3px">💰 Выплата скоро</div>`;
+                                    // Задержка зависит от очков продавца (считаем приблизительно)
+                                    const delayHours = 12; // будет пересчитываться когда подключим платёжку
+                                    const hrsLeft = Math.max(0, delayHours - (Date.now() - new Date(updStr)) / 3600000);
+                                    const h = Math.floor(hrsLeft);
+                                    const m = Math.floor((hrsLeft - h) * 60);
+                                    if (hrsLeft > 0) {
+                                        payoutNote = `
+                                            <div style="margin-top:8px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px">
+                                                <div style="font-size:11px;color:var(--gold-dim);font-family:'Cinzel',serif;letter-spacing:0.5px;margin-bottom:4px">⏳ ВЫПЛАТА ЧЕРЕЗ</div>
+                                                <div style="font-size:16px;font-family:'Cinzel',serif;font-weight:700;color:var(--gold)">${h}ч ${m}м</div>
+                                            </div>`;
+                                    } else {
+                                        payoutNote = `
+                                            <div style="margin-top:8px;background:rgba(74,122,80,0.12);border:1px solid rgba(74,122,80,0.3);border-radius:6px;padding:8px 10px">
+                                                <div style="font-size:13px;color:var(--green-lt)">💰 Деньги скоро поступят на счёт</div>
+                                            </div>`;
+                                    }
                                 }
                             }
                         }
