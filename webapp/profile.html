@@ -844,17 +844,16 @@ function renderHistory() {
 function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
 
 function shareProfile() {
-    const name     = document.getElementById('user-name').textContent;
-    const status   = document.querySelector('.status-pill')?.textContent?.trim() || '—';
-    const pts      = document.getElementById('pts-value')?.textContent || '0';
-    const completed= document.getElementById('cnt-completed')?.textContent || '0';
-    const volume   = document.getElementById('cnt-volume')?.textContent || '—';
-    const disputes = document.getElementById('cnt-dispute')?.textContent || '0';
+    const name      = document.getElementById('user-name').textContent;
+    const status    = document.querySelector('.status-pill')?.textContent?.trim() || '—';
+    const pts       = document.getElementById('pts-value')?.textContent || '0';
+    const completed = document.getElementById('cnt-completed')?.textContent || '0';
+    const volume    = document.getElementById('cnt-volume')?.textContent || '—';
+    const disputes  = document.getElementById('cnt-dispute')?.textContent || '0';
 
-    const bars = parseInt(document.getElementById('pts-bar')?.style.width) || 0;
+    const bars   = parseFloat(document.getElementById('pts-bar')?.style.width) || 0;
     const filled = Math.round(bars / 10);
-    const empty  = 10 - filled;
-    const progressBar = '▓'.repeat(filled) + '░'.repeat(empty);
+    const progressBar = '▓'.repeat(filled) + '░'.repeat(10 - filled);
 
     const text = `⚖️ ГАРАНТЪ — Карточка репутации\n\n` +
         `👤 ${name}\n` +
@@ -867,15 +866,9 @@ function shareProfile() {
         `${progressBar}\n\n` +
         `🔗 Безопасные сделки → @garant_bot`;
 
-    // Пробуем нативный шаринг Telegram
-    if (tg.shareMessage) {
-        tg.shareMessage(text);
-    } else {
-        // Fallback — копируем в буфер
-        navigator.clipboard.writeText(text).then(() => {
-            tg.showAlert('✅ Карточка скопирована!\nВставьте её в любой чат.');
-        });
-    }
+    // Правильный метод — открывает Telegram с текстом для пересылки
+    const encoded = encodeURIComponent(text);
+    window.open(`https://t.me/share/url?url=&text=${encoded}`, '_blank');
 }
 
 async function load() {
