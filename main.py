@@ -75,12 +75,68 @@ async def auto_complete_deals():
         print(f"[Автозавершение] Ошибка: {e}")
 
 
-# ── ЗАПУСК ПЛАНИРОВЩИКА ───────────────────────────────────────────────────────
+# ── ФОНОВАЯ ЗАДАЧА: напоминания через 24 часа ────────────────────────────────
+async def send_reminders():
+    """Раз в час проверяет активные сделки. Если 24+ часа без действий — напоминает."""
+    try:
+        result = supabase.table("deals").select("*").eq("status", "active").execute()
+        now = datetime.now(timezone.utc)
+
+        for deal in result.data:
+            # Берём время последнего обновления
+            updated_str = deal.get("accepted_at") or deal.get("updated_at") or deal.get("created_at")
+            if not updated_str:
+                continue
+
+            updated_at = datetime.fromisoformat(updated_str.replace("Z", "+00:00"))
+            hours_passed = (now - updated_at).total_seconds() / 3600
+
+            # Напоминаем ровно один раз — между 24 и 25 часами
+            if 24 <= hours_passed < 25:
+                seller_action = deal.get("seller_action")
+                buyer_action  = deal.get("buyer_action")
+
+                # Напоминаем продавцу если он не нажал
+                if not seller_action and deal.get("seller_id"):
+                    try:
+                        await bot_instance.send_message(
+                            deal["seller_id"],
+                            f"🔔 Напоминание о сделке\n\n"
+                            f"Товар: {deal['description']}\n"
+                            f"Сумма: {int(deal['amount']):,} ₽\n\n"
+                            f"Покупатель внёс деньги и ждёт вашего подтверждения. "
+                            f"Войдите в Гарант и подтвердите или отмените сделку."
+                        )
+                    except:
+                        pass
+
+                # Напоминаем покупателю если он не нажал
+                if not buyer_action and deal.get("buyer_id"):
+                    try:
+                        await bot_instance.send_message(
+                            deal["buyer_id"],
+                            f"🔔 Напоминание о сделке\n\n"
+                            f"Товар: {deal['description']}\n"
+                            f"Сумма: {int(deal['amount']):,} ₽\n\n"
+                            f"Продавец ждёт вашего решения. "
+                            f"Войдите в Гарант и подтвердите получение или откройте спор."
+                        )
+                    except:
+                        pass
+
+                print(f"[Напоминание] Сделка {deal['id']} — прошло {hours_passed:.1f} ч.")
+
+    except Exception as e:
+        print(f"[Напоминание] Ошибка: {e}")
+
+
+
 scheduler = AsyncIOScheduler(timezone="UTC")
 
 @app.on_event("startup")
 async def startup():
     scheduler.add_job(auto_complete_deals, "interval", hours=1, id="auto_complete")
+    scheduler.add_job(send_reminders,      "interval", hours=1, id="reminders")
     scheduler.start()
     print("Планировщик запущен")
 
