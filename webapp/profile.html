@@ -152,6 +152,9 @@
             border: 1px solid var(--border);
             text-align: center; position: relative;
             transition: transform .1s;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
         .achv:active { transform: scale(0.93); }
         .achv.unlocked { border-color: var(--gold-dim); background: rgba(139,105,20,0.12); }
@@ -545,7 +548,7 @@
 <div id="history-list" class="fade-in d5"></div>
 
 <!-- Long press попап -->
-<div class="achv-popup-overlay" id="achv-overlay"></div>
+<div class="achv-popup-overlay" id="achv-overlay" onclick="closeAchvPopup()"></div>
 <div class="achv-popup" id="achv-popup">
     <div class="achv-popup-icon" id="achv-popup-icon">🏆</div>
     <div class="achv-popup-name" id="achv-popup-name">—</div>
@@ -659,7 +662,6 @@ function startPress(el, achv, unlocked) {
 function endPress(el) {
     clearTimeout(pressTimer);
     el.classList.remove('pressing');
-    closeAchvPopup();
 }
 
 function openAchvPopup(achv, unlocked) {
