@@ -131,12 +131,80 @@ async def send_reminders():
 
 
 
+import math
+
 scheduler = AsyncIOScheduler(timezone="UTC")
+
+# ── ФОНОВАЯ ЗАДАЧА: задержка выплаты продавцу ────────────────────────────────
+def get_commission(amount):
+    if amount <= 10000: return 0.01
+    if amount <= 25000: return 0.02
+    if amount <= 50000: return 0.03
+    if amount <= 100000: return 0.04
+    return 0.05
+
+async def process_payouts():
+    """Раз в 30 минут проверяет завершённые сделки и уведомляет о выплате после задержки."""
+    try:
+        result = supabase.table("deals").select("*").eq("status", "completed").execute()
+        now = datetime.now(timezone.utc)
+
+        for deal in result.data:
+            if deal.get("payout_sent"):
+                continue
+
+            completed_str = deal.get("completed_at") or deal.get("updated_at")
+            if not completed_str:
+                continue
+
+            completed_at = datetime.fromisoformat(completed_str.replace("Z", "+00:00"))
+            hours_passed = (now - completed_at).total_seconds() / 3600
+
+            # Считаем очки продавца
+            seller_deals = supabase.table("deals").select("amount").eq(
+                "status", "completed"
+            ).eq("seller_id", deal["seller_id"]).execute()
+            seller_pts = sum(math.floor(float(d["amount"]) / 100) for d in seller_deals.data)
+
+            # Задержка по статусу
+            if seller_pts >= 1500:
+                delay_hours = 2
+            elif seller_pts >= 500:
+                delay_hours = 6
+            else:
+                delay_hours = 12
+
+            if hours_passed >= delay_hours:
+                supabase.table("deals").update({"payout_sent": True}).eq("id", deal["id"]).execute()
+
+                amount = int(float(deal["amount"]))
+                commission = round(amount * get_commission(amount))
+                seller_gets = amount - commission
+
+                try:
+                    await bot_instance.send_message(
+                        deal["seller_id"],
+                        f"💰 Деньги переведены!\n\n"
+                        f"Товар: {deal['description']}\n"
+                        f"Сумма сделки: {amount:,} ₽\n"
+                        f"Комиссия Гаранта: {commission:,} ₽\n"
+                        f"Вы получили: {seller_gets:,} ₽\n\n"
+                        f"Спасибо за использование Гаранта!"
+                    )
+                except:
+                    pass
+
+                print(f"[Выплата] Сделка {deal['id']} — выплачено продавцу {deal['seller_id']}")
+
+    except Exception as e:
+        print(f"[Выплата] Ошибка: {e}")
+
 
 @app.on_event("startup")
 async def startup():
-    scheduler.add_job(auto_complete_deals, "interval", hours=1, id="auto_complete")
-    scheduler.add_job(send_reminders,      "interval", hours=1, id="reminders")
+    scheduler.add_job(auto_complete_deals, "interval", hours=1,   id="auto_complete")
+    scheduler.add_job(send_reminders,      "interval", hours=1,   id="reminders")
+    scheduler.add_job(process_payouts,     "interval", minutes=30, id="payouts")
     scheduler.start()
     print("Планировщик запущен")
 
