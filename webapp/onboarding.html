@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:         #1a1208;
+            --bg2:        #241a0e;
+            --bg3:        #2e2010;
+            --border:     #4a3520;
+            --text:       #e8d5b0;
+            --text-dim:   #a08060;
+            --gold:       #c9a84c;
+            --gold-dim:   #8b6914;
+            --sealing:    #7a3022;
+            --green:      #4a7a50;
+            --green-lt:   #7acc84;
+            --shadow:     rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* фоновое свечение меняется по слайду */
+        .bg-glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            transition: background 1s ease;
+        }
+        .bg-glow.slide-0 {
+            background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(201,168,76,0.12) 0%, transparent 70%);
+        }
+        .bg-glow.slide-1 {
+            background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(122,48,34,0.15) 0%, transparent 70%);
+        }
+        .bg-glow.slide-2 {
+            background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(74,122,80,0.15) 0%, transparent 70%);
+        }
+
+        /* линии бумаги */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ── СЛАЙДЕР ── */
+        .slides-wrap {
+            flex: 1; position: relative; z-index: 1;
+            overflow: hidden;
+        }
+        .slides-track {
+            display: flex; height: 100%;
+            transition: transform .5s cubic-bezier(.77,0,.18,1);
+        }
+        .slide {
+            min-width: 100vw; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px 28px 20px;
+            text-align: center;
+        }
+
+        /* ── ИЛЛЮСТРАЦИЯ ── */
+        .slide-art {
+            position: relative;
+            width: 180px; height: 180px;
+            margin-bottom: 32px;
+            flex-shrink: 0;
+        }
+        .art-circle {
+            width: 180px; height: 180px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 72px; line-height: 1;
+            position: relative;
+        }
+        /* Слайд 0 — золото */
+        .art-0 {
+            background: radial-gradient(circle at 40% 35%, rgba(201,168,76,0.2), rgba(139,105,20,0.05));
+            border: 1px solid rgba(201,168,76,0.2);
+            box-shadow: 0 0 40px rgba(201,168,76,0.15), inset 0 0 30px rgba(201,168,76,0.05);
+            animation: artFloat0 4s ease-in-out infinite;
+        }
+        @keyframes artFloat0 {
+            0%,100% { transform: translateY(0) scale(1); box-shadow: 0 0 40px rgba(201,168,76,0.15); }
+            50%      { transform: translateY(-8px) scale(1.03); box-shadow: 0 10px 50px rgba(201,168,76,0.25); }
+        }
+        /* Слайд 1 — сургуч */
+        .art-1 {
+            background: radial-gradient(circle at 40% 35%, rgba(122,48,34,0.25), rgba(61,20,10,0.05));
+            border: 1px solid rgba(122,48,34,0.3);
+            box-shadow: 0 0 40px rgba(122,48,34,0.2);
+            animation: artFloat1 4s ease-in-out infinite;
+        }
+        @keyframes artFloat1 {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            33%      { transform: translateY(-6px) rotate(2deg); }
+            66%      { transform: translateY(-4px) rotate(-1deg); }
+        }
+        /* Слайд 2 — зелень */
+        .art-2 {
+            background: radial-gradient(circle at 40% 35%, rgba(74,122,80,0.25), rgba(20,50,25,0.05));
+            border: 1px solid rgba(74,122,80,0.3);
+            box-shadow: 0 0 40px rgba(74,122,80,0.2);
+            animation: artFloat2 4s ease-in-out infinite;
+        }
+        @keyframes artFloat2 {
+            0%,100% { transform: translateY(0) scale(1); }
+            50%      { transform: translateY(-10px) scale(1.05); }
+        }
+
+        /* декоративные орбиты */
+        .art-orbit {
+            position: absolute; inset: -15px;
+            border: 1px dashed rgba(201,168,76,0.15);
+            border-radius: 50%;
+            animation: orbitSpin 12s linear infinite;
+        }
+        .art-orbit-2 {
+            position: absolute; inset: -30px;
+            border: 1px dashed rgba(201,168,76,0.08);
+            border-radius: 50%;
+            animation: orbitSpin 20s linear infinite reverse;
+        }
+        @keyframes orbitSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+        /* маленькие иконки на орбите */
+        .orbit-dot {
+            position: absolute; font-size: 14px;
+            top: 50%; left: 50%;
+            transform-origin: 0 0;
+        }
+
+        /* ── ТЕКСТ СЛАЙДА ── */
+        .slide-tag {
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 3px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 10px;
+        }
+        .slide-title {
+            font-family: 'Cinzel', serif;
+            font-size: 26px; font-weight: 700;
+            color: var(--gold); letter-spacing: 0.5px;
+            line-height: 1.2; margin-bottom: 16px;
+            text-shadow: 0 0 30px rgba(201,168,76,0.3);
+        }
+        .slide-desc {
+            font-size: 17px; font-style: italic;
+            color: var(--text-dim); line-height: 1.7;
+            max-width: 300px;
+        }
+        .slide-desc b { font-style: normal; color: var(--text); font-weight: 600; }
+        .slide-desc .accent { color: var(--gold); font-style: normal; font-weight: 600; }
+
+        /* ── ШАГИ (слайд 1) ── */
+        .steps {
+            display: flex; flex-direction: column; gap: 12px;
+            margin-top: 20px; width: 100%; max-width: 320px;
+        }
+        .step {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--bg2); border-radius: 10px;
+            padding: 12px 14px; border: 1px solid var(--border);
+            text-align: left;
+            animation: stepIn .4s ease both;
+        }
+        @keyframes stepIn {
+            from { opacity:0; transform:translateX(-20px); }
+            to   { opacity:1; transform:translateX(0); }
+        }
+        .step:nth-child(1) { animation-delay: .1s; }
+        .step:nth-child(2) { animation-delay: .2s; }
+        .step:nth-child(3) { animation-delay: .3s; }
+        .step-num {
+            font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+            color: var(--gold); flex-shrink: 0; width: 28px; text-align: center;
+        }
+        .step-text { font-size: 14px; color: var(--text-dim); line-height: 1.4; }
+        .step-text b { color: var(--text); font-weight: 600; }
+
+        /* ── СТАТУСЫ (слайд 2) ── */
+        .statuses {
+            display: flex; flex-direction: column; gap: 8px;
+            margin-top: 20px; width: 100%; max-width: 320px;
+        }
+        .status-row {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg2); border-radius: 8px;
+            padding: 10px 14px; border: 1px solid var(--border);
+            animation: stepIn .4s ease both;
+        }
+        .status-row:nth-child(1) { animation-delay: .1s; border-color: #5a5a5a; }
+        .status-row:nth-child(2) { animation-delay: .2s; border-color: #2a6aad; }
+        .status-row:nth-child(3) { animation-delay: .3s; border-color: var(--green); }
+        .status-row:nth-child(4) { animation-delay: .4s; border-color: var(--gold-dim); }
+        .status-row-icon { font-size: 20px; flex-shrink: 0; }
+        .status-row-info { flex: 1; }
+        .status-row-name {
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; color: var(--text);
+        }
+        .status-row-pts { font-size: 12px; font-style: italic; color: var(--text-dim); }
+
+        /* ── НИЖНЯЯ ПАНЕЛЬ ── */
+        .bottom-panel {
+            position: relative; z-index: 1;
+            padding: 20px 28px 36px;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+
+        /* точки */
+        .dots {
+            display: flex; gap: 8px;
+        }
+        .dot {
+            width: 6px; height: 6px; border-radius: 3px;
+            background: var(--border);
+            transition: all .3s ease;
+        }
+        .dot.active {
+            width: 22px; background: var(--gold);
+        }
+
+        /* кнопка */
+        .btn-next {
+            width: 100%; padding: 16px;
+            border-radius: 8px; border: none;
+            font-family: 'Cinzel', serif;
+            font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+            cursor: pointer; transition: all .2s;
+            background: var(--sealing); color: var(--text);
+            box-shadow: 0 4px 16px rgba(122,48,34,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            position: relative; overflow: hidden;
+        }
+        .btn-next::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+        }
+        .btn-next:active { transform: scale(0.97); }
+        .btn-next.last {
+            background: linear-gradient(135deg, var(--gold-dim), #a07820);
+            box-shadow: 0 4px 20px rgba(139,105,20,0.5), 0 0 30px rgba(201,168,76,0.2);
+        }
+
+        /* пропустить */
+        .btn-skip {
+            background: none; border: none;
+            font-family: 'Crimson Text', serif; font-style: italic;
+            font-size: 14px; color: var(--text-dim);
+            cursor: pointer; padding: 4px;
+            transition: color .2s;
+        }
+        .btn-skip:active { color: var(--text); }
+
+        /* переход между слайдами */
+        .slide { transition: opacity .3s; }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow slide-0" id="bg-glow"></div>
+
+<div class="slides-wrap">
+    <div class="slides-track" id="track">
+
+        <!-- ── СЛАЙД 0: Добро пожаловать ── -->
+        <div class="slide">
+            <div class="slide-art">
+                <div class="art-orbit"></div>
+                <div class="art-orbit-2"></div>
+                <div class="art-circle art-0">⚖️</div>
+            </div>
+            <div class="slide-tag">Добро пожаловать</div>
+            <div class="slide-title">ГАРАНТЪ</div>
+            <div class="slide-desc">
+                Представьте средневекового нотариуса — доверенное лицо, которое
+                <b>держит деньги</b> пока стороны не договорились.<br><br>
+                Именно это делает <span class="accent">Гарантъ</span> — защищает и продавца, и покупателя.
+            </div>
+        </div>
+
+        <!-- ── СЛАЙД 1: Как работает ── -->
+        <div class="slide">
+            <div class="slide-art">
+                <div class="art-circle art-1">📜</div>
+            </div>
+            <div class="slide-tag">Как это работает</div>
+            <div class="slide-title">Три простых шага</div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-text"><b>Продавец создаёт сделку</b> и отправляет ссылку покупателю</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-text"><b>Покупатель вносит деньги</b> — они хранятся у Гаранта, не у продавца</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-text"><b>Оба подтверждают</b> — деньги уходят продавцу. Всё честно.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── СЛАЙД 2: Репутация ── -->
+        <div class="slide">
+            <div class="slide-art">
+                <div class="art-circle art-2">⭐</div>
+            </div>
+            <div class="slide-tag">Ваша репутация</div>
+            <div class="slide-title">Расти в статусе</div>
+            <div class="statuses">
+                <div class="status-row">
+                    <div class="status-row-icon">🆕</div>
+                    <div class="status-row-info">
+                        <div class="status-row-name">Новичок</div>
+                        <div class="status-row-pts">0 – 99 очков</div>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <div class="status-row-icon">📜</div>
+                    <div class="status-row-info">
+                        <div class="status-row-name">Проверенный</div>
+                        <div class="status-row-pts">100 – 499 очков</div>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <div class="status-row-icon">🛡️</div>
+                    <div class="status-row-info">
+                        <div class="status-row-name">Надёжный</div>
+                        <div class="status-row-pts">500 – 1499 очков</div>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <div class="status-row-icon">⭐</div>
+                    <div class="status-row-info">
+                        <div class="status-row-name">Гарант</div>
+                        <div class="status-row-pts">1500+ очков — золотая рамка 👑</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Нижняя панель -->
+<div class="bottom-panel">
+    <div class="dots">
+        <div class="dot active" id="dot-0"></div>
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+    </div>
+    <button class="btn-next" id="btn-next" onclick="nextSlide()">
+        Далее →
+    </button>
+    <button class="btn-skip" onclick="finish()">Пропустить</button>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+let current = 0;
+const total = 3;
+const track = document.getElementById('track');
+const btnNext = document.getElementById('btn-next');
+const bgGlow = document.getElementById('bg-glow');
+
+const labels = ['Далее →', 'Далее →', 'Начать! ⚖️'];
+const glowClasses = ['slide-0', 'slide-1', 'slide-2'];
+
+function nextSlide() {
+    if (current < total - 1) {
+        current++;
+        updateSlider();
+    } else {
+        finish();
+    }
+}
+
+function updateSlider() {
+    // двигаем трек
+    track.style.transform = `translateX(-${current * 100}vw)`;
+
+    // точки
+    for (let i = 0; i < total; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        dot.classList.toggle('active', i === current);
+    }
+
+    // кнопка
+    btnNext.textContent = labels[current];
+    btnNext.classList.toggle('last', current === total - 1);
+
+    // фон
+    bgGlow.className = `bg-glow ${glowClasses[current]}`;
+
+    // вибрация
+    if (navigator.vibrate) navigator.vibrate(20);
+}
+
+function finish() {
+    localStorage.setItem('garant_onboarding_done', '1');
+    // плавный переход
+    document.body.style.transition = 'opacity .4s';
+    document.body.style.opacity = '0';
+    setTimeout(() => { window.location.href = 'index.html'; }, 400);
+}
+
+// свайп
+let startX = 0;
+document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && current < total - 1) { current++; updateSlider(); }
+    if (dx > 50 && current > 0) { current--; updateSlider(); }
+});
+</script>
+</body>
+</html>

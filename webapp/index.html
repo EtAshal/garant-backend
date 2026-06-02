@@ -244,6 +244,12 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        // Показываем онбординг новым пользователям
+        if (!localStorage.getItem('garant_onboarding_done')) {
+            window.location.href = 'onboarding.html';
+        }
+
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const currentUserId = tg.initDataUnsafe?.user?.id || 0;
         let feedInterval = null;
