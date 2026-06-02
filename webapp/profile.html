@@ -171,7 +171,69 @@
             color: white; font-weight: 700;
         }
 
-        .user-info { flex: 1; min-width: 0; }
+        /* ── LONG PRESS ПОПАП ── */
+        @keyframes popupIn {
+            0%   { opacity:0; transform:translate(-50%,-50%) scale(0.7); }
+            70%  { transform:translate(-50%,-50%) scale(1.04); }
+            100% { opacity:1; transform:translate(-50%,-50%) scale(1); }
+        }
+        @keyframes popupOut {
+            0%   { opacity:1; transform:translate(-50%,-50%) scale(1); }
+            100% { opacity:0; transform:translate(-50%,-50%) scale(0.8); }
+        }
+
+        .achv-popup-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity .2s;
+        }
+        .achv-popup-overlay.open { opacity: 1; pointer-events: all; }
+
+        .achv-popup {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0.7);
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px 20px;
+            width: 260px; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            z-index: 201;
+            opacity: 0; pointer-events: none;
+        }
+        .achv-popup.open {
+            animation: popupIn .35s cubic-bezier(.34,1.56,.64,1) forwards;
+            pointer-events: all;
+        }
+        .achv-popup.closing {
+            animation: popupOut .2s ease forwards;
+        }
+        .achv-popup-icon { font-size: 48px; margin-bottom: 12px; line-height: 1; }
+        .achv-popup-name {
+            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+            color: var(--gold); margin-bottom: 8px; letter-spacing: 0.5px;
+        }
+        .achv-popup-desc {
+            font-size: 14px; font-style: italic;
+            color: var(--text-dim); line-height: 1.6; margin-bottom: 14px;
+        }
+        .achv-popup-status {
+            display: inline-block; padding: 4px 14px; border-radius: 20px;
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .achv-popup-status.unlocked { background: rgba(74,122,80,0.2); color: #7acc84; border: 1px solid var(--green); }
+        .achv-popup-status.locked   { background: rgba(74,53,32,0.4);  color: var(--text-dim); border: 1px solid var(--border); }
+
+        /* iOS 3D Touch — сжатие при зажатии */
+        @keyframes pressDown {
+            0%   { transform: scale(1); }
+            100% { transform: scale(0.88); }
+        }
+        .achv.pressing {
+            animation: pressDown .5s ease forwards !important;
+        }
         .user-name {
             font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700;
             color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -482,6 +544,15 @@
 </div>
 <div id="history-list" class="fade-in d5"></div>
 
+<!-- Long press попап -->
+<div class="achv-popup-overlay" id="achv-overlay" onclick="closeAchvPopup()"></div>
+<div class="achv-popup" id="achv-popup">
+    <div class="achv-popup-icon" id="achv-popup-icon">🏆</div>
+    <div class="achv-popup-name" id="achv-popup-name">—</div>
+    <div class="achv-popup-desc" id="achv-popup-desc">—</div>
+    <div class="achv-popup-status" id="achv-popup-status">—</div>
+</div>
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
@@ -526,51 +597,109 @@ const ACHIEVEMENTS = [
     {
         id: 'first_deal',
         icon: '🤝', name: 'Первое рукопожатие',
+        desc: 'Завершите свою первую сделку на платформе.',
         check: (d, s, b) => s + b >= 1
     },
     {
         id: 'trader',
         icon: '💰', name: 'Торговец',
+        desc: 'Завершите 10 сделок. Вы становитесь настоящим участником рынка.',
         check: (d, s, b) => s + b >= 10
     },
     {
         id: 'merchant',
         icon: '🏪', name: 'Купец',
+        desc: 'Завершите 50 сделок. Ваше имя известно на торговых площадях.',
         check: (d, s, b) => s + b >= 50
     },
     {
         id: 'baron',
         icon: '👑', name: 'Барон',
+        desc: 'Завершите 100 сделок. Вы — легенда этой площадки.',
         check: (d, s, b) => s + b >= 100
     },
     {
         id: 'big_fish',
         icon: '💎', name: 'Крупная рыба',
+        desc: 'Проведите сделку на сумму 50 000 ₽ и выше.',
         check: (d) => d.some(x => x.status === 'completed' && parseFloat(x.amount) >= 50000)
     },
     {
         id: 'no_disputes',
         icon: '🕊️', name: 'Миротворец',
+        desc: 'Завершите 20 сделок без единого спора. Честность — ваш путь.',
         check: (d, s, b) => (s + b >= 20) && !d.some(x => x.status === 'dispute')
     },
     {
         id: 'ghost',
         icon: '👻', name: 'Призрак',
+        desc: 'Ни одной отмены или спора за всё время. Идеальная репутация.',
         check: (d, s, b) => (s + b >= 5) && !d.some(x => x.status === 'dispute' || x.status === 'cancelled')
     },
     {
         id: 'verified',
         icon: '🛡️', name: 'Надёжный',
+        desc: 'Наберите 500 очков репутации. Вам доверяют.',
         check: (d, s, b, pts) => pts >= 500
     },
 ];
+
+// Long press
+let pressTimer = null;
+let pressEl = null;
+
+function startPress(el, achv, unlocked) {
+    el.classList.add('pressing');
+    pressTimer = setTimeout(() => {
+        el.classList.remove('pressing');
+        openAchvPopup(achv, unlocked);
+    }, 500);
+}
+
+function endPress(el) {
+    clearTimeout(pressTimer);
+    el.classList.remove('pressing');
+}
+
+function openAchvPopup(achv, unlocked) {
+    document.getElementById('achv-popup-icon').textContent = achv.icon;
+    document.getElementById('achv-popup-name').textContent = achv.name;
+    document.getElementById('achv-popup-desc').textContent = achv.desc;
+    const statusEl = document.getElementById('achv-popup-status');
+    if (unlocked) {
+        statusEl.textContent = '✅ Получено';
+        statusEl.className = 'achv-popup-status unlocked';
+    } else {
+        statusEl.textContent = '🔒 Не получено';
+        statusEl.className = 'achv-popup-status locked';
+    }
+    document.getElementById('achv-overlay').classList.add('open');
+    const popup = document.getElementById('achv-popup');
+    popup.classList.remove('closing');
+    popup.classList.add('open');
+}
+
+function closeAchvPopup() {
+    const popup = document.getElementById('achv-popup');
+    popup.classList.add('closing');
+    document.getElementById('achv-overlay').classList.remove('open');
+    setTimeout(() => {
+        popup.classList.remove('open', 'closing');
+    }, 200);
+}
 
 function renderAchievements(deals, sellerCount, buyerCount, totalPts) {
     const grid = document.getElementById('achievements-grid');
     grid.innerHTML = ACHIEVEMENTS.map(a => {
         const unlocked = a.check(deals, sellerCount, buyerCount, totalPts);
         return `
-        <div class="achv ${unlocked ? 'unlocked' : ''}" title="${a.name}">
+        <div class="achv ${unlocked ? 'unlocked' : ''}"
+            onmousedown="startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
+            onmouseup="endPress(this)"
+            onmouseleave="endPress(this)"
+            ontouchstart="startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
+            ontouchend="endPress(this)"
+            ontouchcancel="endPress(this)">
             <div class="achv-icon">${a.icon}</div>
             <div class="achv-name">${a.name}</div>
             ${unlocked ? '<div class="achv-new">✓</div>' : ''}
