@@ -5,7 +5,7 @@ import math
 sys.stdout.reconfigure(encoding='utf-8')
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import CommandStart, Command
 from aiogram import F
 from dotenv import load_dotenv
@@ -18,6 +18,22 @@ dp = Dispatcher()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SECRET"))
 
 WEBAPP_URL = os.getenv("WEBAPP_URL")
+
+# Постоянная клавиатура внизу чата
+MAIN_KEYBOARD = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="🔒 Открыть Гарант", web_app=WebAppInfo(url=WEBAPP_URL)),
+        ],
+        [
+            KeyboardButton(text="📋 Мои сделки"),
+            KeyboardButton(text="👤 Профиль"),
+            KeyboardButton(text="❓ Помощь"),
+        ]
+    ],
+    resize_keyboard=True,
+    persistent=True
+)
 
 # ── ХЕЛПЕРЫ ───────────────────────────────────────────────────────────────────
 
@@ -75,17 +91,10 @@ async def start(message: Message):
         return
 
     # Обычный старт
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔒 Открыть Гарант", web_app=WebAppInfo(url=WEBAPP_URL))]
-    ])
     await message.answer(
         "⚖️ Добро пожаловать в Гарантъ!\n\n"
-        "Безопасные сделки между людьми — деньги хранятся у нас до подтверждения обеих сторон.\n\n"
-        "Команды:\n"
-        "/deals — мои активные сделки\n"
-        "/profile — моя репутация\n"
-        "/help — как пользоваться",
-        reply_markup=keyboard
+        "Безопасные сделки между людьми — деньги хранятся у нас до подтверждения обеих сторон.",
+        reply_markup=MAIN_KEYBOARD
     )
 
 
@@ -222,6 +231,19 @@ async def cmd_help(message: Message):
 @dp.message()
 async def handle_message(message: Message):
     text = message.text or ""
+
+    # Кнопки клавиатуры
+    if text == "📋 Мои сделки":
+        await cmd_deals(message)
+        return
+    if text == "👤 Профиль":
+        await cmd_profile(message)
+        return
+    if text == "❓ Помощь":
+        await cmd_help(message)
+        return
+
+    # Ссылка на сделку
     if "deal.html?id=" in text:
         deal_id = text.split("id=")[-1].strip()
         deal_url = f"{WEBAPP_URL.rstrip('/')}/deal.html?id={deal_id}"
