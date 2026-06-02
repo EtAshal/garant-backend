@@ -173,11 +173,45 @@
             50%       { opacity: 0.4; transform: scale(0.7); }
         }
 
-        /* ── EMPTY ── */
-        .empty-state {
-            text-align: center; padding: 40px 0;
-            color: var(--text-dim); font-style: italic; font-size: 15px;
+        /* ── ПУСТОЙ ЭКРАН ── */
+        .empty-screen {
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
+            padding: 30px 20px;
         }
+        .empty-art {
+            width: 130px; height: 130px; border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, rgba(201,168,76,0.12), rgba(139,105,20,0.03));
+            border: 1px solid rgba(201,168,76,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 56px; margin-bottom: 24px;
+            box-shadow: 0 0 40px rgba(201,168,76,0.1);
+            animation: emptyFloat 4s ease-in-out infinite;
+        }
+        @keyframes emptyFloat {
+            0%,100% { transform: translateY(0); box-shadow: 0 0 40px rgba(201,168,76,0.1); }
+            50%      { transform: translateY(-8px); box-shadow: 0 12px 50px rgba(201,168,76,0.18); }
+        }
+        .empty-title {
+            font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+            color: var(--gold); margin-bottom: 10px; letter-spacing: 0.5px;
+        }
+        .empty-desc {
+            font-size: 15px; font-style: italic;
+            color: var(--text-dim); line-height: 1.7;
+            margin-bottom: 24px; max-width: 260px;
+        }
+        .empty-desc b { font-style: normal; color: var(--text); }
+        .btn-empty {
+            padding: 13px 28px;
+            border-radius: 6px; border: none;
+            font-family: 'Cinzel', serif;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; transition: all .2s;
+            background: var(--sealing); color: var(--text);
+            box-shadow: 0 3px 12px rgba(122,48,34,0.4);
+        }
+        .btn-empty:active { transform: scale(0.96); }
 
         /* ── SECTION TITLE ── */
         .section-title {
@@ -229,7 +263,17 @@
     <!-- Мои сделки -->
     <div id="panel-my" class="fade-in d3">
         <div class="section-title">Активные и ожидающие</div>
-        <div class="empty-state" id="my-empty">Записей о сделках не найдено</div>
+        <div class="empty-screen" id="my-empty">
+            <div class="empty-art">📜</div>
+            <div class="empty-title">Грамот пока нет</div>
+            <div class="empty-desc">
+                Создайте первую сделку и отправьте ссылку покупателю —
+                <b>деньги будут в безопасности</b> до подтверждения обеих сторон
+            </div>
+            <button class="btn-empty" onclick="createDeal()">
+                + Создать первую сделку
+            </button>
+        </div>
         <div id="my-container"></div>
     </div>
 
