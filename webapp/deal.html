@@ -229,36 +229,49 @@
 
             // ── Таймер выплаты для завершённых сделок ──
             let payoutHtml = '';
-            if (deal.status === 'completed' && isSeller && !deal.payout_sent) {
-                const updatedStr = deal.completed_at || deal.updated_at;
-                if (updatedStr) {
-                    const completedAt = new Date(updatedStr);
-                    const now = new Date();
-                    const hoursLeft = Math.max(0, 12 - (now - completedAt) / 3600000);
-                    const h = Math.floor(hoursLeft);
-                    const m = Math.floor((hoursLeft - h) * 60);
-                    const timeStr = hoursLeft > 0 ? `${h} ч. ${m} мин.` : 'скоро';
-                    const amount = parseFloat(deal.amount);
-                    const commission = Math.round(amount * getCommission(amount));
-                    const sellerGets = amount - commission;
+            if (deal.status === 'completed' && isSeller) {
+                const amount = parseFloat(deal.amount);
+                const commission = Math.round(amount * getCommission(amount));
+                const sellerGets = amount - commission;
+
+                if (deal.payout_sent) {
                     payoutHtml = `
                         <div class="timer-card fade-in d1" style="border-left-color:var(--green)">
-                            <div class="timer-label">Выплата продавцу</div>
-                            <div class="timer-bar-wrap">
-                                <div class="timer-bar-fill" style="width:${Math.min(100, Math.round((1 - hoursLeft/12)*100))}%;background:linear-gradient(90deg,var(--green),var(--gold))"></div>
-                            </div>
-                            <div class="timer-text">
-                                Вы получите <b>${sellerGets.toLocaleString()} ₽</b> через <b>${timeStr}</b>
-                            </div>
+                            <div class="timer-label">Выплата завершена</div>
+                            <div class="timer-text">💰 <b>Деньги переведены на ваш счёт</b></div>
                         </div>`;
+                } else {
+                    const updatedStr = deal.completed_at || deal.updated_at || deal.created_at;
+                    const completedAt = updatedStr ? new Date(updatedStr) : new Date();
+                    const hoursLeft = Math.max(0, 12 - (Date.now() - completedAt) / 3600000);
+                    const h = Math.floor(hoursLeft);
+                    const m = Math.floor((hoursLeft - h) * 60);
+                    const pct = Math.min(100, Math.round((1 - hoursLeft / 12) * 100));
+
+                    if (hoursLeft > 0) {
+                        payoutHtml = `
+                            <div class="timer-card fade-in d1" style="border-left-color:var(--green)">
+                                <div class="timer-label">Выплата продавцу</div>
+                                <div class="timer-bar-wrap">
+                                    <div class="timer-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--green),var(--gold))"></div>
+                                </div>
+                                <div class="timer-text">
+                                    Вы получите <b>${sellerGets.toLocaleString()} ₽</b> через <b>${h}ч ${m}м</b>
+                                </div>
+                            </div>`;
+                    } else {
+                        payoutHtml = `
+                            <div class="timer-card fade-in d1" style="border-left-color:var(--green)">
+                                <div class="timer-label">Выплата продавцу</div>
+                                <div class="timer-bar-wrap">
+                                    <div class="timer-bar-fill" style="width:100%;background:var(--green)"></div>
+                                </div>
+                                <div class="timer-text">
+                                    💰 Выплата <b>${sellerGets.toLocaleString()} ₽</b> обрабатывается
+                                </div>
+                            </div>`;
+                    }
                 }
-            }
-            if (deal.status === 'completed' && isSeller && deal.payout_sent) {
-                payoutHtml = `
-                    <div class="timer-card fade-in d1" style="border-left-color:var(--green)">
-                        <div class="timer-label">Выплата</div>
-                        <div class="timer-text">✅ <b>Деньги переведены на ваш счёт</b></div>
-                    </div>`;
             }
 
             let timerHtml = '';
