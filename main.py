@@ -374,12 +374,37 @@ async def deal_action(deal_id: str, data: dict):
         buyer_action  = deal["buyer_action"]
 
         if seller_action == "confirm" and buyer_action == "confirm":
-            supabase.table("deals").update({"status": "completed"}).eq("id", deal_id).execute()
+            now_iso = datetime.now(timezone.utc).isoformat()
+            supabase.table("deals").update({
+                "status": "completed",
+                "completed_at": now_iso
+            }).eq("id", deal_id).execute()
             try:
                 await bot_instance.send_message(deal["seller_id"], "✅ Сделка завершена! Деньги будут переведены вам.")
                 await bot_instance.send_message(deal["buyer_id"],  "✅ Сделка завершена! Спасибо за использование Гаранта.")
             except:
                 pass
+
+            # Проверяем повышение статуса для обеих сторон
+            try:
+                from bot_runner import notify_status_upgrade
+                for uid in [deal["seller_id"], deal["buyer_id"]]:
+                    if not uid: continue
+                    all_deals = supabase.table("deals").select("*").or_(
+                        f"seller_id.eq.{uid},buyer_id.eq.{uid}"
+                    ).execute().data
+                    # Очки до этой сделки
+                    old_deals = [d for d in all_deals if d["id"] != deal_id]
+                    old_pts = sum(
+                        math.floor(float(d["amount"]) / 100)
+                        for d in old_deals
+                        if d["status"] == "completed" and (d["seller_id"] == uid or d["buyer_id"] == uid)
+                    )
+                    new_pts = old_pts + math.floor(float(deal["amount"]) / 100)
+                    await notify_status_upgrade(bot_instance, uid, old_pts, new_pts)
+            except:
+                pass
+
             return {"success": True, "message": "✅ Сделка завершена! Деньги переведены продавцу."}
 
         elif seller_action == "cancel" and buyer_action == "cancel":

@@ -1,11 +1,12 @@
 import asyncio
 import os
 import sys
+import math
 sys.stdout.reconfigure(encoding='utf-8')
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram import F
 from dotenv import load_dotenv
 from supabase import create_client
@@ -17,6 +18,30 @@ dp = Dispatcher()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SECRET"))
 
 WEBAPP_URL = os.getenv("WEBAPP_URL")
+
+# ── ХЕЛПЕРЫ ───────────────────────────────────────────────────────────────────
+
+def get_status(pts):
+    if pts >= 1500: return "⭐ Гарант"
+    if pts >= 500:  return "🛡️ Надёжный"
+    if pts >= 100:  return "📜 Проверенный"
+    return "🆕 Новичок"
+
+def get_commission(amount):
+    if amount <= 10000: return 0.01
+    if amount <= 25000: return 0.02
+    if amount <= 50000: return 0.03
+    if amount <= 100000: return 0.04
+    return 0.05
+
+def calc_points(deals, user_id):
+    completed = [d for d in deals if d["status"] == "completed"]
+    seller_pts = sum(math.floor(float(d["amount"]) / 100) for d in completed if d["seller_id"] == user_id)
+    buyer_pts  = sum(math.floor(float(d["amount"]) / 100) for d in completed if d["buyer_id"]  == user_id)
+    return seller_pts + buyer_pts
+
+
+# ── /start ────────────────────────────────────────────────────────────────────
 
 @dp.message(CommandStart())
 async def start(message: Message):
@@ -35,19 +60,13 @@ async def start(message: Message):
     except Exception as e:
         print(f"Ошибка: {e}")
 
-    # Если пришли по ссылке профиля — открываем публичный профиль
+    # Глубокая ссылка на профиль
     if deep_link.startswith("profile_"):
         user_id = deep_link.replace("profile_", "")
         profile_url = f"{WEBAPP_URL.rstrip('/')}/public_profile.html?id={user_id}"
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="👤 Посмотреть профиль",
-                web_app=WebAppInfo(url=profile_url)
-            )],
-            [InlineKeyboardButton(
-                text="🔒 Открыть Гарант",
-                web_app=WebAppInfo(url=WEBAPP_URL)
-            )]
+            [InlineKeyboardButton(text="👤 Посмотреть профиль", web_app=WebAppInfo(url=profile_url))],
+            [InlineKeyboardButton(text="🔒 Открыть Гарант",     web_app=WebAppInfo(url=WEBAPP_URL))]
         ])
         await message.answer(
             "📜 Вам прислали карточку репутации.\n\nНажмите кнопку чтобы посмотреть профиль пользователя.",
@@ -57,15 +76,148 @@ async def start(message: Message):
 
     # Обычный старт
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(
-            text="🔒 Открыть Гарант",
-            web_app=WebAppInfo(url=WEBAPP_URL)
-        )]
+        [InlineKeyboardButton(text="🔒 Открыть Гарант", web_app=WebAppInfo(url=WEBAPP_URL))]
     ])
     await message.answer(
-        "Добро пожаловать в Гарант!\n\nБезопасные сделки между людьми.",
+        "⚖️ Добро пожаловать в Гарантъ!\n\n"
+        "Безопасные сделки между людьми — деньги хранятся у нас до подтверждения обеих сторон.\n\n"
+        "Команды:\n"
+        "/deals — мои активные сделки\n"
+        "/profile — моя репутация\n"
+        "/help — как пользоваться",
         reply_markup=keyboard
     )
+
+
+# ── /deals ────────────────────────────────────────────────────────────────────
+
+@dp.message(Command("deals"))
+async def cmd_deals(message: Message):
+    user_id = message.from_user.id
+    try:
+        result = supabase.table("deals").select("*").or_(
+            f"seller_id.eq.{user_id},buyer_id.eq.{user_id}"
+        ).in_("status", ["pending", "active", "dispute"]).execute()
+
+        deals = result.data
+        if not deals:
+            await message.answer("📭 У вас нет активных сделок.\n\nОткройте Гарант чтобы создать новую.")
+            return
+
+        status_map = {
+            "pending": "🕯 Ожидает покупателя",
+            "active":  "📜 Активна",
+            "dispute": "⚔️ Спор"
+        }
+
+        text = "📋 <b>Ваши активные сделки:</b>\n\n"
+        buttons = []
+
+        for deal in deals:
+            role = "Продавец" if deal["seller_id"] == user_id else "Покупатель"
+            amount = int(float(deal["amount"]))
+            status = status_map.get(deal["status"], deal["status"])
+            text += f"• <b>{deal['description']}</b>\n"
+            text += f"  {amount:,} ₽ · {role} · {status}\n\n"
+
+            deal_url = f"{WEBAPP_URL.rstrip('/')}/deal.html?id={deal['id']}"
+            buttons.append([InlineKeyboardButton(
+                text=f"📜 {deal['description'][:25]}",
+                web_app=WebAppInfo(url=deal_url)
+            )])
+
+        buttons.append([InlineKeyboardButton(
+            text="🔒 Открыть Гарант",
+            web_app=WebAppInfo(url=WEBAPP_URL)
+        )])
+
+        await message.answer(text, parse_mode="HTML",
+                             reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+
+    except Exception as e:
+        await message.answer(f"Ошибка: {e}")
+
+
+# ── /profile ──────────────────────────────────────────────────────────────────
+
+@dp.message(Command("profile"))
+async def cmd_profile(message: Message):
+    user_id = message.from_user.id
+    user = message.from_user
+    try:
+        result = supabase.table("deals").select("*").or_(
+            f"seller_id.eq.{user_id},buyer_id.eq.{user_id}"
+        ).execute()
+
+        deals = result.data
+        completed = [d for d in deals if d["status"] == "completed"]
+        disputes  = [d for d in deals if d["status"] == "dispute"]
+        as_seller = [d for d in completed if d["seller_id"] == user_id]
+        as_buyer  = [d for d in completed if d["buyer_id"]  == user_id]
+
+        total_pts = calc_points(deals, user_id)
+        status    = get_status(total_pts)
+        volume    = sum(float(d["amount"]) for d in completed)
+
+        # Прогресс до следующего уровня
+        levels = [0, 100, 500, 1500]
+        next_label = ""
+        for i in range(len(levels) - 1):
+            if total_pts < levels[i+1]:
+                need = levels[i+1] - total_pts
+                next_label = f"До следующего звания: {need:,} очков"
+                break
+
+        name = f"{user.first_name or ''} {user.last_name or ''}".strip() or "Пользователь"
+        vol_str = f"{volume/1000:.1f}к ₽" if volume >= 1000 else f"{int(volume):,} ₽"
+
+        text = (
+            f"👤 <b>{name}</b>\n"
+            f"{status}\n\n"
+            f"⭐ Очки доверия: <b>{total_pts:,}</b>\n"
+            f"{next_label}\n\n"
+            f"📊 Статистика:\n"
+            f"✅ Завершено: <b>{len(completed)}</b>\n"
+            f"📦 Как продавец: <b>{len(as_seller)}</b> сделок\n"
+            f"🛒 Как покупатель: <b>{len(as_buyer)}</b> сделок\n"
+            f"⚔️ Споров: <b>{len(disputes)}</b>\n"
+            f"🪙 Оборот: <b>{vol_str}</b>"
+        )
+
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="👤 Открыть профиль", web_app=WebAppInfo(url=f"{WEBAPP_URL.rstrip('/')}/profile.html"))]
+        ])
+
+        await message.answer(text, parse_mode="HTML", reply_markup=keyboard)
+
+    except Exception as e:
+        await message.answer(f"Ошибка: {e}")
+
+
+# ── /help ─────────────────────────────────────────────────────────────────────
+
+@dp.message(Command("help"))
+async def cmd_help(message: Message):
+    text = (
+        "⚖️ <b>Как работает Гарантъ</b>\n\n"
+        "1️⃣ <b>Продавец</b> создаёт сделку и отправляет ссылку покупателю\n\n"
+        "2️⃣ <b>Покупатель</b> переходит по ссылке и вносит деньги — они хранятся у Гаранта, не у продавца\n\n"
+        "3️⃣ <b>Продавец</b> передаёт товар или услугу\n\n"
+        "4️⃣ <b>Оба подтверждают</b> — деньги уходят продавцу\n\n"
+        "❌ Если один отказывается — открывается спор и арбитр разбирается\n\n"
+        "⏳ Если никто не нажал кнопку 7 дней — деньги автоматически уходят продавцу\n\n"
+        "<b>Команды:</b>\n"
+        "/deals — активные сделки\n"
+        "/profile — ваша репутация\n"
+        "/help — эта справка"
+    )
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔒 Открыть Гарант", web_app=WebAppInfo(url=WEBAPP_URL))]
+    ])
+    await message.answer(text, parse_mode="HTML", reply_markup=keyboard)
+
+
+# ── ОБЫЧНЫЕ СООБЩЕНИЯ ─────────────────────────────────────────────────────────
 
 @dp.message()
 async def handle_message(message: Message):
@@ -74,15 +226,35 @@ async def handle_message(message: Message):
         deal_id = text.split("id=")[-1].strip()
         deal_url = f"{WEBAPP_URL.rstrip('/')}/deal.html?id={deal_id}"
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="🔒 Открыть сделку",
-                web_app=WebAppInfo(url=deal_url)
-            )]
+            [InlineKeyboardButton(text="🔒 Открыть сделку", web_app=WebAppInfo(url=deal_url))]
         ])
         await message.answer(
             "Нажми кнопку чтобы открыть сделку:",
             reply_markup=keyboard
         )
+
+
+# ── УВЕДОМЛЕНИЕ О НОВОМ СТАТУСЕ ───────────────────────────────────────────────
+# Вызывается из main.py после завершения сделки
+
+async def notify_status_upgrade(bot_instance, user_id: int, old_pts: int, new_pts: int):
+    """Отправляет поздравление если пользователь получил новый статус."""
+    levels = {100: "📜 Проверенный", 500: "🛡️ Надёжный", 1500: "⭐ Гарант"}
+    for threshold, status_name in levels.items():
+        if old_pts < threshold <= new_pts:
+            try:
+                await bot_instance.send_message(
+                    user_id,
+                    f"🎉 Поздравляем! Вы получили новый статус:\n\n"
+                    f"<b>{status_name}</b>\n\n"
+                    f"Ваши очки доверия: {new_pts:,}\n"
+                    f"Продолжайте в том же духе!",
+                    parse_mode="HTML"
+                )
+            except:
+                pass
+            break
+
 
 async def main():
     await dp.start_polling(bot)
