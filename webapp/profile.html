@@ -462,7 +462,19 @@
         }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .fade-in { animation: fadeUp .4s ease both; }
+        /* ── КНОПКА ПОДЕЛИТЬСЯ ── */
+        .share-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 13px;
+            border-radius: 6px; border: 1px solid var(--gold-dim);
+            background: rgba(139,105,20,0.1);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; transition: all .2s;
+            margin-top: 14px;
+        }
+        .share-btn:active { background: rgba(139,105,20,0.2); transform: scale(0.97); }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s} .d5{animation-delay:.25s}
     </style>
@@ -485,6 +497,10 @@
         <div id="status-pill"></div>
     </div>
 </div>
+
+<button class="share-btn fade-in d1" onclick="shareProfile()">
+    📤 Поделиться репутацией
+</button>
 
 <div class="section-title fade-in d2">Очки доверия</div>
 <div class="points-card fade-in d2" onclick="window.location.href='reputation.html'" style="cursor:pointer">
@@ -826,6 +842,41 @@ function renderHistory() {
     list.innerHTML = filtered.map((deal, i) => dealCard(deal, i)).join('');
 }
 function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
+
+function shareProfile() {
+    const name     = document.getElementById('user-name').textContent;
+    const status   = document.querySelector('.status-pill')?.textContent?.trim() || '—';
+    const pts      = document.getElementById('pts-value')?.textContent || '0';
+    const completed= document.getElementById('cnt-completed')?.textContent || '0';
+    const volume   = document.getElementById('cnt-volume')?.textContent || '—';
+    const disputes = document.getElementById('cnt-dispute')?.textContent || '0';
+
+    const bars = parseInt(document.getElementById('pts-bar')?.style.width) || 0;
+    const filled = Math.round(bars / 10);
+    const empty  = 10 - filled;
+    const progressBar = '▓'.repeat(filled) + '░'.repeat(empty);
+
+    const text = `⚖️ ГАРАНТЪ — Карточка репутации\n\n` +
+        `👤 ${name}\n` +
+        `${status}\n\n` +
+        `📊 Статистика:\n` +
+        `✅ Завершено сделок: ${completed}\n` +
+        `🪙 Оборот: ${volume}\n` +
+        `⚔️ Споров: ${disputes}\n\n` +
+        `⭐ Очки доверия: ${pts}\n` +
+        `${progressBar}\n\n` +
+        `🔗 Безопасные сделки → @garant_bot`;
+
+    // Пробуем нативный шаринг Telegram
+    if (tg.shareMessage) {
+        tg.shareMessage(text);
+    } else {
+        // Fallback — копируем в буфер
+        navigator.clipboard.writeText(text).then(() => {
+            tg.showAlert('✅ Карточка скопирована!\nВставьте её в любой чат.');
+        });
+    }
+}
 
 async function load() {
     document.getElementById('history-list').innerHTML = `
