@@ -378,7 +378,36 @@
         .scroll-section.expanded .scroll-section-body { display: block; }
         .scroll-section-body b { font-style: normal; color: var(--text); }
 
-        /* статистика */
+        /* ── ПОДРАЗДЕЛЫ ПРАВИЛ ── */
+        .sub-rule {
+            border-top: 1px solid rgba(74,53,32,0.5);
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        .sub-rule:first-child { border-top: none; padding-top: 0; }
+        .sub-rule:last-child { padding-bottom: 0; }
+        .sub-rule-header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .sub-rule-title {
+            font-size: 14px; font-weight: 600;
+            color: var(--text); flex: 1;
+        }
+        .sub-rule-arrow {
+            color: var(--gold-dim); font-size: 14px;
+            transition: transform .2s; flex-shrink: 0;
+        }
+        .sub-rule.open .sub-rule-arrow { transform: rotate(90deg); }
+        .sub-rule-body {
+            display: none;
+            margin-top: 10px;
+            font-size: 13px; font-style: italic;
+            color: var(--text-dim); line-height: 1.7;
+            padding-left: 4px;
+        }
+        .sub-rule.open .sub-rule-body { display: block; }
+        .sub-rule-body b { font-style: normal; color: var(--text); }
         .stat-row {
             display: flex; justify-content: space-between;
             padding: 6px 0; border-bottom: 1px solid rgba(74,53,32,0.4);
@@ -444,12 +473,119 @@
             <span class="scroll-section-arrow">›</span>
         </div>
         <div class="scroll-section-body">
-            <b>Комиссия</b> списывается с продавца при получении денег:<br>
-            100–10к ₽ → 1% · 10–25к → 2% · 25–50к → 3% · 50–100к → 4% · 100к+ → 5%<br><br>
-            <b>Завершение сделки</b> — оба нажимают «подтверждаю». Если один отказывается — открывается спор.<br><br>
-            <b>Автозавершение</b> — если никто не нажал кнопку 7 дней, деньги уходят продавцу.<br><br>
-            <b>Спор</b> открывается если продавец молчит 2+ дня или стороны не согласны.<br><br>
-            <b>Штрафы</b> — за мошенничество: −300 очков + заморозка. За повторное — вечная блокировка.
+
+            <!-- Подраздел 1 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">💰 Комиссия</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    Комиссию платит <b>продавец</b> при получении денег:<br><br>
+                    • 100 – 10 000 ₽ → <b>1%</b><br>
+                    • 10 000 – 25 000 ₽ → <b>2%</b><br>
+                    • 25 000 – 50 000 ₽ → <b>3%</b><br>
+                    • 50 000 – 100 000 ₽ → <b>4%</b><br>
+                    • 100 000 ₽ и выше → <b>5%</b>
+                </div>
+            </div>
+
+            <!-- Подраздел 2 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">📜 Как проходит сделка</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    • Продавец создаёт сделку и отправляет ссылку покупателю.<br>
+                    • Покупатель вносит деньги — они хранятся у Гаранта, не у продавца.<br>
+                    • Продавец передаёт товар или услугу.<br>
+                    • Обе стороны нажимают «Всё ок» — деньги уходят продавцу после задержки.
+                </div>
+            </div>
+
+            <!-- Подраздел 3 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">✅ Подтверждение сделки</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    У каждой стороны две кнопки:<br>
+                    • «Всё ок, подтверждаю»<br>
+                    • «Отказываюсь от сделки»<br><br>
+                    <b>Оба подтвердили</b> → деньги идут продавцу через задержку:<br>
+                    Новичок/Проверенный — 12 ч. · Надёжный — 6 ч. · Гарант — 2 ч.<br><br>
+                    <b>Оба отказались</b> → деньги возвращаются покупателю, спора нет.<br><br>
+                    <b>Мнения разошлись</b> → открывается спор, деньги замораживаются.
+                </div>
+            </div>
+
+            <!-- Подраздел 4 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">⏳ Автозавершение</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    • Если прошло <b>7 дней</b> после оплаты и никто не нажал кнопку — сделка завершается в пользу продавца автоматически.<br>
+                    • Покупатель может открыть спор <b>в любой момент</b>, не дожидаясь 7 дней.
+                </div>
+            </div>
+
+            <!-- Подраздел 5 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">⚔️ Споры</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    Спор открывается в двух случаях:<br>
+                    1. Стороны нажали <b>разные кнопки</b>.<br>
+                    2. Продавец молчит <b>2+ дня</b> — покупатель открывает спор вручную.<br><br>
+                    Арбитр рассматривает описание, фото, переписку и трек-номер.<br><br>
+                    • До 10 000 ₽ без доказательств → система решает в пользу продавца.<br>
+                    • Крупные суммы → решает арбитр, решение окончательно.
+                </div>
+            </div>
+
+            <!-- Подраздел 6 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">⚠️ Штрафы</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    Штраф только за <b>мошенничество</b>, подтверждённое арбитром:<br><br>
+                    • Проигранный спор (не мошенничество) → −10 очков<br>
+                    • 1-е мошенничество → −300 очков + заморозка на 7 дней<br>
+                    • 2-е мошенничество → вечная блокировка<br><br>
+                    <b>Штрафов нет</b> за: недовольство товаром, разногласия, грубость, молчание.
+                </div>
+            </div>
+
+            <!-- Подраздел 7 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">🛡️ Цифровые товары</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    Если покупатель сменил пароль, подключил 2FA или использовал доступ — это считается <b>фактом получения товара</b>. Отмена без серьёзных доказательств невозможна.
+                </div>
+            </div>
+
+            <!-- Подраздел 8 -->
+            <div class="sub-rule" onclick="toggleSubRule(this, event)">
+                <div class="sub-rule-header">
+                    <span class="sub-rule-title">⚖️ Ответственность</span>
+                    <span class="sub-rule-arrow">›</span>
+                </div>
+                <div class="sub-rule-body">
+                    Платформа выступает только <b>гарантом хранения средств</b>. Все сделки проходят на страх и риск участников. Платформа не контролирует доставку и качество товара.
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -586,6 +722,10 @@
         }
         function toggleSection(el) {
             el.classList.toggle('expanded');
+        }
+        function toggleSubRule(el, event) {
+            event.stopPropagation();
+            el.classList.toggle('open');
         }
         function shareApp() {
             const text = `⚖️ Гарантъ — безопасные сделки между людьми!\n\nДеньги хранятся у Гаранта до подтверждения обеих сторон. Никакого обмана.\n\nt.me/ramwaytestbot`;
