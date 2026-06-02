@@ -223,8 +223,34 @@
         }
 
         /* ── GEAR ── */
-        .gear { display: inline-block; animation: spin 3s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* ── СВАЙП ПАНЕЛИ ── */
+        .swipe-wrap {
+            position: relative; overflow: hidden;
+        }
+        .swipe-track {
+            display: flex;
+            transition: transform .35s cubic-bezier(.77,0,.18,1);
+        }
+        .swipe-panel {
+            min-width: 100%; padding-right: 0;
+        }
+        .swipe-indicator {
+            display: flex; justify-content: center; gap: 6px;
+            margin-bottom: 14px;
+        }
+        .swipe-dot {
+            width: 6px; height: 6px; border-radius: 3px;
+            background: var(--border); transition: all .3s;
+        }
+        .swipe-dot.active { width: 20px; background: var(--gold); }
+        .swipe-label {
+            text-align: center; margin-bottom: 12px;
+            font-family: 'Cinzel', serif; font-size: 11px;
+            font-weight: 600; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--gold-dim);
+        }
+        .deal-card.completed-deal::before { background: var(--green); }
+        .deal-card.cancelled-deal::before { background: var(--sealing); }
 
         /* ── ANIMATIONS ── */
         .fade-in { animation: fadeUp .4s ease both; }
@@ -262,19 +288,43 @@
 
     <!-- Мои сделки -->
     <div id="panel-my" class="fade-in d3">
-        <div class="section-title">Активные и ожидающие</div>
-        <div class="empty-screen" id="my-empty">
-            <div class="empty-art">📜</div>
-            <div class="empty-title">Грамот пока нет</div>
-            <div class="empty-desc">
-                Создайте первую сделку и отправьте ссылку покупателю —
-                <b>деньги будут в безопасности</b> до подтверждения обеих сторон
-            </div>
-            <button class="btn-empty" onclick="createDeal()">
-                + Создать первую сделку
-            </button>
+        <div class="swipe-indicator">
+            <div class="swipe-dot active" id="dot-active"></div>
+            <div class="swipe-dot" id="dot-completed"></div>
         </div>
-        <div id="my-container"></div>
+        <div class="swipe-wrap" id="swipe-wrap">
+            <div class="swipe-track" id="swipe-track">
+
+                <!-- Активные -->
+                <div class="swipe-panel">
+                    <div class="swipe-label">⚙️ Активные и ожидающие</div>
+                    <div class="empty-screen" id="my-empty">
+                        <div class="empty-art">📜</div>
+                        <div class="empty-title">Грамот пока нет</div>
+                        <div class="empty-desc">
+                            Создайте первую сделку и отправьте ссылку покупателю —
+                            <b>деньги будут в безопасности</b> до подтверждения обеих сторон
+                        </div>
+                        <button class="btn-empty" onclick="createDeal()">
+                            + Создать первую сделку
+                        </button>
+                    </div>
+                    <div id="my-container"></div>
+                </div>
+
+                <!-- Завершённые -->
+                <div class="swipe-panel">
+                    <div class="swipe-label">✅ Завершённые сделки</div>
+                    <div class="empty-screen" id="completed-empty">
+                        <div class="empty-art">⚖️</div>
+                        <div class="empty-title">Завершённых нет</div>
+                        <div class="empty-desc">Здесь появятся ваши завершённые и отменённые сделки</div>
+                    </div>
+                    <div id="completed-container"></div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <!-- Лента всех сделок -->
@@ -316,7 +366,52 @@
             }
         }
 
-        // ── МОИ СДЕЛКИ ────────────────────────────────────────
+        // ── СВАЙП МОИ СДЕЛКИ ──────────────────────────────────
+        let currentSubTab = 0; // 0 = активные, 1 = завершённые
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        let isSwiping = false;
+
+        function setSubPanel(idx) {
+            currentSubTab = idx;
+            document.getElementById('swipe-track').style.transform = `translateX(-${idx * 100}%)`;
+            document.getElementById('dot-active').classList.toggle('active', idx === 0);
+            document.getElementById('dot-completed').classList.toggle('active', idx === 1);
+        }
+
+        function initSwipe() {
+            const wrap = document.getElementById('swipe-wrap');
+            wrap.addEventListener('touchstart', e => {
+                swipeStartX = e.touches[0].clientX;
+                swipeStartY = e.touches[0].clientY;
+                isSwiping = false;
+            }, { passive: true });
+
+            wrap.addEventListener('touchmove', e => {
+                const dx = e.touches[0].clientX - swipeStartX;
+                const dy = e.touches[0].clientY - swipeStartY;
+                if (!isSwiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+                    isSwiping = true;
+                }
+            }, { passive: true });
+
+            wrap.addEventListener('touchend', e => {
+                if (!isSwiping) return;
+                const dx = e.changedTouches[0].clientX - swipeStartX;
+                if (dx < -50 && currentSubTab === 0) setSubPanel(1);
+                if (dx > 50  && currentSubTab === 1) setSubPanel(0);
+                isSwiping = false;
+            });
+        }
+
+        function getCommission(amount) {
+            if (amount <= 10000) return 0.01;
+            if (amount <= 25000) return 0.02;
+            if (amount <= 50000) return 0.03;
+            if (amount <= 100000) return 0.04;
+            return 0.05;
+        }
+
         async function loadMyDeals() {
             if (!currentUserId) return;
             try {
@@ -324,29 +419,85 @@
                 const data = await res.json();
                 if (!data.success || !data.deals.length) return;
 
+                allMyDeals = data.deals;
+
+                // ── АКТИВНЫЕ ──
                 const active = data.deals.filter(d =>
                     d.status === 'pending' || d.status === 'active' || d.status === 'dispute');
-                if (!active.length) return;
 
-                document.getElementById('my-empty').style.display = 'none';
-
-                const statusMap = {
-                    'pending': '🕯 Ожидает покупателя',
-                    'active':  '📜 Активна',
-                    'dispute': '⚔️ Спор'
-                };
-                const clsMap = { 'active': 'active-deal', 'dispute': 'dispute-deal' };
-
-                document.getElementById('my-container').innerHTML = active.map(deal => `
-                    <div class="deal-card ${clsMap[deal.status] || ''}" onclick="openDeal('${deal.id}')">
-                        <div class="deal-card-desc">
-                            ${deal.description}
-                            ${(deal.status === 'active' || deal.status === 'dispute') ? ' <span class="gear">⚙️</span>' : ''}
+                if (active.length) {
+                    document.getElementById('my-empty').style.display = 'none';
+                    const statusMap = {
+                        'pending': '🕯 Ожидает покупателя',
+                        'active':  '📜 Активна',
+                        'dispute': '⚔️ Спор'
+                    };
+                    const clsMap = { 'active': 'active-deal', 'dispute': 'dispute-deal' };
+                    document.getElementById('my-container').innerHTML = active.map(deal => `
+                        <div class="deal-card ${clsMap[deal.status] || ''}" onclick="openDeal('${deal.id}')">
+                            <div class="deal-card-desc">
+                                ${deal.description}
+                                ${(deal.status === 'active' || deal.status === 'dispute') ? ' <span class="gear">⚙️</span>' : ''}
+                            </div>
+                            <div class="deal-card-amount">${parseInt(deal.amount).toLocaleString()} ₽</div>
+                            <div class="deal-card-status">${statusMap[deal.status] || deal.status}</div>
                         </div>
-                        <div class="deal-card-amount">${parseInt(deal.amount).toLocaleString()} ₽</div>
-                        <div class="deal-card-status">${statusMap[deal.status] || deal.status}</div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
+
+                // ── ЗАВЕРШЁННЫЕ ──
+                const done = data.deals.filter(d =>
+                    d.status === 'completed' || d.status === 'cancelled');
+
+                if (done.length) {
+                    document.getElementById('completed-empty').style.display = 'none';
+                    const statusMap = {
+                        'completed': '✅ Завершена',
+                        'cancelled': '❌ Отменена'
+                    };
+                    const clsMap = { 'completed': 'completed-deal', 'cancelled': 'cancelled-deal' };
+
+                    document.getElementById('completed-container').innerHTML = done.map(deal => {
+                        const isSeller = deal.seller_id == currentUserId;
+                        const amount   = parseInt(deal.amount);
+                        const commission = isSeller ? Math.round(amount * getCommission(amount)) : 0;
+                        const net = isSeller ? amount - commission : amount;
+                        const sign = deal.status === 'completed' ? (isSeller ? '+' : '−') : '';
+                        const amountColor = deal.status === 'completed'
+                            ? (isSeller ? 'color:var(--green)' : 'color:var(--sealing-lt)')
+                            : 'color:var(--text-dim)';
+
+                        // Таймер выплаты для завершённых сделок продавца
+                        let payoutNote = '';
+                        if (deal.status === 'completed' && isSeller) {
+                            if (deal.payout_sent) {
+                                payoutNote = `<div style="font-size:11px;color:var(--green);margin-top:3px">💰 Деньги переведены</div>`;
+                            } else {
+                                const updStr = deal.completed_at || deal.updated_at;
+                                if (updStr) {
+                                    const hrs = Math.max(0, 12 - (Date.now() - new Date(updStr)) / 3600000);
+                                    const h = Math.floor(hrs), m = Math.floor((hrs - h) * 60);
+                                    payoutNote = hrs > 0
+                                        ? `<div style="font-size:11px;color:var(--gold-dim);margin-top:3px">⏳ Выплата через ${h}ч ${m}м</div>`
+                                        : `<div style="font-size:11px;color:var(--green);margin-top:3px">💰 Выплата скоро</div>`;
+                                }
+                            }
+                        }
+
+                        const dateStr = deal.created_at
+                            ? new Date(deal.created_at).toLocaleDateString('ru', { day:'numeric', month:'short' })
+                            : '';
+
+                        return `
+                        <div class="deal-card ${clsMap[deal.status] || ''}" onclick="openDeal('${deal.id}')">
+                            <div class="deal-card-desc">${deal.description}</div>
+                            <div class="deal-card-amount" style="${amountColor}">${sign}${net.toLocaleString()} ₽</div>
+                            <div class="deal-card-status">${statusMap[deal.status]} · ${isSeller ? 'Продавец' : 'Покупатель'}${dateStr ? ' · ' + dateStr : ''}</div>
+                            ${payoutNote}
+                        </div>`;
+                    }).join('');
+                }
+
             } catch(e) { console.log(e); }
         }
 
@@ -412,6 +563,7 @@
 
         // ── INIT ──────────────────────────────────────────────
         loadMyDeals();
+        initSwipe();
     </script>
 </body>
 </html>
