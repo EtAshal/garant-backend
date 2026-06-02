@@ -74,31 +74,112 @@
             position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
             background: linear-gradient(180deg, var(--gold), var(--sealing));
         }
-        /* ── ПУЛЬСАЦИЯ АВАТАРА ── */
+        /* ══════════════════════════════════════
+           РАМКИ АВАТАРА ПО СТАТУСУ
+           ══════════════════════════════════════ */
+
         @keyframes avatarPulse {
-            0%,100% { transform: scale(1);    box-shadow: 0 0 0 3px rgba(201,168,76,0.15), 0 0 12px rgba(201,168,76,0.1); }
-            30%      { transform: scale(1.06); box-shadow: 0 0 0 5px rgba(201,168,76,0.25), 0 0 22px rgba(201,168,76,0.2); }
-            60%      { transform: scale(0.96); box-shadow: 0 0 0 2px rgba(201,168,76,0.1),  0 0 8px  rgba(201,168,76,0.08); }
+            0%,100% { transform: scale(1); }
+            30%      { transform: scale(1.06); }
+            60%      { transform: scale(0.96); }
         }
+
         .avatar {
-            width: 60px; height: 60px; border-radius: 50%;
+            width: 64px; height: 64px; border-radius: 50%;
             background: linear-gradient(135deg, var(--sealing), #1a0a05);
-            border: 2px solid var(--gold-dim);
             display: flex; align-items: center; justify-content: center;
             font-family: 'Cinzel', serif;
             font-size: 22px; font-weight: 700; color: var(--gold);
-            flex-shrink: 0;
-            overflow: hidden;
+            flex-shrink: 0; overflow: hidden;
             animation: avatarPulse 4s ease-in-out infinite;
+            position: relative;
         }
-        .avatar img {
-            width: 100%; height: 100%;
-            object-fit: cover; border-radius: 50%;
+        .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        /* Новичок — серая рамка */
+        .avatar.rank-0 {
+            border: 2px solid #5a5a5a;
+            box-shadow: 0 0 0 3px rgba(90,90,90,0.2);
         }
+        /* Проверенный — синяя рамка */
+        .avatar.rank-1 {
+            border: 2px solid #2a6aad;
+            box-shadow: 0 0 0 3px rgba(42,106,173,0.25), 0 0 12px rgba(42,106,173,0.2);
+        }
+        /* Надёжный — зелёная рамка с узором */
+        .avatar.rank-2 {
+            border: 3px solid #4a7a50;
+            box-shadow: 0 0 0 2px rgba(74,122,80,0.3), 0 0 16px rgba(74,122,80,0.25), 0 0 0 5px rgba(74,122,80,0.1);
+        }
+        /* Гарант — золотая анимированная рамка */
+        @keyframes goldRing {
+            0%,100% {
+                border-color: #c9a84c;
+                box-shadow: 0 0 0 2px rgba(201,168,76,0.4), 0 0 20px rgba(201,168,76,0.4), 0 0 40px rgba(201,168,76,0.15);
+            }
+            50% {
+                border-color: #f5d06a;
+                box-shadow: 0 0 0 3px rgba(245,208,106,0.6), 0 0 30px rgba(201,168,76,0.6), 0 0 60px rgba(201,168,76,0.25);
+            }
+        }
+        .avatar.rank-3 {
+            border: 3px solid var(--gold);
+            animation: avatarPulse 4s ease-in-out infinite, goldRing 2s ease-in-out infinite;
+        }
+
+        /* Корона над аватаром для Гаранта */
+        .avatar-wrap { position: relative; flex-shrink: 0; }
+        .avatar-crown {
+            position: absolute; top: -14px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px; line-height: 1;
+            display: none;
+            animation: crownFloat 3s ease-in-out infinite;
+            z-index: 2;
+        }
+        @keyframes crownFloat {
+            0%,100% { transform: translateX(-50%) translateY(0); }
+            50%      { transform: translateX(-50%) translateY(-3px); }
+        }
+        .avatar-wrap.rank-3 .avatar-crown { display: block; }
+
+        /* ── АЧИВКИ ── */
+        .achievements-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+        }
+        .achv {
+            background: var(--bg2); border-radius: 10px; padding: 10px 6px;
+            border: 1px solid var(--border);
+            text-align: center; position: relative;
+            transition: transform .1s;
+        }
+        .achv:active { transform: scale(0.93); }
+        .achv.unlocked { border-color: var(--gold-dim); background: rgba(139,105,20,0.12); }
+        .achv.unlocked .achv-icon { filter: none; }
+        .achv-icon { font-size: 22px; margin-bottom: 4px; filter: grayscale(1) opacity(0.3); }
+        .achv.unlocked .achv-icon { filter: none; }
+        .achv-name {
+            font-family: 'Cinzel', serif; font-size: 8px; font-weight: 600;
+            letter-spacing: 0.3px; color: var(--text-dim); line-height: 1.2;
+        }
+        .achv.unlocked .achv-name { color: var(--gold-dim); }
+        .achv-new {
+            position: absolute; top: -4px; right: -4px;
+            background: var(--sealing); border-radius: 50%;
+            width: 14px; height: 14px;
+            font-size: 8px; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700;
+        }
+
         .user-info { flex: 1; min-width: 0; }
         .user-name {
             font-family: 'Cinzel', serif; font-size: 17px; font-weight: 700;
             color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        /* Золотое имя для Гаранта */
+        .user-name.rank-3 {
+            color: var(--gold);
+            text-shadow: 0 0 12px rgba(201,168,76,0.3);
         }
         .user-handle { font-size: 13px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
         .status-pill {
@@ -107,10 +188,10 @@
             font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
             letter-spacing: 0.8px; margin-top: 8px; border: 1px solid;
         }
-        .status-0 { background: rgba(74,53,32,0.4);  color: var(--text-dim); border-color: var(--border); }
-        .status-1 { background: rgba(139,105,20,0.2); color: var(--gold-dim); border-color: var(--gold-dim); }
-        .status-2 { background: rgba(74,122,80,0.2);  color: #7acc84; border-color: var(--green); }
-        .status-3 { background: rgba(201,168,76,0.15);color: var(--gold); border-color: var(--gold); }
+        .status-0 { background: rgba(74,53,32,0.4);   color: var(--text-dim); border-color: var(--border); }
+        .status-1 { background: rgba(42,106,173,0.15); color: #5aabee; border-color: #2a6aad; }
+        .status-2 { background: rgba(74,122,80,0.2);   color: #7acc84; border-color: var(--green); }
+        .status-3 { background: rgba(201,168,76,0.15); color: var(--gold); border-color: var(--gold); }
 
         .section-title {
             font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
@@ -329,7 +410,10 @@
 </div>
 
 <div class="avatar-section fade-in d1">
-    <div class="avatar" id="avatar">?</div>
+    <div class="avatar-wrap" id="avatar-wrap">
+        <div class="avatar-crown">👑</div>
+        <div class="avatar" id="avatar">?</div>
+    </div>
     <div class="user-info">
         <div class="user-name" id="user-name">Загрузка…</div>
         <div class="user-handle" id="user-handle"></div>
@@ -387,6 +471,9 @@
     </div>
 </div>
 
+<div class="section-title fade-in d4" style="margin-top:18px">Достижения</div>
+<div class="achievements-grid fade-in d4" id="achievements-grid"></div>
+
 <div class="section-title fade-in d5">История сделок</div>
 <div class="history-tabs fade-in d5">
     <button class="tab active" onclick="filterDeals('all', this)">Все</button>
@@ -434,25 +521,68 @@ function getCommission(amount) {
     return 0.05;
 }
 
+// ── АЧИВКИ ───────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+    {
+        id: 'first_deal',
+        icon: '🤝', name: 'Первое рукопожатие',
+        check: (d, s, b) => s + b >= 1
+    },
+    {
+        id: 'trader',
+        icon: '💰', name: 'Торговец',
+        check: (d, s, b) => s + b >= 10
+    },
+    {
+        id: 'merchant',
+        icon: '🏪', name: 'Купец',
+        check: (d, s, b) => s + b >= 50
+    },
+    {
+        id: 'baron',
+        icon: '👑', name: 'Барон',
+        check: (d, s, b) => s + b >= 100
+    },
+    {
+        id: 'big_fish',
+        icon: '💎', name: 'Крупная рыба',
+        check: (d) => d.some(x => x.status === 'completed' && parseFloat(x.amount) >= 50000)
+    },
+    {
+        id: 'no_disputes',
+        icon: '🕊️', name: 'Миротворец',
+        check: (d, s, b) => (s + b >= 20) && !d.some(x => x.status === 'dispute')
+    },
+    {
+        id: 'ghost',
+        icon: '👻', name: 'Призрак',
+        check: (d, s, b) => (s + b >= 5) && !d.some(x => x.status === 'dispute' || x.status === 'cancelled')
+    },
+    {
+        id: 'verified',
+        icon: '🛡️', name: 'Надёжный',
+        check: (d, s, b, pts) => pts >= 500
+    },
+];
+
+function renderAchievements(deals, sellerCount, buyerCount, totalPts) {
+    const grid = document.getElementById('achievements-grid');
+    grid.innerHTML = ACHIEVEMENTS.map(a => {
+        const unlocked = a.check(deals, sellerCount, buyerCount, totalPts);
+        return `
+        <div class="achv ${unlocked ? 'unlocked' : ''}" title="${a.name}">
+            <div class="achv-icon">${a.icon}</div>
+            <div class="achv-name">${a.name}</div>
+            ${unlocked ? '<div class="achv-new">✓</div>' : ''}
+        </div>`;
+    }).join('');
+}
+
 function renderProfile(deals) {
     const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
     const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     document.getElementById('user-name').textContent = name;
     if (user.username) document.getElementById('user-handle').textContent = '@' + user.username;
-
-    // Загружаем фото — если есть подставляем, иначе инициалы
-    const avatarEl = document.getElementById('avatar');
-    avatarEl.textContent = initials;
-    if (currentUserId) {
-        fetch(`${BACKEND}/users/${currentUserId}/photo`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.photo_url) {
-                    avatarEl.innerHTML = `<img src="${data.photo_url}" alt="${initials}">`;
-                }
-            })
-            .catch(() => {});
-    }
 
     const completed = deals.filter(d => d.status === 'completed');
     const disputes  = deals.filter(d => d.status === 'dispute');
@@ -465,14 +595,43 @@ function renderProfile(deals) {
 
     const status = getStatus(totalPts);
     const prog   = getProgress(totalPts);
+    const rankIdx = STATUSES.findIndex(s => s.name === status.name);
 
+    // Рамка аватара
+    const avatarEl   = document.getElementById('avatar');
+    const avatarWrap = document.getElementById('avatar-wrap');
+    avatarEl.className = `avatar rank-${rankIdx}`;
+    avatarWrap.className = `avatar-wrap rank-${rankIdx}`;
+
+    // Золотое имя для Гаранта
+    const nameEl = document.getElementById('user-name');
+    nameEl.className = rankIdx === 3 ? 'user-name rank-3' : 'user-name';
+
+    // Загружаем фото
+    avatarEl.textContent = initials;
+    if (currentUserId) {
+        fetch(`${BACKEND}/users/${currentUserId}/photo`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.photo_url) {
+                    avatarEl.innerHTML = `<img src="${data.photo_url}" alt="${initials}">`;
+                }
+            })
+            .catch(() => {});
+    }
+
+    // Статус
     document.getElementById('status-pill').innerHTML =
         `<span class="status-pill ${status.cls}">${status.emoji} ${status.name}</span>`;
+
+    // Очки
     document.getElementById('pts-value').textContent = totalPts.toLocaleString('ru');
     document.getElementById('pts-next').textContent  = prog.need > 0 ? `ещё ${prog.need.toLocaleString('ru')} очков` : 'высший статус';
     document.getElementById('bar-left').textContent  = prog.left.toLocaleString('ru');
     document.getElementById('bar-right').textContent = typeof prog.right === 'number' ? prog.right.toLocaleString('ru') : prog.right;
     requestAnimationFrame(() => setTimeout(() => { document.getElementById('pts-bar').style.width = prog.pct + '%'; }, 150));
+
+    // Статистика
     document.getElementById('cnt-completed').textContent = completed.length;
     document.getElementById('cnt-dispute').textContent   = disputes.length;
     document.getElementById('cnt-volume').textContent    = volume >= 1000 ? (volume/1000).toFixed(1).replace('.0','') + 'к ₽' : volume.toLocaleString('ru') + ' ₽';
@@ -480,6 +639,9 @@ function renderProfile(deals) {
     document.getElementById('cnt-seller').textContent = asSeller.length + ' сделок';
     document.getElementById('pts-buyer').textContent  = buyerPts.toLocaleString('ru');
     document.getElementById('cnt-buyer').textContent  = asBuyer.length + ' сделок';
+
+    // Ачивки
+    renderAchievements(deals, asSeller.length, asBuyer.length, totalPts);
 }
 
 const DEAL_META = {
