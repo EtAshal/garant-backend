@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:         #1a1208;
+            --bg2:        #241a0e;
+            --bg3:        #2e2010;
+            --border:     #4a3520;
+            --text:       #e8d5b0;
+            --text-dim:   #a08060;
+            --gold:       #c9a84c;
+            --gold-dim:   #8b6914;
+            --sealing:    #7a3022;
+            --sealing-lt: #9b4a35;
+            --green:      #4a7a50;
+            --green-lt:   #7acc84;
+            --shadow:     rgba(0,0,0,0.5);
+        }
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 0 16px 40px;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none; z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
+
+        .header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 24px 0 20px;
+            border-bottom: 1px solid var(--border); margin-bottom: 20px;
+        }
+        .back-btn {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow); font-family: serif;
+        }
+        .page-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+
+        /* ── АВАТАР ── */
+        @keyframes avatarPulse {
+            0%,100% { transform: scale(1); }
+            30%      { transform: scale(1.05); }
+            60%      { transform: scale(0.97); }
+        }
+        @keyframes goldRing {
+            0%,100% { box-shadow: 0 0 0 2px rgba(201,168,76,0.3), 0 0 16px rgba(201,168,76,0.3); }
+            50%      { box-shadow: 0 0 0 3px rgba(201,168,76,0.6), 0 0 30px rgba(201,168,76,0.5); }
+        }
+
+        .profile-card {
+            background: var(--bg2); border-radius: 16px; padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px var(--shadow);
+            text-align: center; margin-bottom: 16px;
+            position: relative; overflow: hidden;
+        }
+        .profile-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--sealing), #1a0a05);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cinzel', serif; font-size: 28px; font-weight: 700;
+            color: var(--gold); margin: 0 auto 14px; overflow: hidden;
+            animation: avatarPulse 4s ease-in-out infinite;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .avatar.rank-0 { border: 2px solid #5a5a5a; box-shadow: 0 0 0 3px rgba(90,90,90,0.2); }
+        .avatar.rank-1 { border: 2px solid #2a6aad; box-shadow: 0 0 0 3px rgba(42,106,173,0.25), 0 0 12px rgba(42,106,173,0.2); }
+        .avatar.rank-2 { border: 3px solid #4a7a50; box-shadow: 0 0 0 2px rgba(74,122,80,0.3), 0 0 16px rgba(74,122,80,0.2); }
+        .avatar.rank-3 { border: 3px solid var(--gold); animation: avatarPulse 4s ease-in-out infinite, goldRing 2s ease-in-out infinite; }
+
+        .crown { font-size: 20px; margin-bottom: 4px; display: none; }
+        .crown.show { display: block; }
+
+        .profile-name {
+            font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+            color: var(--text); margin-bottom: 4px;
+        }
+        .profile-name.gold { color: var(--gold); text-shadow: 0 0 12px rgba(201,168,76,0.3); }
+        .profile-handle { font-size: 13px; font-style: italic; color: var(--text-dim); margin-bottom: 10px; }
+
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 4px;
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 0.8px; border: 1px solid; margin-bottom: 20px;
+        }
+        .status-0 { background: rgba(74,53,32,0.4);   color: var(--text-dim); border-color: var(--border); }
+        .status-1 { background: rgba(42,106,173,0.15); color: #5aabee; border-color: #2a6aad; }
+        .status-2 { background: rgba(74,122,80,0.2);   color: var(--green-lt); border-color: var(--green); }
+        .status-3 { background: rgba(201,168,76,0.15); color: var(--gold); border-color: var(--gold); }
+
+        /* ── ОЧКИ ── */
+        .pts-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+        .pts-label { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-dim); }
+        .pts-value { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700; color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.2); }
+        .progress-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 1.2s cubic-bezier(.4,0,.2,1); width: 0%; }
+
+        /* ── СТАТИСТИКА ── */
+        .section-title {
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin: 18px 0 10px;
+        }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .stat-card {
+            background: var(--bg2); border-radius: 8px; padding: 13px 10px;
+            border: 1px solid var(--border); text-align: center;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        .stat-icon { font-size: 18px; margin-bottom: 5px; }
+        .stat-num { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; }
+        .stat-num.green  { color: var(--green-lt); }
+        .stat-num.yellow { color: var(--gold); }
+        .stat-num.red    { color: var(--sealing-lt); }
+        .stat-label { font-size: 11px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
+
+        /* ── КНОПКА НАЧАТЬ СДЕЛКУ ── */
+        .btn-deal {
+            display: block; width: 100%; padding: 15px;
+            border-radius: 6px; border: none; margin-top: 20px;
+            font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; transition: all .2s;
+            background: var(--sealing); color: var(--text);
+            box-shadow: 0 3px 12px rgba(122,48,34,0.5);
+        }
+        .btn-deal:active { transform: scale(0.97); background: #5a2018; }
+
+        /* верифицировано */
+        .verified-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; font-style: italic; color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .loading { text-align: center; padding: 60px 0; color: var(--text-dim); font-style: italic; }
+
+        .fade-in { animation: fadeUp .4s ease both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="window.history.back()">←</button>
+    <span class="page-title">Карточка репутации</span>
+</div>
+
+<div id="loading" class="loading">Загружаем профиль…</div>
+<div id="content" style="display:none"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const BACKEND = 'https://garant-backend-production.up.railway.app';
+const params  = new URLSearchParams(window.location.search);
+const userId  = params.get('id');
+
+const STATUSES = [
+    { min: 0,    name: '🆕 Новичок',     cls: 'status-0', rank: 0 },
+    { min: 100,  name: '📜 Проверенный', cls: 'status-1', rank: 1 },
+    { min: 500,  name: '🛡️ Надёжный',   cls: 'status-2', rank: 2 },
+    { min: 1500, name: '⭐ Гарант',      cls: 'status-3', rank: 3 },
+];
+const LEVELS = [0, 100, 500, 1500];
+
+function getStatus(pts) {
+    for (let i = STATUSES.length - 1; i >= 0; i--)
+        if (pts >= STATUSES[i].min) return STATUSES[i];
+    return STATUSES[0];
+}
+function getProgress(pts) {
+    const c = Math.max(0, pts);
+    for (let i = 0; i < LEVELS.length - 1; i++) {
+        if (c < LEVELS[i+1]) return {
+            pct: Math.round((c - LEVELS[i]) / (LEVELS[i+1] - LEVELS[i]) * 100),
+            left: LEVELS[i], right: LEVELS[i+1]
+        };
+    }
+    return { pct: 100, left: 1500, right: '∞' };
+}
+function getCommission(amount) {
+    if (amount <= 10000) return 0.01;
+    if (amount <= 25000) return 0.02;
+    if (amount <= 50000) return 0.03;
+    if (amount <= 100000) return 0.04;
+    return 0.05;
+}
+
+async function load() {
+    if (!userId) {
+        document.getElementById('loading').textContent = 'Профиль не найден';
+        return;
+    }
+    try {
+        const res  = await fetch(`${BACKEND}/users/${userId}/public`);
+        const data = await res.json();
+        if (!data.success) {
+            document.getElementById('loading').textContent = 'Профиль не найден';
+            return;
+        }
+        render(data.user, data.deals);
+    } catch(e) {
+        document.getElementById('loading').textContent = 'Ошибка загрузки';
+    }
+}
+
+function render(user, deals) {
+    document.getElementById('loading').style.display = 'none';
+    const content = document.getElementById('content');
+    content.style.display = 'block';
+
+    const completed = deals.filter(d => d.status === 'completed');
+    const disputes  = deals.filter(d => d.status === 'dispute');
+    const asSeller  = completed.filter(d => d.seller_id == userId);
+    const asBuyer   = completed.filter(d => d.buyer_id  == userId);
+    const sellerPts = asSeller.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
+    const buyerPts  = asBuyer.reduce((s, d)  => s + Math.floor(parseFloat(d.amount) / 100), 0);
+    const totalPts  = sellerPts + buyerPts;
+    const volume    = completed.reduce((s, d) => s + parseFloat(d.amount), 0);
+
+    const status = getStatus(totalPts);
+    const prog   = getProgress(totalPts);
+    const name   = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Пользователь';
+    const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+    const memberSince = user.created_at
+        ? new Date(user.created_at).toLocaleDateString('ru', { month: 'long', year: 'numeric' })
+        : '';
+
+    content.innerHTML = `
+        <div class="profile-card fade-in">
+            <div class="crown ${status.rank === 3 ? 'show' : ''}">👑</div>
+            <div class="avatar rank-${status.rank}" id="pub-avatar">${initials}</div>
+            <div class="profile-name ${status.rank === 3 ? 'gold' : ''}">${name}</div>
+            ${user.username ? `<div class="profile-handle">@${user.username}</div>` : ''}
+            <div class="status-pill ${status.cls}">${status.name}</div>
+
+            <div class="pts-row">
+                <div class="pts-label">Очки доверия</div>
+                <div class="pts-value">${totalPts.toLocaleString('ru')}</div>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-fill" id="pub-bar"></div>
+            </div>
+            ${memberSince ? `<div class="verified-badge" style="margin-top:10px">📅 На платформе с ${memberSince}</div>` : ''}
+        </div>
+
+        <div class="section-title fade-in d1">Статистика</div>
+        <div class="stats-grid fade-in d1">
+            <div class="stat-card">
+                <div class="stat-icon">📜</div>
+                <div class="stat-num green">${completed.length}</div>
+                <div class="stat-label">завершено</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚔️</div>
+                <div class="stat-num yellow">${disputes.length}</div>
+                <div class="stat-label">споров</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🪙</div>
+                <div class="stat-num" style="font-size:15px;color:var(--gold)">
+                    ${volume >= 1000 ? (volume/1000).toFixed(1).replace('.0','') + 'к' : volume.toLocaleString('ru')} ₽
+                </div>
+                <div class="stat-label">оборот</div>
+            </div>
+        </div>
+
+        <button class="btn-deal fade-in d2" onclick="startDeal()">
+            🤝 Предложить сделку
+        </button>
+    `;
+
+    // Анимируем прогресс-бар
+    requestAnimationFrame(() => setTimeout(() => {
+        document.getElementById('pub-bar').style.width = prog.pct + '%';
+    }, 200));
+
+    // Загружаем фото
+    fetch(`${BACKEND}/users/${userId}/photo`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.photo_url) {
+                document.getElementById('pub-avatar').innerHTML =
+                    `<img src="${data.photo_url}" alt="${initials}">`;
+            }
+        })
+        .catch(() => {});
+}
+
+function startDeal() {
+    // Открываем главную — пользователь сам создаст сделку и отправит ссылку
+    tg.showAlert('Создайте сделку в Гаранте и отправьте ссылку этому пользователю!');
+}
+
+load();
+</script>
+</body>
+</html>

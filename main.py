@@ -292,6 +292,31 @@ async def deal_action(deal_id: str, data: dict):
         return {"success": False, "error": str(e)}
 
 
+@app.get("/users/{user_id}/public")
+async def get_public_profile(user_id: int):
+    """Публичный профиль пользователя — только завершённые сделки и очки."""
+    try:
+        # Данные пользователя
+        user = supabase.table("users").select("*").eq("id", user_id).execute()
+        if not user.data:
+            return {"success": False, "error": "Пользователь не найден"}
+
+        # Только завершённые сделки для подсчёта очков
+        deals = supabase.table("deals").select(
+            "id, amount, status, seller_id, buyer_id, created_at"
+        ).or_(
+            f"seller_id.eq.{user_id},buyer_id.eq.{user_id}"
+        ).execute()
+
+        return {
+            "success": True,
+            "user": user.data[0],
+            "deals": deals.data
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/users/{user_id}/photo")
 async def get_user_photo(user_id: int):
     """Получаем фото профиля пользователя через Telegram Bot API."""

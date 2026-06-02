@@ -6,6 +6,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import CommandStart
+from aiogram import F
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -20,6 +21,10 @@ WEBAPP_URL = os.getenv("WEBAPP_URL")
 @dp.message(CommandStart())
 async def start(message: Message):
     user = message.from_user
+    args = message.text.split(maxsplit=1)
+    deep_link = args[1] if len(args) > 1 else ""
+
+    # Сохраняем пользователя
     try:
         supabase.table("users").upsert({
             "id": user.id,
@@ -30,6 +35,27 @@ async def start(message: Message):
     except Exception as e:
         print(f"Ошибка: {e}")
 
+    # Если пришли по ссылке профиля — открываем публичный профиль
+    if deep_link.startswith("profile_"):
+        user_id = deep_link.replace("profile_", "")
+        profile_url = f"{WEBAPP_URL.rstrip('/')}/public_profile.html?id={user_id}"
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="👤 Посмотреть профиль",
+                web_app=WebAppInfo(url=profile_url)
+            )],
+            [InlineKeyboardButton(
+                text="🔒 Открыть Гарант",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )]
+        ])
+        await message.answer(
+            "📜 Вам прислали карточку репутации.\n\nНажмите кнопку чтобы посмотреть профиль пользователя.",
+            reply_markup=keyboard
+        )
+        return
+
+    # Обычный старт
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text="🔒 Открыть Гарант",
