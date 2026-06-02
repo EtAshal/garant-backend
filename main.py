@@ -40,11 +40,12 @@ async def auto_complete_deals():
             days_passed = (now - accepted_at).total_seconds() / 86400
 
             if days_passed >= 7:
-                # Завершаем в пользу продавца
+                now_iso = now.isoformat()
                 supabase.table("deals").update({
                     "status": "completed",
                     "seller_action": "confirm",
-                    "buyer_action": "confirm"
+                    "buyer_action": "confirm",
+                    "completed_at": now_iso
                 }).eq("id", deal["id"]).execute()
 
                 try:
