@@ -260,6 +260,145 @@
         .deal-card.completed-deal::before { background: var(--green); }
         .deal-card.cancelled-deal::before { background: var(--sealing); }
 
+        /* ── СВИТОК ── */
+        .page-wrap {
+            transition: transform .4s cubic-bezier(.77,0,.18,1), filter .4s;
+            transform-origin: right center;
+            min-height: 100vh;
+        }
+        .page-wrap.scrolled {
+            transform: translateX(75%) scale(0.88);
+            filter: brightness(0.5);
+            pointer-events: none;
+        }
+
+        .scroll-overlay {
+            position: fixed; inset: 0; z-index: 50;
+            pointer-events: none; opacity: 0;
+            background: rgba(0,0,0,0.4);
+            transition: opacity .4s;
+        }
+        .scroll-overlay.open { opacity: 1; pointer-events: all; }
+
+        .scroll-panel {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 80vw; max-width: 340px;
+            z-index: 100;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.7);
+            transform: translateX(-100%);
+            transition: transform .4s cubic-bezier(.77,0,.18,1);
+            overflow-y: auto;
+            padding: 0 0 40px;
+        }
+        .scroll-panel.open { transform: translateX(0); }
+
+        /* шапка свитка */
+        .scroll-header {
+            padding: 32px 20px 16px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            background: linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+        }
+        .scroll-header-title {
+            font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase; color: var(--gold);
+        }
+        .scroll-close {
+            position: absolute; top: 20px; right: 16px;
+            background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 50%; width: 30px; height: 30px;
+            color: var(--text-dim); font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ── ЦИТАТА ── */
+        .quote-block {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .quote-label {
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 12px;
+        }
+        .quote-text {
+            font-size: 16px; font-style: italic;
+            color: var(--text); line-height: 1.7;
+            text-shadow: 0 0 20px rgba(201,168,76,0.1);
+            animation: quoteGlow 3s ease-in-out infinite;
+        }
+        @keyframes quoteGlow {
+            0%,100% { text-shadow: 0 0 10px rgba(201,168,76,0.1); }
+            50%      { text-shadow: 0 0 25px rgba(201,168,76,0.25); }
+        }
+        .quote-author {
+            font-size: 12px; font-style: normal;
+            color: var(--gold-dim); margin-top: 10px;
+            font-family: 'Cinzel', serif; letter-spacing: 0.5px;
+        }
+        .quote-divider {
+            display: flex; align-items: center; gap: 8px;
+            margin: 12px 0 0; color: var(--border); font-size: 10px;
+        }
+        .quote-divider::before, .quote-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        /* ── СЕКЦИИ СВИТКА ── */
+        .scroll-section {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer; transition: background .2s;
+        }
+        .scroll-section:active { background: var(--bg3); }
+        .scroll-section-header {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 0;
+        }
+        .scroll-section-icon { font-size: 20px; flex-shrink: 0; }
+        .scroll-section-title {
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
+            color: var(--text); letter-spacing: 0.3px;
+        }
+        .scroll-section-arrow {
+            margin-left: auto; color: var(--text-dim); font-size: 14px;
+            transition: transform .2s;
+        }
+        .scroll-section.expanded .scroll-section-arrow { transform: rotate(90deg); }
+        .scroll-section-body {
+            display: none; margin-top: 14px;
+            font-size: 14px; font-style: italic;
+            color: var(--text-dim); line-height: 1.7;
+        }
+        .scroll-section.expanded .scroll-section-body { display: block; }
+        .scroll-section-body b { font-style: normal; color: var(--text); }
+
+        /* статистика */
+        .stat-row {
+            display: flex; justify-content: space-between;
+            padding: 6px 0; border-bottom: 1px solid rgba(74,53,32,0.4);
+            font-size: 14px;
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-row-label { color: var(--text-dim); font-style: italic; }
+        .stat-row-val { font-family: 'Cinzel', serif; font-weight: 600; color: var(--gold); }
+
+        /* весы — кнопка */
+        .seal-icon {
+            font-size: 26px; line-height: 1; cursor: pointer;
+            transition: transform .2s;
+            display: inline-block;
+            animation: scalesFloat 4s ease-in-out infinite;
+        }
+        @keyframes scalesFloat {
+            0%,100% { transform: rotate(0deg); }
+            25%      { transform: rotate(3deg); }
+            75%      { transform: rotate(-3deg); }
+        }
+        .seal-icon:active { transform: scale(0.85) !important; }
+
         /* ── ANIMATIONS ── */
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -272,11 +411,73 @@
             animation: shimmer 1.5s infinite; border-radius: 4px; height: 14px; margin-bottom: 6px;
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    </style>
+</style>
 </head>
 <body>
+
+<!-- Затемнение -->
+<div class="scroll-overlay" id="scroll-overlay" onclick="closeScroll()"></div>
+
+<!-- Свиток -->
+<div class="scroll-panel" id="scroll-panel">
+    <button class="scroll-close" onclick="closeScroll()">✕</button>
+    <div class="scroll-header">
+        <div class="scroll-header-title">⚖️ Кодекс Гаранта</div>
+    </div>
+
+    <!-- Цитата -->
+    <div class="quote-block">
+        <div class="quote-label">✦ Мудрость дня</div>
+        <div class="quote-text" id="quote-text">Загрузка…</div>
+        <div class="quote-author" id="quote-author"></div>
+        <div class="quote-divider">✦</div>
+    </div>
+
+    <!-- Правила -->
+    <div class="scroll-section" onclick="toggleSection(this)">
+        <div class="scroll-section-header">
+            <span class="scroll-section-icon">📜</span>
+            <span class="scroll-section-title">Правила платформы</span>
+            <span class="scroll-section-arrow">›</span>
+        </div>
+        <div class="scroll-section-body">
+            <b>Комиссия</b> списывается с продавца при получении денег:<br>
+            100–10к ₽ → 1% · 10–25к → 2% · 25–50к → 3% · 50–100к → 4% · 100к+ → 5%<br><br>
+            <b>Завершение сделки</b> — оба нажимают «подтверждаю». Если один отказывается — открывается спор.<br><br>
+            <b>Автозавершение</b> — если никто не нажал кнопку 7 дней, деньги уходят продавцу.<br><br>
+            <b>Спор</b> открывается если продавец молчит 2+ дня или стороны не согласны.<br><br>
+            <b>Штрафы</b> — за мошенничество: −300 очков + заморозка. За повторное — вечная блокировка.
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="scroll-section" onclick="toggleSection(this)">
+        <div class="scroll-section-header">
+            <span class="scroll-section-icon">📊</span>
+            <span class="scroll-section-title">Статистика платформы</span>
+            <span class="scroll-section-arrow">›</span>
+        </div>
+        <div class="scroll-section-body" id="stats-body">
+            <div class="skel" style="width:100%;margin-bottom:8px"></div>
+            <div class="skel" style="width:80%"></div>
+        </div>
+    </div>
+
+    <!-- Поделиться -->
+    <div class="scroll-section" onclick="shareApp()">
+        <div class="scroll-section-header">
+            <span class="scroll-section-icon">🔗</span>
+            <span class="scroll-section-title">Пригласить друга</span>
+            <span class="scroll-section-arrow">›</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- Основной контент -->
+<div class="page-wrap" id="page-wrap">
     <div class="header fade-in">
-        <span class="seal-icon">⚖️</span>
+        <span class="seal-icon" onclick="toggleScroll()">⚖️</span>
         <div class="header-center">
             <h1>ГАРАНТЪ</h1>
             <p>Надёжные сделки с честью</p>
@@ -343,6 +544,8 @@
         <div id="feed-container"></div>
     </div>
 
+</div><!-- /page-wrap -->
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -358,6 +561,112 @@
 
         function createDeal() { window.location.href = 'create.html'; }
         function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
+
+        // ── СВИТОК ────────────────────────────────────────────
+        let scrollOpen = false;
+
+        function toggleScroll() {
+            scrollOpen ? closeScroll() : openScroll();
+        }
+        function openScroll() {
+            scrollOpen = true;
+            document.getElementById('scroll-panel').classList.add('open');
+            document.getElementById('scroll-overlay').classList.add('open');
+            document.getElementById('page-wrap').classList.add('scrolled');
+            loadStats();
+        }
+        function closeScroll() {
+            scrollOpen = false;
+            document.getElementById('scroll-panel').classList.remove('open');
+            document.getElementById('scroll-overlay').classList.remove('open');
+            document.getElementById('page-wrap').classList.remove('scrolled');
+        }
+        function toggleSection(el) {
+            el.classList.toggle('expanded');
+        }
+        function shareApp() {
+            const text = `⚖️ Гарантъ — безопасные сделки между людьми!\n\nДеньги хранятся у Гаранта до подтверждения обеих сторон. Никакого обмана.\n\nt.me/ramwaytestbot`;
+            const encoded = encodeURIComponent(text);
+            window.open(`https://t.me/share/url?url=https://t.me/ramwaytestbot&text=${encoded}`, '_blank');
+        }
+
+        // ── ЦИТАТЫ ────────────────────────────────────────────
+        const QUOTES = [
+            { text: "Доверие — это фундамент всех человеческих отношений.", author: "— Конфуций" },
+            { text: "Честность — это книга мудрости, которую нужно читать каждый день.", author: "— Аристотель" },
+            { text: "Репутация человека — это его судьба.", author: "— Публий Сир" },
+            { text: "Ничто так не укрепляет доверие, как сдержанное слово.", author: "— Цицерон" },
+            { text: "Слово — серебро, молчание — золото. Но честное слово — бесценно.", author: "— Народная мудрость" },
+            { text: "Тот, кто не доверяет другим, сам не заслуживает доверия.", author: "— Лао-цзы" },
+            { text: "Хороший купец знает: честная сделка — лучшая реклама.", author: "— Средневековая пословица" },
+            { text: "Мудрец не нуждается в печати — его слово само по себе договор.", author: "— Соломон" },
+            { text: "В торговле нет ничего ценнее доброго имени.", author: "— Бенджамин Франклин" },
+            { text: "Кто не верен в малом, тот не верен и в большом.", author: "— Евангелие от Луки" },
+            { text: "Лучший гарант сделки — совесть обеих сторон.", author: "— Монтень" },
+            { text: "Деньги потеряешь — наживёшь. Честь потеряешь — пропадёшь.", author: "— Русская пословица" },
+        ];
+
+        function loadQuote() {
+            const key = 'garant_quote_idx';
+            const timeKey = 'garant_quote_time';
+            const now = Date.now();
+            const lastTime = parseInt(localStorage.getItem(timeKey) || '0');
+            let idx = parseInt(localStorage.getItem(key) || '0');
+
+            // Меняем цитату каждые 2 часа
+            if (now - lastTime > 2 * 60 * 60 * 1000) {
+                idx = (idx + 1) % QUOTES.length;
+                localStorage.setItem(key, idx);
+                localStorage.setItem(timeKey, now);
+            }
+
+            const q = QUOTES[idx];
+            const textEl = document.getElementById('quote-text');
+            const authorEl = document.getElementById('quote-author');
+
+            // Анимация появления
+            textEl.style.opacity = '0';
+            authorEl.style.opacity = '0';
+            setTimeout(() => {
+                textEl.textContent = `«${q.text}»`;
+                authorEl.textContent = q.author;
+                textEl.style.transition = 'opacity 1s';
+                authorEl.style.transition = 'opacity 1s';
+                textEl.style.opacity = '1';
+                authorEl.style.opacity = '1';
+            }, 200);
+        }
+
+        // ── СТАТИСТИКА ────────────────────────────────────────
+        let statsLoaded = false;
+        async function loadStats() {
+            if (statsLoaded) return;
+            try {
+                const res  = await fetch(`${BACKEND}/feed`);
+                const data = await res.json();
+                if (!data.success) return;
+
+                const deals = data.deals;
+                const total     = deals.length;
+                const completed = deals.filter(d => d.status === 'completed').length;
+                const active    = deals.filter(d => d.status === 'active' || d.status === 'pending').length;
+                const volume    = deals.reduce((s, d) => s + parseFloat(d.amount), 0);
+                const volStr    = volume >= 1000000
+                    ? (volume/1000000).toFixed(1) + ' млн ₽'
+                    : volume >= 1000 ? (volume/1000).toFixed(0) + 'к ₽'
+                    : volume + ' ₽';
+
+                document.getElementById('stats-body').innerHTML = `
+                    <div class="stat-row"><span class="stat-row-label">Всего сделок</span><span class="stat-row-val">${total}</span></div>
+                    <div class="stat-row"><span class="stat-row-label">Активных</span><span class="stat-row-val">${active}</span></div>
+                    <div class="stat-row"><span class="stat-row-label">Завершённых</span><span class="stat-row-val">${completed}</span></div>
+                    <div class="stat-row"><span class="stat-row-label">Общий оборот</span><span class="stat-row-val">${volStr}</span></div>
+                `;
+                statsLoaded = true;
+            } catch(e) {}
+        }
+
+        loadQuote();
 
         // ── TABS ──────────────────────────────────────────────
         function switchTab(tab) {
