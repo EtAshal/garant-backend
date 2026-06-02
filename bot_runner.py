@@ -23,9 +23,6 @@ WEBAPP_URL = os.getenv("WEBAPP_URL")
 MAIN_KEYBOARD = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="🔒 Открыть Гарант", web_app=WebAppInfo(url=WEBAPP_URL)),
-        ],
-        [
             KeyboardButton(text="📋 Мои сделки"),
             KeyboardButton(text="👤 Профиль"),
             KeyboardButton(text="❓ Помощь"),
@@ -95,6 +92,12 @@ async def start(message: Message):
         "⚖️ Добро пожаловать в Гарантъ!\n\n"
         "Безопасные сделки между людьми — деньги хранятся у нас до подтверждения обеих сторон.",
         reply_markup=MAIN_KEYBOARD
+    )
+    await message.answer(
+        "Нажмите кнопку чтобы открыть платформу:",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🔒 Открыть Гарант", web_app=WebAppInfo(url=WEBAPP_URL))]
+        ])
     )
 
 
