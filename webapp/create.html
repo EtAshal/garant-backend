@@ -43,7 +43,7 @@
             pointer-events: none; z-index: 0;
         }
         * { position: relative; z-index: 1; }
- 
+
         .header {
             display: flex; align-items: center; gap: 12px;
             padding: 24px 0 20px;
@@ -63,7 +63,7 @@
             font-size: 18px; font-weight: 700;
             letter-spacing: 0.5px; color: var(--gold);
         }
- 
+
         .form-group { margin-bottom: 20px; }
         label {
             display: block;
@@ -98,7 +98,7 @@
             font-family: 'Cinzel', serif; font-size: 15px;
         }
         .hint { font-size: 12px; font-style: italic; color: var(--text-dim); margin-top: 5px; }
- 
+
         .commission-info {
             background: var(--bg2);
             border: 1px solid var(--border);
@@ -108,7 +108,7 @@
             color: var(--text-dim); line-height: 1.7;
         }
         .commission-info b { font-style: normal; font-weight: 600; color: var(--text); }
- 
+
         .divider {
             display: flex; align-items: center; gap: 10px;
             margin: 20px 0; color: var(--border); font-size: 12px;
@@ -117,7 +117,7 @@
             content: ''; flex: 1; height: 1px;
             background: linear-gradient(90deg, transparent, var(--border), transparent);
         }
- 
+
         .btn {
             display: block; width: 100%; padding: 15px;
             border-radius: 6px; border: none;
@@ -131,10 +131,76 @@
         }
         .btn-primary:active { background: #5a2018; }
         .btn:disabled { opacity: 0.35; cursor: not-allowed; }
- 
+
         .fade-in { animation: fadeUp .35s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s}
+
+        /* ── КОНФЕТТИ ── */
+        .confetti-overlay {
+            position: fixed; inset: 0; z-index: 999;
+            pointer-events: none; overflow: hidden;
+        }
+        .confetti-piece {
+            position: absolute;
+            top: -20px;
+            width: 10px; height: 10px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+        }
+
+        /* Вспышка золотого света */
+        .flash-overlay {
+            position: fixed; inset: 0; z-index: 998;
+            background: radial-gradient(ellipse at center, rgba(201,168,76,0.4) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            animation: flashIn .6s ease forwards;
+        }
+        @keyframes flashIn {
+            0%   { opacity: 0; }
+            20%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Карточка успеха */
+        .success-card {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 1000;
+            background: var(--bg2);
+            border: 1px solid var(--gold-dim);
+            border-radius: 20px; padding: 32px 28px;
+            text-align: center; width: 280px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(201,168,76,0.2);
+            animation: successPop .5s cubic-bezier(.34,1.56,.64,1) .1s forwards;
+        }
+        @keyframes successPop {
+            0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+            100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+        }
+        .success-icon {
+            font-size: 56px; margin-bottom: 12px; line-height: 1;
+            animation: iconBounce .6s cubic-bezier(.34,1.56,.64,1) .4s both;
+        }
+        @keyframes iconBounce {
+            0%   { transform: scale(0) rotate(-30deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .success-title {
+            font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+            color: var(--gold); margin-bottom: 8px; letter-spacing: 1px;
+            text-shadow: 0 0 20px rgba(201,168,76,0.4);
+        }
+        .success-desc {
+            font-size: 14px; font-style: italic;
+            color: var(--text-dim); line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -142,7 +208,7 @@
         <button class="back-btn" onclick="goBack()">←</button>
         <h1>Составить грамоту</h1>
     </div>
- 
+
     <div class="form-group fade-in d1">
         <label>Сумма сделки</label>
         <div class="amount-wrapper">
@@ -151,28 +217,28 @@
         </div>
         <div class="hint">Не менее 100 рублей</div>
     </div>
- 
+
     <div class="form-group fade-in d2">
         <label>Описание товара или услуги</label>
         <textarea id="description" placeholder="Например: iPhone 14 Pro, 256GB, чёрный, новый в коробке"></textarea>
     </div>
- 
+
     <div class="commission-info fade-in d3" id="commission-info">
         Укажите сумму, дабы увидеть расчёт комиссии
     </div>
- 
+
     <div class="divider fade-in d3">✦</div>
- 
+
     <button class="btn btn-primary fade-in d4" id="create-btn" onclick="createDeal()" disabled>
         Скрепить сделку печатью
     </button>
- 
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
- 
+
         function goBack() { window.location.href = 'index.html'; }
- 
+
         function getCommission(amount) {
             if (amount <= 10000) return 0.01;
             if (amount <= 25000) return 0.02;
@@ -180,7 +246,7 @@
             if (amount <= 100000) return 0.04;
             return 0.05;
         }
- 
+
         function updateCommission() {
             const amount = parseFloat(document.getElementById('amount').value);
             const btn = document.getElementById('create-btn');
@@ -200,9 +266,78 @@
                 info.innerHTML = 'Укажите сумму, дабы увидеть расчёт комиссии';
             }
         }
- 
+
         document.getElementById('description').addEventListener('input', updateCommission);
- 
+
+        // ── КОНФЕТТИ ─────────────────────────────────────────
+        function launchConfetti() {
+            // Вспышка
+            const flash = document.createElement('div');
+            flash.className = 'flash-overlay';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 700);
+
+            // Вибрация
+            if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+
+            // Конфетти
+            const colors = [
+                '#c9a84c', '#f5d06a', '#e8d5b0',  // золото/пергамент
+                '#7a3022', '#9b4a35',               // сургуч
+                '#4a7a50', '#7acc84',               // зелень
+                '#ffffff', '#a08060'                // белый/капучино
+            ];
+            const shapes = ['🪙', '⭐', '✦', '◆', '▲'];
+            const overlay = document.createElement('div');
+            overlay.className = 'confetti-overlay';
+            document.body.appendChild(overlay);
+
+            for (let i = 0; i < 60; i++) {
+                const piece = document.createElement('div');
+                const isEmoji = Math.random() > 0.6;
+
+                if (isEmoji) {
+                    piece.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                    piece.style.cssText = `
+                        position: absolute;
+                        top: -30px;
+                        left: ${Math.random() * 100}%;
+                        font-size: ${10 + Math.random() * 16}px;
+                        animation: confettiFall ${1.5 + Math.random() * 2}s linear ${Math.random() * 0.8}s forwards;
+                    `;
+                } else {
+                    piece.className = 'confetti-piece';
+                    piece.style.cssText = `
+                        left: ${Math.random() * 100}%;
+                        width: ${6 + Math.random() * 8}px;
+                        height: ${6 + Math.random() * 8}px;
+                        background: ${colors[Math.floor(Math.random() * colors.length)]};
+                        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+                        animation-duration: ${1.5 + Math.random() * 2}s;
+                        animation-delay: ${Math.random() * 0.8}s;
+                    `;
+                }
+                overlay.appendChild(piece);
+            }
+
+            setTimeout(() => overlay.remove(), 3500);
+        }
+
+        function showSuccessCard(amount, description) {
+            const card = document.createElement('div');
+            card.className = 'success-card';
+            card.innerHTML = `
+                <div class="success-icon">📜</div>
+                <div class="success-title">Грамота составлена!</div>
+                <div class="success-desc">
+                    Сделка на <b style="color:var(--gold);font-style:normal">${amount.toLocaleString()} ₽</b><br>
+                    Ссылка скопирована в буфер обмена
+                </div>
+            `;
+            document.body.appendChild(card);
+            return card;
+        }
+
         async function createDeal() {
             const amount = parseFloat(document.getElementById('amount').value);
             const description = document.getElementById('description').value;
@@ -223,8 +358,17 @@
                 if (data.success) {
                     const dealUrl = `https://etashal.github.io/garant-webapp/deal.html?id=${data.deal_id}`;
                     await navigator.clipboard.writeText(dealUrl);
-                    tg.showAlert(`✅ Грамота составлена!\n\nСумма: ${amount.toLocaleString()} ₽\nТовар: ${description}\n\n🔗 Ссылка скопирована!\nПередайте её покупателю.`);
-                    window.location.href = 'index.html';
+
+                    // Запускаем конфетти и карточку успеха
+                    launchConfetti();
+                    const card = showSuccessCard(amount, description);
+
+                    // Через 2.5 секунды переходим на главную
+                    setTimeout(() => {
+                        card.remove();
+                        window.location.href = 'index.html';
+                    }, 2500);
+
                 } else {
                     tg.showAlert('Ошибка: ' + data.error);
                     btn.disabled = false;
