@@ -431,21 +431,6 @@
         }
         .seal-icon:active { transform: scale(0.93) !important; }
 
-        /* ── КНОПКА МУЗЫКИ ── */
-        .music-btn {
-            position: fixed; bottom: 24px; right: 16px;
-            width: 42px; height: 42px; border-radius: 50%;
-            background: var(--bg2); border: 1px solid var(--border);
-            font-size: 18px; cursor: pointer; z-index: 50;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 16px var(--shadow);
-            transition: all .2s;
-            animation: profilePulse 4s ease-in-out infinite;
-            animation-delay: -2s;
-        }
-        .music-btn:active { transform: scale(0.9) !important; }
-        .music-btn.playing { border-color: var(--gold-dim); }
-
         /* ── ANIMATIONS ── */
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -464,14 +449,6 @@
 
 <!-- Затемнение -->
 <div class="scroll-overlay" id="scroll-overlay" onclick="closeScroll()"></div>
-
-<!-- Фоновая музыка -->
-<audio id="bg-music" loop preload="none">
-    <source src="medieval.mp3" type="audio/mpeg">
-</audio>
-
-<!-- Кнопка музыки -->
-<button class="music-btn" id="music-btn" onclick="toggleMusic()" title="Музыка">🔇</button>
 
 <!-- Свиток -->
 <div class="scroll-panel" id="scroll-panel">
@@ -931,40 +908,6 @@
             playNoise(0.08, 0.3);
             playTone(110, 'sine', 0.4, 0.2, 0.05);
             playTone(80,  'sine', 0.6, 0.15, 0.15);
-        }
-
-        // ── ФОНОВАЯ МУЗЫКА ────────────────────────────────────
-        let musicPlaying = false;
-        const bgMusic = document.getElementById('bg-music');
-        bgMusic.volume = 0.25;
-
-        // Запускаем при первом касании экрана
-        function startMusicOnce() {
-            if (musicPlaying) return;
-            bgMusic.play().then(() => {
-                musicPlaying = true;
-                document.getElementById('music-btn').textContent = '🎵';
-                document.getElementById('music-btn').classList.add('playing');
-            }).catch(() => {});
-            document.removeEventListener('touchstart', startMusicOnce);
-            document.removeEventListener('click', startMusicOnce);
-        }
-        document.addEventListener('touchstart', startMusicOnce, { once: true });
-        document.addEventListener('click', startMusicOnce, { once: true });
-
-        function toggleMusic() {
-            if (musicPlaying) {
-                bgMusic.pause();
-                musicPlaying = false;
-                document.getElementById('music-btn').textContent = '🔇';
-                document.getElementById('music-btn').classList.remove('playing');
-            } else {
-                bgMusic.play().then(() => {
-                    musicPlaying = true;
-                    document.getElementById('music-btn').textContent = '🎵';
-                    document.getElementById('music-btn').classList.add('playing');
-                }).catch(() => {});
-            }
         }
 
         loadQuote();
