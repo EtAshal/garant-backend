@@ -157,6 +157,12 @@
             font-size: 12px; padding: 11px;
         }
         .btn-dispute:active { background: rgba(122,48,34,0.15); }
+        .btn-copy {
+            background: transparent; color: var(--text-dim);
+            border: 1px solid var(--border);
+            font-size: 13px; padding: 12px;
+        }
+        .btn-copy:active { background: var(--bg3); }
         .btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
         .loading { text-align: center; padding: 50px 0; color: var(--text-dim); font-style: italic; font-size: 16px; }
@@ -310,7 +316,18 @@
                     <div style="font-size:11px;color:var(--text-dim);word-break:break-all;font-family:monospace">${deal.id}</div>
                 </div>
                 <div class="divider fade-in d2">⚖️</div>
+                <button class="btn btn-copy fade-in d2" onclick="copyLink()">🔗 Скопировать ссылку на сделку</button>
                 ${buttonsHtml}`;
+        }
+
+        async function copyLink() {
+            const dealUrl = `https://etashal.github.io/garant-webapp/deal.html?id=${dealId}`;
+            try {
+                await navigator.clipboard.writeText(dealUrl);
+                tg.showAlert('✅ Ссылка скопирована!\nОтправьте её покупателю.');
+            } catch(e) {
+                tg.showAlert('Ссылка: ' + dealUrl);
+            }
         }
 
         async function acceptDeal() {
