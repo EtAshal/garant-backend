@@ -230,6 +230,35 @@ async def root():
 @app.post("/deals/create")
 async def create_deal(deal: DealCreate):
     try:
+        # Считаем очки продавца
+        seller_deals = supabase.table("deals").select("amount, seller_id, buyer_id, status").or_(
+            f"seller_id.eq.{deal.seller_id},buyer_id.eq.{deal.seller_id}"
+        ).eq("status", "completed").execute()
+
+        seller_pts = sum(
+            math.floor(float(d["amount"]) / 100)
+            for d in seller_deals.data
+        )
+
+        # Лимит по статусу
+        if seller_pts >= 1500:
+            limit = None  # без лимита
+        elif seller_pts >= 500:
+            limit = 200000
+        elif seller_pts >= 100:
+            limit = 50000
+        else:
+            limit = 10000
+
+        if limit and deal.amount > limit:
+            status_name = "Новичок" if seller_pts < 100 else "Проверенный" if seller_pts < 500 else "Надёжный"
+            return {
+                "success": False,
+                "error": f"Лимит для статуса «{status_name}» — {limit:,} ₽. Ваша сумма: {int(deal.amount):,} ₽",
+                "limit": limit,
+                "current_pts": seller_pts
+            }
+
         result = supabase.table("deals").insert({
             "seller_id": deal.seller_id,
             "amount": deal.amount,
