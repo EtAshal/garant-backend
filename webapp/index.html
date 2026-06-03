@@ -431,7 +431,140 @@
         }
         .seal-icon:active { transform: scale(0.93) !important; }
 
-        /* ── ANIMATIONS ── */
+        /* ── КНОПКА КОШЕЛЬКА ── */
+        @keyframes goldCoinGlow {
+            0%,100% {
+                box-shadow: 0 2px 8px var(--shadow), 0 0 0 0 rgba(201,168,76,0);
+                transform: scale(1);
+                border-color: var(--gold-dim);
+            }
+            50% {
+                box-shadow: 0 2px 8px var(--shadow), 0 0 12px rgba(201,168,76,0.5), 0 0 0 4px rgba(201,168,76,0.15);
+                transform: scale(1.06);
+                border-color: var(--gold);
+            }
+        }
+        .wallet-btn {
+            width: 58px; height: 38px; border-radius: 8px;
+            background: var(--bg2); border: 1px solid var(--gold-dim);
+            font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            animation: goldCoinGlow 3s ease-in-out infinite;
+            animation-delay: -0.8s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .wallet-btn:active { transform: scale(0.93) !important; }
+
+        /* ── ПАНЕЛЬ КОШЕЛЬКА ── */
+        .wallet-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity .3s;
+        }
+        .wallet-overlay.open { opacity: 1; pointer-events: all; }
+
+        .wallet-panel {
+            position: fixed; inset: 0; z-index: 201;
+            background: var(--bg);
+            transform: translateY(100%);
+            transition: transform .4s cubic-bezier(.77,0,.18,1);
+            overflow-y: auto;
+            padding: 0 16px 40px;
+        }
+        .wallet-panel::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; height: 200px;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        .wallet-panel.open { transform: translateY(0); }
+
+        .wallet-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 24px 0 20px; border-bottom: 1px solid var(--border);
+            margin-bottom: 20px; position: relative; z-index: 1;
+        }
+        .wallet-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+
+        .wallet-balance {
+            text-align: center; padding: 20px 0 24px;
+            border-bottom: 1px solid var(--border); margin-bottom: 16px;
+            position: relative; z-index: 1;
+        }
+        .wallet-balance-label {
+            font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--gold-dim); margin-bottom: 8px;
+        }
+        .wallet-balance-amount {
+            font-family: 'Cinzel', serif; font-size: 38px; font-weight: 700;
+            color: var(--gold); letter-spacing: 1px;
+            text-shadow: 0 0 30px rgba(201,168,76,0.3);
+        }
+        .wallet-balance-sub { font-size: 13px; font-style: italic; color: var(--text-dim); margin-top: 6px; }
+
+        .wallet-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-bottom: 12px; position: relative; z-index: 1;
+        }
+        .wallet-card {
+            background: var(--bg2); border-radius: 10px; padding: 14px 12px;
+        }
+        .wallet-card-label {
+            font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .wallet-card-amount { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; }
+        .wallet-card-sub { font-size: 11px; font-style: italic; color: var(--text-dim); margin-top: 4px; }
+        .wallet-card.incoming { border: 1px solid var(--green); }
+        .wallet-card.incoming .wallet-card-label { color: var(--green); }
+        .wallet-card.incoming .wallet-card-amount { color: #7acc84; }
+        .wallet-card.frozen { border: 1px solid var(--sealing); }
+        .wallet-card.frozen .wallet-card-label { color: var(--sealing-lt); }
+        .wallet-card.frozen .wallet-card-amount { color: #c97a5a; }
+
+        .wallet-actions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-bottom: 20px; position: relative; z-index: 1;
+        }
+        @keyframes btnPulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .wallet-action-btn {
+            padding: 14px; border-radius: 8px; border: none;
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all .15s; letter-spacing: 0.3px;
+        }
+        .wallet-action-btn:active { transform: scale(0.95); }
+        .wallet-action-btn.deposit {
+            background: var(--sealing); color: var(--text);
+            box-shadow: 0 3px 12px rgba(122,48,34,0.4);
+            animation: btnPulse 3s ease-in-out infinite;
+        }
+        .wallet-action-btn.withdraw {
+            background: var(--bg3); color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .wallet-history-title {
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 12px;
+            position: relative; z-index: 1;
+        }
+        .wallet-tx {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid rgba(74,53,32,0.4);
+            position: relative; z-index: 1;
+        }
+        .wallet-tx:last-child { border-bottom: none; }
+        .wallet-tx-desc { font-size: 13px; color: var(--text); margin-bottom: 3px; }
+        .wallet-tx-meta { font-size: 11px; font-style: italic; color: var(--text-dim); }
+        .wallet-tx-amount { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600; }
+        .wallet-tx-amount.plus  { color: #7acc84; }
+        .wallet-tx-amount.minus { color: #c97a5a; }
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s}
@@ -446,6 +579,48 @@
 </style>
 </head>
 <body>
+
+<!-- Затемнение кошелька -->
+<div class="wallet-overlay" id="wallet-overlay" onclick="closeWallet()"></div>
+
+<!-- Панель кошелька -->
+<div class="wallet-panel" id="wallet-panel">
+    <div class="wallet-header">
+        <button class="back-btn" onclick="closeWallet()">←</button>
+        <span class="wallet-title">💰 Казна Гаранта</span>
+    </div>
+
+    <div class="wallet-balance">
+        <div class="wallet-balance-label">⚖️ Доступно в кошельке</div>
+        <div class="wallet-balance-amount" id="wallet-main">—</div>
+        <div class="wallet-balance-sub">Скоро будет доступно пополнение</div>
+    </div>
+
+    <div class="wallet-cards">
+        <div class="wallet-card incoming">
+            <div class="wallet-card-label">📥 Ожидаем</div>
+            <div class="wallet-card-amount" id="wallet-incoming">—</div>
+            <div class="wallet-card-sub">Со сделок</div>
+        </div>
+        <div class="wallet-card frozen">
+            <div class="wallet-card-label">📤 Заморожено</div>
+            <div class="wallet-card-amount" id="wallet-frozen">—</div>
+            <div class="wallet-card-sub">В активных</div>
+        </div>
+    </div>
+
+    <div class="wallet-actions">
+        <button class="wallet-action-btn deposit" onclick="walletDeposit()">＋ Пополнить</button>
+        <button class="wallet-action-btn withdraw" onclick="walletWithdraw()">→ Вывести</button>
+    </div>
+
+    <div class="wallet-history-title">Последние движения</div>
+    <div id="wallet-history">
+        <div class="wallet-tx">
+            <div><div class="wallet-tx-desc">Нет операций</div><div class="wallet-tx-meta">Пополните кошелёк</div></div>
+        </div>
+    </div>
+</div>
 
 <!-- Затемнение -->
 <div class="scroll-overlay" id="scroll-overlay" onclick="closeScroll()"></div>
@@ -626,7 +801,10 @@
 <!-- Основной контент -->
 <div class="page-wrap" id="page-wrap">
     <div class="header fade-in">
-        <span class="seal-icon" onclick="toggleScroll()">⚖️</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+            <span class="seal-icon" onclick="toggleScroll()">⚖️</span>
+            <button class="wallet-btn" onclick="openWallet()">💰</button>
+        </div>
         <div class="header-center">
             <h1>ГАРАНТЪ</h1>
             <p>Надёжные сделки с честью</p>
@@ -831,6 +1009,87 @@
         }
 
         // ── ЗВУКИ ─────────────────────────────────────────────
+        // ── КОШЕЛЁК ───────────────────────────────────────────
+        function openWallet() {
+            // Звук монет
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.coins();
+            document.getElementById('wallet-overlay').classList.add('open');
+            document.getElementById('wallet-panel').classList.add('open');
+            loadWalletData();
+        }
+
+        function closeWallet() {
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.click();
+            document.getElementById('wallet-overlay').classList.remove('open');
+            document.getElementById('wallet-panel').classList.remove('open');
+        }
+
+        function walletDeposit() {
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.tapDeal();
+            tg.showAlert('💳 Пополнение будет доступно после подключения платёжной системы.\n\nСкоро!');
+        }
+
+        function walletWithdraw() {
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.tapDeal();
+            tg.showAlert('💸 Вывод средств будет доступен после подключения платёжной системы.\n\nСкоро!');
+        }
+
+        async function loadWalletData() {
+            if (!currentUserId) return;
+            try {
+                const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
+                const data = await res.json();
+                if (!data.success) return;
+
+                const deals = data.deals || [];
+
+                // Деньги которые придут (завершённые, продавец, payout ещё не отправлен)
+                const incoming = deals
+                    .filter(d => d.status === 'completed' && d.seller_id == currentUserId && !d.payout_sent)
+                    .reduce((s, d) => {
+                        const amt = parseFloat(d.amount);
+                        const commission = Math.round(amt * getCommission(amt));
+                        return s + (amt - commission);
+                    }, 0);
+
+                // Заморожено (активные, покупатель)
+                const frozen = deals
+                    .filter(d => d.status === 'active' && d.buyer_id == currentUserId)
+                    .reduce((s, d) => s + parseFloat(d.amount), 0);
+
+                document.getElementById('wallet-main').textContent = '0 ₽';
+                document.getElementById('wallet-incoming').textContent = incoming > 0 ? incoming.toLocaleString('ru') + ' ₽' : '0 ₽';
+                document.getElementById('wallet-frozen').textContent  = frozen > 0  ? frozen.toLocaleString('ru')  + ' ₽' : '0 ₽';
+
+                // История — последние сделки
+                const history = deals
+                    .filter(d => d.status === 'completed' || d.status === 'active')
+                    .slice(0, 5);
+
+                if (history.length) {
+                    document.getElementById('wallet-history').innerHTML = history.map(deal => {
+                        const isSeller = deal.seller_id == currentUserId;
+                        const amt = parseFloat(deal.amount);
+                        const commission = isSeller ? Math.round(amt * getCommission(amt)) : 0;
+                        const net = isSeller ? amt - commission : amt;
+                        const sign = isSeller ? '+' : '−';
+                        const cls  = isSeller ? 'plus' : 'minus';
+                        const date = deal.created_at
+                            ? new Date(deal.created_at).toLocaleDateString('ru', { day:'numeric', month:'short' })
+                            : '';
+                        return `
+                        <div class="wallet-tx">
+                            <div>
+                                <div class="wallet-tx-desc">${deal.description}</div>
+                                <div class="wallet-tx-meta">${isSeller ? 'Продавец' : 'Покупатель'} · ${date}</div>
+                            </div>
+                            <div class="wallet-tx-amount ${cls}">${sign}${net.toLocaleString('ru')} ₽</div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch(e) {}
+        }
+
         loadQuote();
 
         // ── TABS ──────────────────────────────────────────────
