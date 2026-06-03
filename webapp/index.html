@@ -488,6 +488,15 @@
             margin-bottom: 20px; position: relative; z-index: 1;
         }
         .wallet-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+        .wallet-back {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow); font-family: serif;
+            flex-shrink: 0;
+        }
+        .wallet-back:active { background: var(--bg3); }
 
         .wallet-balance {
             text-align: center; padding: 20px 0 24px;
@@ -586,7 +595,7 @@
 <!-- Панель кошелька -->
 <div class="wallet-panel" id="wallet-panel">
     <div class="wallet-header">
-        <button class="back-btn" onclick="closeWallet()">←</button>
+        <button class="wallet-back" onclick="closeWallet()">←</button>
         <span class="wallet-title">💰 Казна Гаранта</span>
     </div>
 
