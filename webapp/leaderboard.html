@@ -221,7 +221,6 @@ const BACKEND = 'https://garant-backend-production.up.railway.app';
 function formatAmount(amount) {
     const n = parseInt(amount);
     if (n >= 1000000) return (n/1000000).toFixed(1).replace('.0','') + ' млн ₽';
-    if (n >= 1000)    return (n/1000).toFixed(0) + ' 000 ₽';
     return n.toLocaleString('ru') + ' ₽';
 }
 
