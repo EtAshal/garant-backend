@@ -1101,40 +1101,20 @@
             const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.25 }).toDestination();
             const roomReverb = new Tone.Reverb({ decay: 0.8, wet: 0.15 }).toDestination();
 
-            // ── ПЕРГАМЕНТ — разворачивание свитка ──────────────
-            // Мягкий шелест без резкости: розовый шум + низкий фильтр + долгий fade
+            // ── БЛЁСТКИ — открытие свитка ──────────────────────
             function scroll() {
                 const now = Tone.now();
-
-                // Слой 1 — тихий шелест бумаги (очень мягкий)
-                const n1 = new Tone.Noise("pink");
-                const f1 = new Tone.Filter({ frequency: 600, type: "lowpass", rolloff: -24 });
-                const e1 = new Tone.AmplitudeEnvelope({ attack: 0.15, decay: 0.8, sustain: 0.1, release: 0.6 });
-                const g1 = new Tone.Gain(-28).toDestination();
-                n1.connect(f1); f1.connect(e1); e1.connect(g1);
-                n1.start(now); e1.triggerAttack(now); e1.triggerRelease(now + 0.7);
-
-                // Слой 2 — ещё тише, высокочастотный шелест
-                const n2 = new Tone.Noise("white");
-                const f2 = new Tone.Filter({ frequency: 3000, type: "bandpass", Q: 0.5 });
-                const e2 = new Tone.AmplitudeEnvelope({ attack: 0.08, decay: 0.5, sustain: 0, release: 0.3 });
-                const g2 = new Tone.Gain(-34).toDestination();
-                n2.connect(f2); f2.connect(e2); e2.connect(g2);
-                n2.start(now + 0.05); e2.triggerAttack(now + 0.05); e2.triggerRelease(now + 0.4);
-
-                // Слой 3 — лёгкий деревянный тон (как раскрытие крышки)
-                const s = new Tone.Synth({
-                    oscillator: { type: "sine" },
-                    envelope: { attack: 0.08, decay: 0.6, sustain: 0, release: 0.4 },
-                    volume: -26
-                }).connect(roomReverb);
-                s.triggerAttackRelease("E3", "4n", now + 0.1);
-
-                setTimeout(() => {
-                    n1.stop(); n1.dispose(); f1.dispose(); e1.dispose(); g1.dispose();
-                    n2.stop(); n2.dispose(); f2.dispose(); e2.dispose(); g2.dispose();
-                    s.dispose();
-                }, 2500);
+                const synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "triangle" },
+                    envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.2 },
+                    volume: -22
+                }).connect(reverb);
+                // Рассыпающиеся высокие ноты как блёстки
+                const notes = ["C6","E6","G6","A6","C7","E6","G6","B6","D7","F6"];
+                notes.forEach((n, i) => {
+                    synth.triggerAttackRelease(n, "32n", now + i * 0.04 + Math.random() * 0.02);
+                });
+                setTimeout(() => synth.dispose(), 2000);
             }
 
             // ── ДЕРЕВЯННЫЕ ЩЕЛЧКИ — разные для разных действий ─

@@ -176,7 +176,7 @@
 </head>
 <body>
     <div class="header fade-in">
-        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <button class="back-btn" onclick="goBack()">←</button>
         <h1>Грамота о сделке</h1>
     </div>
 
@@ -389,6 +389,15 @@
                     } catch(e) { tg.showAlert('Ошибка соединения'); }
                 }
             );
+        }
+
+        function goBack() {
+            // Если пришли из профиля — возвращаемся туда в конец страницы
+            if (document.referrer.includes('profile.html')) {
+                window.location.href = 'profile.html#history-list';
+            } else {
+                window.location.href = 'index.html';
+            }
         }
 
         loadDeal();
