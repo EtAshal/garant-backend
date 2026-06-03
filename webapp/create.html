@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Новая сделка</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="sounds.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -239,57 +241,6 @@
         tg.expand();
 
         // ── ЗВУКИ ─────────────────────────────────────────────
-        let audioCtx = null;
-        function getCtx() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            return audioCtx;
-        }
-        function playTone(freq, type, duration, volume = 0.3, delay = 0) {
-            try {
-                const ctx = getCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-                gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
-                osc.start(ctx.currentTime + delay);
-                osc.stop(ctx.currentTime + delay + duration);
-            } catch(e) {}
-        }
-        function playNoise(duration, volume = 0.05) {
-            try {
-                const ctx = getCtx();
-                const bufferSize = ctx.sampleRate * duration;
-                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                const source = ctx.createBufferSource();
-                source.buffer = buffer;
-                const gain = ctx.createGain();
-                const filter = ctx.createBiquadFilter();
-                filter.type = 'bandpass'; filter.frequency.value = 800;
-                source.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-                gain.gain.setValueAtTime(volume, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-                source.start(); source.stop(ctx.currentTime + duration);
-            } catch(e) {}
-        }
-        function soundSeal() {
-            playNoise(0.08, 0.3);
-            playTone(110, 'sine', 0.4, 0.2, 0.05);
-            playTone(80,  'sine', 0.6, 0.15, 0.15);
-        }
-        function soundFanfare() {
-            playTone(523, 'triangle', 0.15, 0.2);
-            playTone(659, 'triangle', 0.15, 0.2, 0.15);
-            playTone(784, 'triangle', 0.15, 0.2, 0.30);
-            playTone(1047,'triangle', 0.4,  0.3, 0.45);
-            playTone(1319,'triangle', 0.6,  0.25, 0.55);
-        }
-
         function goBack() { window.location.href = 'index.html'; }
 
         // ── ЛИМИТЫ ПО СТАТУСУ ─────────────────────────────────
@@ -476,8 +427,8 @@
                     await navigator.clipboard.writeText(dealUrl);
 
                     // Звук печати сургуча + фанфары
-                    soundSeal();
-                    setTimeout(() => soundFanfare(), 300);
+                    GARANT_SOUNDS.seal();
+                    setTimeout(() => GARANT_SOUNDS.fanfare(), 300);
 
                     // Запускаем конфетти и карточку успеха
                     launchConfetti();
