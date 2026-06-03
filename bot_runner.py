@@ -73,6 +73,47 @@ async def start(message: Message):
     except Exception as e:
         print(f"Ошибка: {e}")
 
+    # Реферальная ссылка
+    if deep_link.startswith("ref_"):
+        referrer_id = int(deep_link.replace("ref_", ""))
+
+        # Проверяем что это не сам себя приглашает
+        if referrer_id != user.id:
+            try:
+                # Проверяем что пользователь новый (не был раньше)
+                existing = supabase.table("users").select("referred_by").eq("id", user.id).execute()
+
+                if existing.data and existing.data[0].get("referred_by") is None:
+                    # Проверяем лимит приглашений у реферера (макс 5)
+                    referrer = supabase.table("users").select("referral_count").eq("id", referrer_id).execute()
+
+                    if referrer.data and referrer.data[0].get("referral_count", 0) < 5:
+                        # Записываем кто пригласил
+                        supabase.table("users").update({
+                            "referred_by": referrer_id
+                        }).eq("id", user.id).execute()
+
+                        # Начисляем +20 очков рефереру
+                        new_count  = referrer.data[0].get("referral_count", 0) + 1
+                        new_points = referrer.data[0].get("referral_points", 0) + 20 if hasattr(referrer.data[0], 'get') else 20
+                        supabase.table("users").update({
+                            "referral_count":  new_count,
+                            "referral_points": supabase.table("users").select("referral_points").eq("id", referrer_id).execute().data[0].get("referral_points", 0) + 20
+                        }).eq("id", referrer_id).execute()
+
+                        # Уведомляем реферера
+                        try:
+                            await bot.send_message(
+                                referrer_id,
+                                f"🎉 По вашей ссылке зарегистрировался новый пользователь!\n\n"
+                                f"+20 очков репутации\n"
+                                f"Приглашено: {new_count}/5"
+                            )
+                        except:
+                            pass
+            except Exception as e:
+                print(f"Реферал ошибка: {e}")
+
     # Глубокая ссылка на сделку
     if deep_link.startswith("deal_"):
         deal_id = deep_link.replace("deal_", "")

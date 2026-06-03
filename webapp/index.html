@@ -740,9 +740,10 @@
             el.classList.toggle('open');
         }
         function shareApp() {
-            const text = `⚖️ Гарантъ — безопасные сделки между людьми!\n\nДеньги хранятся у Гаранта до подтверждения обеих сторон. Никакого обмана.\n\nt.me/ramwaytestbot`;
+            const refLink = `https://t.me/ramwaytestbot?start=ref_${currentUserId}`;
+            const text = `⚖️ Гарантъ — безопасные сделки между людьми!\n\nДеньги хранятся у Гаранта до подтверждения обеих сторон. Никакого обмана.\n\n${refLink}`;
             const encoded = encodeURIComponent(text);
-            window.open(`https://t.me/share/url?url=https://t.me/ramwaytestbot&text=${encoded}`, '_blank');
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encoded}`, '_blank');
         }
 
         // ── ЦИТАТЫ ────────────────────────────────────────────

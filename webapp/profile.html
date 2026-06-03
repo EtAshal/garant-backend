@@ -552,6 +552,30 @@
     </div>
 </div>
 
+<div class="section-title fade-in d4" style="margin-top:18px">Реферальная программа</div>
+<div class="points-card fade-in d4" id="referral-card" style="cursor:default;animation:none;border-color:var(--border)">
+    <div class="points-row">
+        <div>
+            <div class="points-label">Приглашено друзей</div>
+            <div class="points-value" id="ref-count" style="font-size:28px">—</div>
+        </div>
+        <div class="points-next">
+            <div class="points-next-label">бонусных очков</div>
+            <div class="points-next-value" id="ref-points">—</div>
+        </div>
+    </div>
+    <div class="progress-wrap">
+        <div class="progress-fill" id="ref-bar" style="background:linear-gradient(90deg,var(--sealing),var(--gold))"></div>
+    </div>
+    <div class="progress-labels">
+        <span>0</span>
+        <span>5 друзей макс.</span>
+    </div>
+    <div style="margin-top:10px;font-size:12px;font-style:italic;color:var(--text-dim)">
+        За каждого приглашённого друга +20 очков репутации
+    </div>
+</div>
+
 <div class="section-title fade-in d4" style="margin-top:18px">Достижения</div>
 <div class="achievements-grid fade-in d4" id="achievements-grid"></div>
 
@@ -726,7 +750,7 @@ function renderAchievements(deals, sellerCount, buyerCount, totalPts) {
     }).join('');
 }
 
-function renderProfile(deals) {
+function renderProfile(deals, refPoints = 0) {
     const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
     const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     document.getElementById('user-name').textContent = name;
@@ -738,7 +762,7 @@ function renderProfile(deals) {
     const asBuyer   = completed.filter(d => d.buyer_id  == currentUserId);
     const sellerPts = asSeller.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
     const buyerPts  = asBuyer.reduce((s, d)  => s + Math.floor(parseFloat(d.amount) / 100), 0);
-    const totalPts  = sellerPts + buyerPts;
+    const totalPts  = sellerPts + buyerPts + refPoints;
     const volume    = completed.reduce((s, d) => s + parseFloat(d.amount), 0);
 
     const status = getStatus(totalPts);
@@ -882,13 +906,33 @@ async function load() {
                 <div class="skel" style="height:11px;width:40%"></div>
             </div>
         </div>`.repeat(3);
+
+    let refPoints = 0;
+
     try {
         if (!currentUserId) throw new Error('no user');
-        const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
-        const data = await res.json();
-        allDeals = data.success ? data.deals : [];
+
+        const [dealsRes, userRes] = await Promise.all([
+            fetch(`${BACKEND}/users/${currentUserId}/deals`),
+            fetch(`${BACKEND}/users/${currentUserId}/public`)
+        ]);
+
+        const dealsData = await dealsRes.json();
+        const userData  = await userRes.json();
+
+        allDeals  = dealsData.success ? (dealsData.deals || []) : [];
+        refPoints = userData.success   ? (userData.user.referral_points || 0) : 0;
+
+        const refCount = userData.success ? (userData.user.referral_count || 0) : 0;
+        document.getElementById('ref-count').textContent  = `${refCount}/5`;
+        document.getElementById('ref-points').textContent = `+${refPoints} очков`;
+        requestAnimationFrame(() => setTimeout(() => {
+            document.getElementById('ref-bar').style.width = (refCount / 5 * 100) + '%';
+        }, 300));
+
     } catch(e) { allDeals = []; }
-    renderProfile(allDeals);
+
+    renderProfile(allDeals, refPoints);
     renderHistory();
 }
 load();
