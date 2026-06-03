@@ -693,6 +693,7 @@ let pressTimer = null;
 let pressEl = null;
 
 function startPress(el, achv, unlocked) {
+    if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.tapAchiev();
     el.classList.add('pressing');
     pressTimer = setTimeout(() => {
         el.classList.remove('pressing');
@@ -741,7 +742,7 @@ function renderAchievements(deals, sellerCount, buyerCount, totalPts) {
             onmousedown="startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
             onmouseup="endPress(this)"
             onmouseleave="endPress(this)"
-            ontouchstart="if(typeof GARANT_SOUNDS!=='undefined')GARANT_SOUNDS.tapAchiev(); startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
+            ontouchstart="startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
             ontouchend="endPress(this)"
             ontouchcancel="endPress(this)">
             <div class="achv-icon">${a.icon}</div>
