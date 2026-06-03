@@ -1083,6 +1083,104 @@
         initSwipe();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-    <script src="sounds.js"></script>
+    <script>
+    // Инициализируем после загрузки Tone.js
+    window.addEventListener('load', () => {
+        window.GARANT_SOUNDS = (() => {
+            let ready = false;
+
+            async function init() {
+                if (ready) return;
+                await Tone.start();
+                ready = true;
+            }
+
+            const reverb = new Tone.Reverb({ decay: 2, wet: 0.3 }).toDestination();
+
+            function bell() {
+                const s = new Tone.MetalSynth({ frequency: 440, envelope: { attack: 0.001, decay: 1.5, release: 0.5 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5, volume: -8 }).connect(reverb);
+                const now = Tone.now();
+                s.triggerAttackRelease("C5", "2n", now);
+                s.triggerAttackRelease("G5", "2n", now + 0.15);
+                s.triggerAttackRelease("E5", "2n", now + 0.3);
+                setTimeout(() => s.dispose(), 4000);
+            }
+
+            function coins() {
+                const s = new Tone.MetalSynth({ frequency: 800, envelope: { attack: 0.001, decay: 0.12, release: 0.05 }, harmonicity: 3.1, modulationIndex: 16, resonance: 3000, octaves: 0.5, volume: -10 }).connect(reverb);
+                const now = Tone.now();
+                [0, 0.08, 0.18, 0.3, 0.38].forEach(t => s.triggerAttackRelease(600 + Math.random() * 400, "32n", now + t));
+                setTimeout(() => s.dispose(), 2000);
+            }
+
+            function fanfare() {
+                const s = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.6, release: 0.3 }, volume: -12 }).connect(reverb);
+                const now = Tone.now();
+                ["C4","E4","G4","C5","E5"].forEach((n, i) => s.triggerAttackRelease(n, "8n", now + i * 0.12));
+                const d = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 4, volume: -15 }).connect(reverb);
+                d.triggerAttackRelease("C2", "8n", now + 0.48);
+                d.triggerAttackRelease("C2", "8n", now + 0.6);
+                setTimeout(() => { s.dispose(); d.dispose(); }, 3000);
+            }
+
+            function scroll() {
+                const n = new Tone.Noise("pink");
+                const f = new Tone.Filter(1200, "bandpass");
+                const e = new Tone.AmplitudeEnvelope({ attack: 0.02, decay: 0.4, sustain: 0, release: 0.1 }).connect(reverb);
+                n.connect(f); f.connect(e);
+                n.start(); e.triggerAttackRelease(0.35);
+                const s = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.4, sustain: 0, release: 0.2 }, volume: -18 }).connect(reverb);
+                s.triggerAttackRelease("G2", "4n", Tone.now() + 0.05);
+                setTimeout(() => { n.stop(); n.dispose(); f.dispose(); e.dispose(); s.dispose(); }, 1500);
+            }
+
+            function confirm() {
+                const s = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 }, volume: -14 }).connect(reverb);
+                const now = Tone.now();
+                s.triggerAttackRelease(["C4","E4","G4"], "4n", now);
+                s.triggerAttackRelease(["E4","G4","C5"], "2n", now + 0.2);
+                setTimeout(() => s.dispose(), 3000);
+            }
+
+            function cancel() {
+                const s = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.3 }, volume: -16 }).connect(reverb);
+                const now = Tone.now();
+                s.triggerAttackRelease("A3", "8n", now);
+                s.triggerAttackRelease("F3", "8n", now + 0.15);
+                s.triggerAttackRelease("D3", "4n", now + 0.3);
+                setTimeout(() => s.dispose(), 2000);
+            }
+
+            function dispute() {
+                const s = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.3 }, volume: -14 }).connect(reverb);
+                const d = new Tone.MembraneSynth({ pitchDecay: 0.08, octaves: 3, volume: -16 }).connect(reverb);
+                const now = Tone.now();
+                s.triggerAttackRelease("G3", "8n", now);
+                s.triggerAttackRelease("G3", "8n", now + 0.2);
+                s.triggerAttackRelease("D3", "4n", now + 0.4);
+                [0,0.15,0.3,0.45,0.6].forEach(t => d.triggerAttackRelease("C2", "16n", now + t));
+                setTimeout(() => { s.dispose(); d.dispose(); }, 3000);
+            }
+
+            function click() {
+                const s = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.06, sustain: 0, release: 0.02 }, volume: -22 }).connect(reverb);
+                s.triggerAttackRelease("C5", "64n");
+                setTimeout(() => s.dispose(), 500);
+            }
+
+            function seal() {
+                const d = new Tone.MembraneSynth({ pitchDecay: 0.12, octaves: 5, envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.1 }, volume: -10 }).connect(reverb);
+                d.triggerAttackRelease("A1", "8n");
+                setTimeout(() => d.dispose(), 1500);
+            }
+
+            // Инициализируем при первом касании
+            document.addEventListener('touchstart', () => init(), { once: true });
+            document.addEventListener('click', () => init(), { once: true });
+
+            return { init, bell, coins, fanfare, scroll, confirm, cancel, dispute, click, seal };
+        })();
+    });
+    </script>
 </body>
 </html>
