@@ -483,7 +483,7 @@
 <body>
 
 <div class="header fade-in">
-    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+    <button class="back-btn" onclick="if(typeof GARANT_SOUNDS!=='undefined')GARANT_SOUNDS.tapSoft(); window.location.href='index.html'">←</button>
     <span class="page-title">Личная книга</span>
 </div>
 
@@ -954,14 +954,44 @@ if (sessionStorage.getItem('scrollToHistory')) {
 window.addEventListener('load', () => {
     let ready = false;
     const rvrb = new Tone.Reverb({ decay: 0.8, wet: 0.15 }).toDestination();
-    async function toneInit() { if(ready)return; await Tone.start(); ready=true; }
-    window.GARANT_SOUNDS = {
-        tapDeal: () => { toneInit(); const s=new Tone.MembraneSynth({pitchDecay:0.025,octaves:3,envelope:{attack:0.001,decay:0.12,sustain:0,release:0.05},volume:-18}).connect(rvrb); s.triggerAttackRelease("C4","16n"); setTimeout(()=>s.dispose(),600); },
-        tapAchiev: () => { toneInit(); const s=new Tone.MembraneSynth({pitchDecay:0.02,octaves:2.5,envelope:{attack:0.001,decay:0.09,sustain:0,release:0.04},volume:-19}).connect(rvrb); const now=Tone.now(); s.triggerAttackRelease("D4","32n",now); s.triggerAttackRelease("A3","32n",now+0.06); setTimeout(()=>s.dispose(),700); },
-        tapSoft: () => { toneInit(); const s=new Tone.MembraneSynth({pitchDecay:0.015,octaves:2.5,envelope:{attack:0.001,decay:0.08,sustain:0,release:0.03},volume:-20}).connect(rvrb); s.triggerAttackRelease("E4","32n"); setTimeout(()=>s.dispose(),500); }
-    };
-    document.addEventListener('touchstart', toneInit, { once: true });
-    document.addEventListener('click', toneInit, { once: true });
+
+    async function toneInit() {
+        if (ready) return;
+        await Tone.start();
+        ready = true;
+    }
+
+    function tapDeal() {
+        toneInit().then(() => {
+            const s = new Tone.MembraneSynth({ pitchDecay: 0.025, octaves: 3, envelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.05 }, volume: -18 }).connect(rvrb);
+            s.triggerAttackRelease("C4", "16n");
+            setTimeout(() => s.dispose(), 600);
+        });
+    }
+
+    function tapAchiev() {
+        toneInit().then(() => {
+            const s = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 2.5, envelope: { attack: 0.001, decay: 0.09, sustain: 0, release: 0.04 }, volume: -19 }).connect(rvrb);
+            const now = Tone.now();
+            s.triggerAttackRelease("D4", "32n", now);
+            s.triggerAttackRelease("A3", "32n", now + 0.06);
+            setTimeout(() => s.dispose(), 700);
+        });
+    }
+
+    function tapSoft() {
+        toneInit().then(() => {
+            const s = new Tone.MembraneSynth({ pitchDecay: 0.015, octaves: 2.5, envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.03 }, volume: -20 }).connect(rvrb);
+            s.triggerAttackRelease("E4", "32n");
+            setTimeout(() => s.dispose(), 500);
+        });
+    }
+
+    window.GARANT_SOUNDS = { tapDeal, tapAchiev, tapSoft };
+
+    // Инициализируем при любом касании (не once — чтобы работало после возврата)
+    document.addEventListener('touchstart', toneInit);
+    document.addEventListener('click', toneInit);
 });
 </script>
 </body>

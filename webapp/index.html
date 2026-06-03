@@ -1241,8 +1241,8 @@
                 setTimeout(() => d.dispose(), 1500);
             }
 
-            document.addEventListener('touchstart', () => init(), { once: true });
-            document.addEventListener('click', () => init(), { once: true });
+            document.addEventListener('touchstart', () => init());
+            document.addEventListener('click', () => init());
 
             return { init, bell, coins, fanfare, scroll, confirm, cancel, dispute, click, tapSoft, tapDeal, tapAchiev, seal };
         })();
