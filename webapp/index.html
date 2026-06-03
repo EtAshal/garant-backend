@@ -1019,9 +1019,13 @@
 
         // ── ЗВУКИ ─────────────────────────────────────────────
         // ── КОШЕЛЁК ───────────────────────────────────────────
+        let walletFirstOpen = true;
+
         function openWallet() {
-            // Звук монет
-            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.coins();
+            if (walletFirstOpen) {
+                if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.coins();
+                walletFirstOpen = false;
+            }
             document.getElementById('wallet-overlay').classList.add('open');
             document.getElementById('wallet-panel').classList.add('open');
             loadWalletData();
@@ -1454,7 +1458,7 @@
 
             // ── МОНЕТЫ ─────────────────────────────────────────
             function coins() {
-                const s = new Tone.MetalSynth({ frequency: 800, envelope: { attack: 0.001, decay: 0.12, release: 0.05 }, harmonicity: 3.1, modulationIndex: 16, resonance: 3000, octaves: 0.5, volume: -10 }).connect(reverb);
+                const s = new Tone.MetalSynth({ frequency: 800, envelope: { attack: 0.001, decay: 0.12, release: 0.05 }, harmonicity: 3.1, modulationIndex: 16, resonance: 3000, octaves: 0.5, volume: -20 }).connect(reverb);
                 const now = Tone.now();
                 [0, 0.08, 0.18, 0.3, 0.38].forEach(t => s.triggerAttackRelease(600 + Math.random() * 400, "32n", now + t));
                 setTimeout(() => s.dispose(), 2000);
