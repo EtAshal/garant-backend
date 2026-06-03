@@ -408,6 +408,9 @@
 
         async function acceptDeal() {
             soundSeal();
+            // Отладка — показываем кто нажимает
+            tg.showAlert(`Debug: buyer_id = ${currentUserId}`);
+            return; // временно останавливаем
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
