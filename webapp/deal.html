@@ -392,9 +392,9 @@
         }
 
         function goBack() {
-            // Если пришли из профиля — возвращаемся туда в конец страницы
             if (document.referrer.includes('profile.html')) {
-                window.location.href = 'profile.html#history-list';
+                sessionStorage.setItem('scrollToHistory', '1');
+                window.location.href = 'profile.html';
             } else {
                 window.location.href = 'index.html';
             }
