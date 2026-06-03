@@ -6,6 +6,7 @@
     <title>Профиль</title>
     <meta name="ngrok-skip-browser-warning" content="true">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -740,7 +741,7 @@ function renderAchievements(deals, sellerCount, buyerCount, totalPts) {
             onmousedown="startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
             onmouseup="endPress(this)"
             onmouseleave="endPress(this)"
-            ontouchstart="startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
+            ontouchstart="if(typeof GARANT_SOUNDS!=='undefined')GARANT_SOUNDS.tapAchiev(); startPress(this, ACHIEVEMENTS.find(x=>x.id==='${a.id}'), ${unlocked})"
             ontouchend="endPress(this)"
             ontouchcancel="endPress(this)">
             <div class="achv-icon">${a.icon}</div>
@@ -865,7 +866,10 @@ function renderHistory() {
     if (!filtered.length) { list.innerHTML = `<div class="empty-state">Записей в книге нет</div>`; return; }
     list.innerHTML = filtered.map((deal, i) => dealCard(deal, i)).join('');
 }
-function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
+function openDeal(id) {
+    if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.tapDeal();
+    window.location.href = `deal.html?id=${id}`;
+}
 
 function shareProfile() {
     const name      = document.getElementById('user-name').textContent;
@@ -936,6 +940,20 @@ async function load() {
     renderHistory();
 }
 load();
+</script>
+<script>
+window.addEventListener('load', () => {
+    let ready = false;
+    const rvrb = new Tone.Reverb({ decay: 0.8, wet: 0.15 }).toDestination();
+    async function toneInit() { if(ready)return; await Tone.start(); ready=true; }
+    window.GARANT_SOUNDS = {
+        tapDeal: () => { toneInit(); const s=new Tone.MembraneSynth({pitchDecay:0.025,octaves:3,envelope:{attack:0.001,decay:0.12,sustain:0,release:0.05},volume:-18}).connect(rvrb); s.triggerAttackRelease("C4","16n"); setTimeout(()=>s.dispose(),600); },
+        tapAchiev: () => { toneInit(); const s=new Tone.MembraneSynth({pitchDecay:0.02,octaves:2.5,envelope:{attack:0.001,decay:0.09,sustain:0,release:0.04},volume:-19}).connect(rvrb); const now=Tone.now(); s.triggerAttackRelease("D4","32n",now); s.triggerAttackRelease("A3","32n",now+0.06); setTimeout(()=>s.dispose(),700); },
+        tapSoft: () => { toneInit(); const s=new Tone.MembraneSynth({pitchDecay:0.015,octaves:2.5,envelope:{attack:0.001,decay:0.08,sustain:0,release:0.03},volume:-20}).connect(rvrb); s.triggerAttackRelease("E4","32n"); setTimeout(()=>s.dispose(),500); }
+    };
+    document.addEventListener('touchstart', toneInit, { once: true });
+    document.addEventListener('click', toneInit, { once: true });
+});
 </script>
 </body>
 </html>

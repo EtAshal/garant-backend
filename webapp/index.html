@@ -631,7 +631,7 @@
             <h1>ГАРАНТЪ</h1>
             <p>Надёжные сделки с честью</p>
         </div>
-        <button class="profile-btn" onclick="window.location.href='profile.html'">👤</button>
+        <button class="profile-btn" onclick="if(typeof GARANT_SOUNDS!=='undefined')GARANT_SOUNDS.tapSoft(); window.location.href='profile.html'">👤</button>
     </div>
 
     <button class="btn-create fade-in d1" onclick="createDeal()">
@@ -709,7 +709,10 @@
         let feedInterval = null;
 
         function createDeal() { window.location.href = 'create.html'; }
-        function openDeal(id) { window.location.href = `deal.html?id=${id}`; }
+        function openDeal(id) {
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.tapDeal();
+            window.location.href = `deal.html?id=${id}`;
+        }
 
         // ── СВИТОК ────────────────────────────────────────────
         let scrollOpen = false;
@@ -1095,8 +1098,98 @@
                 ready = true;
             }
 
-            const reverb = new Tone.Reverb({ decay: 2, wet: 0.3 }).toDestination();
+            const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.25 }).toDestination();
+            const roomReverb = new Tone.Reverb({ decay: 0.8, wet: 0.15 }).toDestination();
 
+            // ── ПЕРГАМЕНТ — разворачивание свитка ──────────────
+            // Мягкий шелест без резкости: розовый шум + низкий фильтр + долгий fade
+            function scroll() {
+                const now = Tone.now();
+
+                // Слой 1 — тихий шелест бумаги (очень мягкий)
+                const n1 = new Tone.Noise("pink");
+                const f1 = new Tone.Filter({ frequency: 600, type: "lowpass", rolloff: -24 });
+                const e1 = new Tone.AmplitudeEnvelope({ attack: 0.15, decay: 0.8, sustain: 0.1, release: 0.6 });
+                const g1 = new Tone.Gain(-28).toDestination();
+                n1.connect(f1); f1.connect(e1); e1.connect(g1);
+                n1.start(now); e1.triggerAttack(now); e1.triggerRelease(now + 0.7);
+
+                // Слой 2 — ещё тише, высокочастотный шелест
+                const n2 = new Tone.Noise("white");
+                const f2 = new Tone.Filter({ frequency: 3000, type: "bandpass", Q: 0.5 });
+                const e2 = new Tone.AmplitudeEnvelope({ attack: 0.08, decay: 0.5, sustain: 0, release: 0.3 });
+                const g2 = new Tone.Gain(-34).toDestination();
+                n2.connect(f2); f2.connect(e2); e2.connect(g2);
+                n2.start(now + 0.05); e2.triggerAttack(now + 0.05); e2.triggerRelease(now + 0.4);
+
+                // Слой 3 — лёгкий деревянный тон (как раскрытие крышки)
+                const s = new Tone.Synth({
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.08, decay: 0.6, sustain: 0, release: 0.4 },
+                    volume: -26
+                }).connect(roomReverb);
+                s.triggerAttackRelease("E3", "4n", now + 0.1);
+
+                setTimeout(() => {
+                    n1.stop(); n1.dispose(); f1.dispose(); e1.dispose(); g1.dispose();
+                    n2.stop(); n2.dispose(); f2.dispose(); e2.dispose(); g2.dispose();
+                    s.dispose();
+                }, 2500);
+            }
+
+            // ── ДЕРЕВЯННЫЕ ЩЕЛЧКИ — разные для разных действий ─
+
+            // Лёгкий тап — переключение вкладок (самый тихий)
+            function click() {
+                const s = new Tone.MembraneSynth({
+                    pitchDecay: 0.008,
+                    octaves: 2,
+                    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
+                    volume: -24
+                }).connect(roomReverb);
+                s.triggerAttackRelease("G4", "32n");
+                setTimeout(() => s.dispose(), 400);
+            }
+
+            // Мягкий тук — нажатие на профиль / навигация
+            function tapSoft() {
+                const s = new Tone.MembraneSynth({
+                    pitchDecay: 0.015,
+                    octaves: 2.5,
+                    envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.03 },
+                    volume: -20
+                }).connect(roomReverb);
+                s.triggerAttackRelease("E4", "32n");
+                setTimeout(() => s.dispose(), 500);
+            }
+
+            // Глухой стук — нажатие на сделку в профиле
+            function tapDeal() {
+                const s = new Tone.MembraneSynth({
+                    pitchDecay: 0.025,
+                    octaves: 3,
+                    envelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.05 },
+                    volume: -18
+                }).connect(roomReverb);
+                s.triggerAttackRelease("C4", "16n");
+                setTimeout(() => s.dispose(), 600);
+            }
+
+            // Двойной тук — зажатие ачивки
+            function tapAchiev() {
+                const s = new Tone.MembraneSynth({
+                    pitchDecay: 0.02,
+                    octaves: 2.5,
+                    envelope: { attack: 0.001, decay: 0.09, sustain: 0, release: 0.04 },
+                    volume: -19
+                }).connect(roomReverb);
+                const now = Tone.now();
+                s.triggerAttackRelease("D4", "32n", now);
+                s.triggerAttackRelease("A3", "32n", now + 0.06);
+                setTimeout(() => s.dispose(), 700);
+            }
+
+            // ── КОЛОКОЛ ────────────────────────────────────────
             function bell() {
                 const s = new Tone.MetalSynth({ frequency: 440, envelope: { attack: 0.001, decay: 1.5, release: 0.5 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5, volume: -8 }).connect(reverb);
                 const now = Tone.now();
@@ -1106,6 +1199,7 @@
                 setTimeout(() => s.dispose(), 4000);
             }
 
+            // ── МОНЕТЫ ─────────────────────────────────────────
             function coins() {
                 const s = new Tone.MetalSynth({ frequency: 800, envelope: { attack: 0.001, decay: 0.12, release: 0.05 }, harmonicity: 3.1, modulationIndex: 16, resonance: 3000, octaves: 0.5, volume: -10 }).connect(reverb);
                 const now = Tone.now();
@@ -1113,6 +1207,7 @@
                 setTimeout(() => s.dispose(), 2000);
             }
 
+            // ── ФАНФАРЫ ────────────────────────────────────────
             function fanfare() {
                 const s = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.6, release: 0.3 }, volume: -12 }).connect(reverb);
                 const now = Tone.now();
@@ -1123,17 +1218,7 @@
                 setTimeout(() => { s.dispose(); d.dispose(); }, 3000);
             }
 
-            function scroll() {
-                const n = new Tone.Noise("pink");
-                const f = new Tone.Filter(1200, "bandpass");
-                const e = new Tone.AmplitudeEnvelope({ attack: 0.02, decay: 0.4, sustain: 0, release: 0.1 }).connect(reverb);
-                n.connect(f); f.connect(e);
-                n.start(); e.triggerAttackRelease(0.35);
-                const s = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.4, sustain: 0, release: 0.2 }, volume: -18 }).connect(reverb);
-                s.triggerAttackRelease("G2", "4n", Tone.now() + 0.05);
-                setTimeout(() => { n.stop(); n.dispose(); f.dispose(); e.dispose(); s.dispose(); }, 1500);
-            }
-
+            // ── ПОДТВЕРЖДЕНИЕ ──────────────────────────────────
             function confirm() {
                 const s = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 }, volume: -14 }).connect(reverb);
                 const now = Tone.now();
@@ -1142,6 +1227,7 @@
                 setTimeout(() => s.dispose(), 3000);
             }
 
+            // ── ОТМЕНА ─────────────────────────────────────────
             function cancel() {
                 const s = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.3 }, volume: -16 }).connect(reverb);
                 const now = Tone.now();
@@ -1151,6 +1237,7 @@
                 setTimeout(() => s.dispose(), 2000);
             }
 
+            // ── СПОР ───────────────────────────────────────────
             function dispute() {
                 const s = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.3 }, volume: -14 }).connect(reverb);
                 const d = new Tone.MembraneSynth({ pitchDecay: 0.08, octaves: 3, volume: -16 }).connect(reverb);
@@ -1162,23 +1249,17 @@
                 setTimeout(() => { s.dispose(); d.dispose(); }, 3000);
             }
 
-            function click() {
-                const s = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.06, sustain: 0, release: 0.02 }, volume: -22 }).connect(reverb);
-                s.triggerAttackRelease("C5", "64n");
-                setTimeout(() => s.dispose(), 500);
-            }
-
+            // ── ПЕЧАТЬ СУРГУЧА ─────────────────────────────────
             function seal() {
                 const d = new Tone.MembraneSynth({ pitchDecay: 0.12, octaves: 5, envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.1 }, volume: -10 }).connect(reverb);
                 d.triggerAttackRelease("A1", "8n");
                 setTimeout(() => d.dispose(), 1500);
             }
 
-            // Инициализируем при первом касании
             document.addEventListener('touchstart', () => init(), { once: true });
             document.addEventListener('click', () => init(), { once: true });
 
-            return { init, bell, coins, fanfare, scroll, confirm, cancel, dispute, click, seal };
+            return { init, bell, coins, fanfare, scroll, confirm, cancel, dispute, click, tapSoft, tapDeal, tapAchiev, seal };
         })();
     });
     </script>
