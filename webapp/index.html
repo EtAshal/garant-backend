@@ -631,7 +631,7 @@
             <h1>ГАРАНТЪ</h1>
             <p>Надёжные сделки с честью</p>
         </div>
-        <button class="profile-btn" onclick="if(typeof GARANT_SOUNDS!=='undefined')GARANT_SOUNDS.tapSoft(); window.location.href='profile.html'">👤</button>
+        <button class="profile-btn" onclick="openProfile()">👤</button>
     </div>
 
     <button class="btn-create fade-in d1" onclick="createDeal()">
@@ -707,6 +707,11 @@
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const currentUserId = tg.initDataUnsafe?.user?.id || 0;
         let feedInterval = null;
+
+        function openProfile() {
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.tapSoft();
+            window.location.replace('profile.html');
+        }
 
         function createDeal() { window.location.href = 'create.html'; }
         function openDeal(id) {
