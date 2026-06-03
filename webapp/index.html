@@ -6,8 +6,6 @@
     <title>Гарант</title>
     <meta name="ngrok-skip-browser-warning" content="true">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-    <script src="sounds.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -724,7 +722,7 @@
             document.getElementById('scroll-panel').classList.add('open');
             document.getElementById('scroll-overlay').classList.add('open');
             document.getElementById('page-wrap').classList.add('scrolled');
-            GARANT_SOUNDS.scroll();
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.scroll();
             loadStats();
         }
         function closeScroll() {
@@ -732,7 +730,7 @@
             document.getElementById('scroll-panel').classList.remove('open');
             document.getElementById('scroll-overlay').classList.remove('open');
             document.getElementById('page-wrap').classList.remove('scrolled');
-            GARANT_SOUNDS.click();
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.click();
         }
         function toggleSection(el) {
             el.classList.toggle('expanded');
@@ -829,7 +827,7 @@
 
         // ── TABS ──────────────────────────────────────────────
         function switchTab(tab) {
-            GARANT_SOUNDS.click();
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.click();
             document.getElementById('panel-my').style.display   = tab === 'my'   ? 'block' : 'none';
             document.getElementById('panel-feed').style.display = tab === 'feed' ? 'block' : 'none';
             document.getElementById('tab-my').classList.toggle('active',   tab === 'my');
@@ -851,7 +849,7 @@
 
         function setSubPanel(idx) {
             currentSubTab = idx;
-            GARANT_SOUNDS.click();
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.click();
             document.getElementById('swipe-track').style.transform = `translateX(-${idx * 100}%)`;
             document.getElementById('dot-active').classList.toggle('active', idx === 0);
             document.getElementById('dot-completed').classList.toggle('active', idx === 1);
@@ -1084,5 +1082,7 @@
         loadMyDeals();
         initSwipe();
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="sounds.js"></script>
 </body>
 </html>
