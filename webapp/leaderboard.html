@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Топ Гарантъ</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:         #1a1208;
+            --bg2:        #241a0e;
+            --bg3:        #2e2010;
+            --border:     #4a3520;
+            --text:       #e8d5b0;
+            --text-dim:   #a08060;
+            --gold:       #c9a84c;
+            --gold-dim:   #8b6914;
+            --sealing:    #7a3022;
+            --sealing-lt: #9b4a35;
+            --green:      #4a7a50;
+            --green-lt:   #7acc84;
+            --shadow:     rgba(0,0,0,0.5);
+        }
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 0 16px 40px;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%),
+                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none; z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
+
+        .header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 24px 0 20px;
+            border-bottom: 1px solid var(--border); margin-bottom: 20px;
+        }
+        .back-btn {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow); font-family: serif;
+        }
+        .page-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+
+        /* ── ГЕРОЙ ── */
+        .hero {
+            text-align: center; padding: 10px 0 24px;
+            border-bottom: 1px solid var(--border); margin-bottom: 20px;
+        }
+        .hero-icon {
+            font-size: 52px; margin-bottom: 10px; line-height: 1;
+            animation: heroFloat 4s ease-in-out infinite;
+        }
+        @keyframes heroFloat {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-6px); }
+        }
+        .hero-title {
+            font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+            color: var(--gold); letter-spacing: 2px;
+            text-shadow: 0 0 30px rgba(201,168,76,0.3);
+        }
+        .hero-sub { font-size: 14px; font-style: italic; color: var(--text-dim); margin-top: 6px; }
+
+        /* ── ТОПОВАЯ СДЕЛКА (1 место) ── */
+        .top-deal {
+            background: var(--bg2);
+            border: 1px solid var(--gold-dim);
+            border-radius: 12px; padding: 20px;
+            margin-bottom: 14px;
+            position: relative; overflow: hidden;
+            animation: goldGlow 2.5s ease-in-out infinite;
+        }
+        @keyframes goldGlow {
+            0%,100% { box-shadow: 0 2px 10px var(--shadow), 0 0 15px rgba(201,168,76,0.15); }
+            50%      { box-shadow: 0 4px 20px var(--shadow), 0 0 35px rgba(201,168,76,0.35); }
+        }
+        .top-deal::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .rank-badge {
+            position: absolute; top: 12px; right: 14px;
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+            letter-spacing: 1px; padding: 3px 10px; border-radius: 20px;
+        }
+        .rank-1 { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold-dim); }
+        .rank-2 { background: rgba(180,180,180,0.15); color: #c0c0c0; border: 1px solid #888; }
+        .rank-3 { background: rgba(180,100,40,0.15); color: #cd7f32; border: 1px solid #9a5a20; }
+
+        .deal-amount-big {
+            font-family: 'Cinzel', serif; font-size: 28px; font-weight: 700;
+            color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.2);
+            margin-bottom: 6px;
+        }
+        .deal-desc-big { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+        .deal-parties {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; font-style: italic; color: var(--text-dim);
+        }
+        .party {
+            background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 4px; padding: 3px 8px;
+            font-family: 'Cinzel', serif; font-size: 11px;
+            color: var(--text); font-style: normal;
+        }
+        .party-arrow { color: var(--gold-dim); font-style: normal; }
+
+        /* ── ОБЫЧНАЯ ЗАПИСЬ ── */
+        .deal-row {
+            background: var(--bg2); border-radius: 8px;
+            padding: 13px 14px; margin-bottom: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px var(--shadow);
+            display: flex; align-items: center; gap: 12px;
+            position: relative; overflow: hidden;
+        }
+        .deal-row::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--gold-dim);
+        }
+        .deal-row-num {
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+            color: var(--text-dim); flex-shrink: 0; width: 24px; text-align: center;
+        }
+        .deal-row-body { flex: 1; min-width: 0; }
+        .deal-row-desc {
+            font-size: 14px; font-weight: 600; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+        .deal-row-parties { font-size: 12px; font-style: italic; color: var(--text-dim); }
+        .deal-row-amount {
+            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+            color: var(--gold); flex-shrink: 0;
+        }
+
+        /* ── МЕДАЛИ ── */
+        .medal { font-size: 18px; flex-shrink: 0; }
+
+        /* ── ПУСТО ── */
+        .empty {
+            text-align: center; padding: 60px 0;
+            color: var(--text-dim); font-style: italic; font-size: 15px;
+        }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* ── СЕКЦИЯ ЗАГОЛОВОК ── */
+        .section-title {
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin: 18px 0 12px;
+        }
+
+        /* skeleton */
+        .skel {
+            background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite; border-radius: 4px;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        .fade-in { animation: fadeUp .4s ease both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .d1{animation-delay:.05s} .d2{animation-delay:.1s}
+    </style>
+</head>
+<body>
+
+<div class="header fade-in">
+    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+    <span class="page-title">Топ Гарантъ</span>
+</div>
+
+<div class="hero fade-in d1">
+    <div class="hero-icon">🏆</div>
+    <div class="hero-title">ЗАЛ СЛАВЫ</div>
+    <div class="hero-sub">Крупнейшие сделки платформы</div>
+</div>
+
+<div id="content">
+    <!-- скелетон -->
+    <div class="deal-row">
+        <div class="deal-row-num skel" style="width:24px;height:16px"></div>
+        <div class="deal-row-body">
+            <div class="skel" style="height:14px;width:70%;margin-bottom:6px"></div>
+            <div class="skel" style="height:11px;width:50%"></div>
+        </div>
+        <div class="skel" style="width:70px;height:16px"></div>
+    </div>
+    <div class="deal-row">
+        <div class="deal-row-num skel" style="width:24px;height:16px"></div>
+        <div class="deal-row-body">
+            <div class="skel" style="height:14px;width:60%;margin-bottom:6px"></div>
+            <div class="skel" style="height:11px;width:40%"></div>
+        </div>
+        <div class="skel" style="width:60px;height:16px"></div>
+    </div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+const BACKEND = 'https://garant-backend-production.up.railway.app';
+
+function formatAmount(amount) {
+    const n = parseInt(amount);
+    if (n >= 1000000) return (n/1000000).toFixed(1).replace('.0','') + ' млн ₽';
+    if (n >= 1000)    return (n/1000).toFixed(0) + ' 000 ₽';
+    return n.toLocaleString('ru') + ' ₽';
+}
+
+function partyName(deal, role) {
+    // Показываем анонимно — только первые буквы ID
+    const id = role === 'seller' ? deal.seller_id : deal.buyer_id;
+    if (!id) return 'Аноним';
+    return `#${String(id).slice(-4)}`;
+}
+
+async function loadLeaderboard() {
+    try {
+        const res  = await fetch(`${BACKEND}/leaderboard`);
+        const data = await res.json();
+
+        const content = document.getElementById('content');
+
+        if (!data.success || !data.deals.length) {
+            content.innerHTML = `
+                <div class="empty">
+                    <div class="empty-icon">📭</div>
+                    Завершённых сделок пока нет
+                </div>`;
+            return;
+        }
+
+        const deals = data.deals;
+        let html = '';
+
+        // Топ 3 — особые карточки
+        const medals = ['🥇', '🥈', '🥉'];
+        const rankCls = ['rank-1', 'rank-2', 'rank-3'];
+        const rankNames = ['I место', 'II место', 'III место'];
+
+        if (deals.length > 0) {
+            html += `<div class="section-title">🏆 Пьедестал</div>`;
+        }
+
+        deals.slice(0, 3).forEach((deal, i) => {
+            html += `
+            <div class="top-deal fade-in">
+                <div class="rank-badge ${rankCls[i]}">${medals[i]} ${rankNames[i]}</div>
+                <div class="deal-amount-big">${formatAmount(deal.amount)}</div>
+                <div class="deal-desc-big">${escHtml(deal.description)}</div>
+                <div class="deal-parties">
+                    <span class="party">📦 ${partyName(deal, 'seller')}</span>
+                    <span class="party-arrow">⇄</span>
+                    <span class="party">🛒 ${partyName(deal, 'buyer')}</span>
+                </div>
+            </div>`;
+        });
+
+        // Остальные 4-25
+        if (deals.length > 3) {
+            html += `<div class="section-title">📜 Летопись сделок</div>`;
+            deals.slice(3).forEach((deal, i) => {
+                html += `
+                <div class="deal-row fade-in">
+                    <div class="deal-row-num">${i + 4}</div>
+                    <div class="deal-row-body">
+                        <div class="deal-row-desc">${escHtml(deal.description)}</div>
+                        <div class="deal-row-parties">
+                            ${partyName(deal, 'seller')} ⇄ ${partyName(deal, 'buyer')}
+                        </div>
+                    </div>
+                    <div class="deal-row-amount">${formatAmount(deal.amount)}</div>
+                </div>`;
+            });
+        }
+
+        content.innerHTML = html;
+
+    } catch(e) {
+        document.getElementById('content').innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">⚠️</div>
+                Ошибка загрузки
+            </div>`;
+    }
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+loadLeaderboard();
+</script>
+</body>
+</html>

@@ -442,6 +442,18 @@ async def deal_action(deal_id: str, data: dict):
         return {"success": False, "error": str(e)}
 
 
+@app.get("/leaderboard")
+async def get_leaderboard():
+    """Топ 25 самых крупных завершённых сделок."""
+    try:
+        result = supabase.table("deals").select(
+            "id, amount, description, seller_id, buyer_id, completed_at, created_at"
+        ).eq("status", "completed").order("amount", desc=True).limit(25).execute()
+        return {"success": True, "deals": result.data}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/users/{user_id}/public")
 async def get_public_profile(user_id: int):
     """Публичный профиль пользователя — только завершённые сделки и очки."""
