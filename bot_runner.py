@@ -73,6 +73,22 @@ async def start(message: Message):
     except Exception as e:
         print(f"Ошибка: {e}")
 
+    # Глубокая ссылка на сделку
+    if deep_link.startswith("deal_"):
+        deal_id = deep_link.replace("deal_", "")
+        deal_url = f"{WEBAPP_URL.rstrip('/')}/deal.html?id={deal_id}"
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="🔒 Открыть сделку",
+                web_app=WebAppInfo(url=deal_url)
+            )]
+        ])
+        await message.answer(
+            "📜 Вам прислали ссылку на сделку.\n\nНажмите кнопку чтобы открыть её:",
+            reply_markup=keyboard
+        )
+        return
+
     # Глубокая ссылка на профиль
     if deep_link.startswith("profile_"):
         user_id = deep_link.replace("profile_", "")

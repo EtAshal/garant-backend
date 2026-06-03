@@ -471,7 +471,8 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    const dealUrl = `https://etashal.github.io/garant-webapp/deal.html?id=${data.deal_id}`;
+                    // Ссылка через бота — открывается правильно с данными пользователя
+                    const dealUrl = `https://t.me/ramwaytestbot?start=deal_${data.deal_id}`;
                     await navigator.clipboard.writeText(dealUrl);
 
                     // Звук печати сургуча + фанфары
