@@ -160,7 +160,27 @@
         .dot-dispute  { background: var(--sealing-lt); }
         .dot-completed { background: var(--green-lt); }
 
-        .empty {
+        /* ── САНКЦИИ ── */
+        .sanctions {
+            margin-top: 10px; padding-top: 10px;
+            border-top: 1px solid rgba(74,53,32,0.5);
+        }
+        .sanctions-title {
+            font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text-dim); margin-bottom: 8px;
+        }
+        .sanctions-btns {
+            display: flex; gap: 6px; flex-wrap: wrap;
+        }
+        .btn-sanction {
+            padding: 7px 10px; border-radius: 5px; border: none;
+            font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+            cursor: pointer; transition: all .15s; letter-spacing: 0.3px;
+        }
+        .btn-sanction:active { transform: scale(0.94); }
+        .btn-penalty  { background: rgba(139,105,20,0.2); color: var(--gold-dim); border: 1px solid var(--gold-dim); }
+        .btn-freeze   { background: rgba(42,106,173,0.15); color: #5aabee; border: 1px solid #2a6aad; }
+        .btn-ban      { background: rgba(122,48,34,0.25); color: var(--sealing-lt); border: 1px solid var(--sealing); }
             text-align: center; padding: 40px 0;
             color: var(--text-dim); font-style: italic; font-size: 15px;
         }
@@ -291,6 +311,19 @@ function actionLabel(action) {
     return `<span class="party-action action-none">⏳ Ожидает</span>`;
 }
 
+
+        async function applyAction(userId, action) {
+            const labels = { penalty: "штраф −300 очков", freeze: "заморозка на 7 дней", ban: "ВЕЧНАЯ БЛОКИРОВКА" };
+            tg.showConfirm(`⚠️ Применить: ${labels[action]} для #${String(userId).slice(-6)}?`, async (confirmed) => {
+                if (!confirmed) return;
+                try {
+                    const res = await fetch(`${BACKEND}/users/${userId}/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin_id: currentUserId, points: 300 }) });
+                    const data = await res.json();
+                    if (data.success) { const msgs = { penalty: "⚠️ Штраф выдан", freeze: "❄️ Заморожен на 7 дней", ban: "🚫 Заблокирован навсегда" }; showToast(msgs[action]); setTimeout(() => load(), 1000); }
+                    else showToast("❌ " + data.error, "var(--sealing-lt)");
+                } catch(e) { showToast("❌ Ошибка соединения", "var(--sealing-lt)"); }
+            });
+        }
 async function resolveDispute(dealId, winner) {
     try {
         const res = await fetch(`${BACKEND}/deals/${dealId}/resolve`, {
@@ -360,6 +393,21 @@ async function load() {
                         <button class="btn-buyer" onclick="resolveDispute('${deal.id}', 'buyer')">
                             🔄 Вернуть покупателю
                         </button>
+                    </div>
+                    <div class="sanctions">
+                        <div class="sanctions-title">⚡ Санкции</div>
+                        <div class="sanctions-btns">
+                            <button class="btn-sanction btn-penalty" onclick="applyAction(${deal.seller_id}, 'penalty')">⚠️ −300 продавцу</button>
+                            <button class="btn-sanction btn-freeze"  onclick="applyAction(${deal.seller_id}, 'freeze')">❄️ Заморозить продавца</button>
+                            <button class="btn-sanction btn-ban"     onclick="applyAction(${deal.seller_id}, 'ban')">🚫 Бан продавца</button>
+                        </div>
+                        <div class="sanctions-btns" style="margin-top:5px">
+                            ${deal.buyer_id ? `
+                            <button class="btn-sanction btn-penalty" onclick="applyAction(${deal.buyer_id}, 'penalty')">⚠️ −300 покупателю</button>
+                            <button class="btn-sanction btn-freeze"  onclick="applyAction(${deal.buyer_id}, 'freeze')">❄️ Заморозить покупателя</button>
+                            <button class="btn-sanction btn-ban"     onclick="applyAction(${deal.buyer_id}, 'ban')">🚫 Бан покупателя</button>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `).join('');

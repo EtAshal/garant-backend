@@ -5,7 +5,7 @@ from supabase import create_client
 from dotenv import load_dotenv
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import os
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
@@ -467,6 +467,75 @@ async def deal_action(deal_id: str, data: dict):
                     pass
             return {"success": True, "message": "Действие записано. Ожидаем второй стороны."}
 
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/users/{user_id}/ban")
+async def ban_user(user_id: int, body: dict):
+    """Вечная блокировка пользователя."""
+    try:
+        if body.get("admin_id") != 1291887879:
+            return {"success": False, "error": "Доступ запрещён"}
+        supabase.table("users").update({
+            "is_banned": True,
+            "is_frozen": True
+        }).eq("id", user_id).execute()
+        try:
+            await bot_instance.send_message(
+                user_id,
+                "🚫 Ваш аккаунт заблокирован навсегда за нарушение правил платформы."
+            )
+        except: pass
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/users/{user_id}/freeze")
+async def freeze_user(user_id: int, body: dict):
+    """Заморозка аккаунта на 7 дней."""
+    try:
+        if body.get("admin_id") != 1291887879:
+            return {"success": False, "error": "Доступ запрещён"}
+        frozen_until = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+        supabase.table("users").update({
+            "is_frozen": True,
+            "frozen_until": frozen_until
+        }).eq("id", user_id).execute()
+        try:
+            await bot_instance.send_message(
+                user_id,
+                "❄️ Ваш аккаунт заморожен на 7 дней за нарушение правил платформы.\n\n"
+                "После снятия заморозки вы сможете снова пользоваться платформой."
+            )
+        except: pass
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/users/{user_id}/penalty")
+async def penalty_user(user_id: int, body: dict):
+    """Штраф -300 очков."""
+    try:
+        if body.get("admin_id") != 1291887879:
+            return {"success": False, "error": "Доступ запрещён"}
+        points = int(body.get("points", 300))
+        # Добавляем запись о штрафе в referral_points (отрицательная)
+        user = supabase.table("users").select("referral_points").eq("id", user_id).execute()
+        if user.data:
+            current = user.data[0].get("referral_points", 0) or 0
+            supabase.table("users").update({
+                "referral_points": current - points
+            }).eq("id", user_id).execute()
+        try:
+            await bot_instance.send_message(
+                user_id,
+                f"⚠️ Вам выдан штраф: −{points} очков репутации за нарушение правил платформы."
+            )
+        except: pass
+        return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
