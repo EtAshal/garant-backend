@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Зал Меценатов</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #1a1208; --bg2: #241a0e; --bg3: #2e2010;
+            --border: #4a3520; --text: #e8d5b0; --text-dim: #a08060;
+            --gold: #c9a84c; --gold-dim: #8b6914;
+            --sealing: #7a3022; --sealing-lt: #9b4a35;
+            --green: #4a7a50; --shadow: rgba(0,0,0,0.5);
+        }
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 0 16px 40px;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 70%),
+                repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(201,168,76,0.02) 28px, rgba(201,168,76,0.02) 29px);
+            pointer-events: none; z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
+
+        .header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 24px 0 20px; border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50%; width: 36px; height: 36px;
+            font-size: 18px; cursor: pointer; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        .page-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+
+        /* ── ГЕРОЙ ── */
+        .hero {
+            text-align: center; padding: 10px 0 24px;
+            border-bottom: 1px solid var(--border); margin-bottom: 24px;
+        }
+        @keyframes heroFloat {
+            0%,100% { transform: translateY(0); filter: drop-shadow(0 0 8px rgba(201,168,76,0.3)); }
+            50%      { transform: translateY(-8px); filter: drop-shadow(0 0 20px rgba(201,168,76,0.6)); }
+        }
+        .hero-icon { font-size: 56px; margin-bottom: 12px; display: block; animation: heroFloat 3s ease-in-out infinite; }
+        .hero-title {
+            font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+            color: var(--gold); letter-spacing: 2px; margin-bottom: 8px;
+            text-shadow: 0 0 30px rgba(201,168,76,0.3);
+        }
+        .hero-desc {
+            font-size: 15px; font-style: italic; color: var(--text-dim);
+            line-height: 1.6; max-width: 300px; margin: 0 auto;
+        }
+
+        /* ── КНОПКА ПОДДЕРЖАТЬ ── */
+        @keyframes supportPulse {
+            0%,100% { box-shadow: 0 4px 20px rgba(122,48,34,0.4), 0 0 0 0 rgba(201,168,76,0); }
+            50%      { box-shadow: 0 4px 30px rgba(122,48,34,0.6), 0 0 0 6px rgba(201,168,76,0.1); }
+        }
+        .btn-support {
+            display: block; width: 100%; padding: 16px;
+            border-radius: 8px; border: none; margin-bottom: 10px;
+            font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700;
+            letter-spacing: 0.5px; cursor: pointer;
+            background: linear-gradient(135deg, var(--sealing), #5a1810);
+            color: var(--text);
+            animation: supportPulse 2.5s ease-in-out infinite;
+            position: relative; overflow: hidden;
+        }
+        .btn-support::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+        }
+        .btn-support:active { transform: scale(0.97); }
+        .btn-support-sub {
+            text-align: center; font-size: 13px; font-style: italic;
+            color: var(--text-dim); margin-bottom: 24px;
+        }
+
+        /* ── СЕКЦИЯ ── */
+        .section-title {
+            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold-dim); margin-bottom: 12px;
+        }
+
+        /* ── ТОП МЕЦЕНАТ ── */
+        .top-sponsor {
+            background: var(--bg2); border-radius: 12px; padding: 18px;
+            border: 1px solid var(--gold-dim); margin-bottom: 12px;
+            text-align: center; position: relative; overflow: hidden;
+        }
+        @keyframes topGlow {
+            0%,100% { box-shadow: 0 0 20px rgba(201,168,76,0.15); }
+            50%      { box-shadow: 0 0 40px rgba(201,168,76,0.35); }
+        }
+        .top-sponsor { animation: topGlow 3s ease-in-out infinite; }
+        .top-sponsor::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 70%);
+        }
+        .top-crown { font-size: 28px; margin-bottom: 6px; }
+        .top-name {
+            font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+            color: var(--gold); margin-bottom: 4px;
+        }
+        .top-amount { font-size: 14px; font-style: italic; color: var(--text-dim); }
+        .top-badge {
+            display: inline-block; margin-top: 8px;
+            padding: 3px 12px; border-radius: 20px;
+            background: rgba(201,168,76,0.15); border: 1px solid var(--gold-dim);
+            font-family: 'Cinzel', serif; font-size: 10px; color: var(--gold);
+            letter-spacing: 1px;
+        }
+
+        /* ── СПИСОК МЕЦЕНАТОВ ── */
+        .sponsor-row {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg2); border-radius: 8px;
+            padding: 12px 14px; border: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+        .sponsor-num {
+            font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700;
+            color: var(--text-dim); width: 24px; text-align: center; flex-shrink: 0;
+        }
+        .sponsor-info { flex: 1; }
+        .sponsor-name {
+            font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px;
+        }
+        .sponsor-date { font-size: 11px; font-style: italic; color: var(--text-dim); }
+        .sponsor-amount {
+            font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700;
+            color: var(--gold); flex-shrink: 0;
+        }
+        .sponsor-icon { font-size: 18px; flex-shrink: 0; }
+
+        /* ── ПУСТО ── */
+        .empty-sponsors {
+            text-align: center; padding: 30px 20px;
+            background: var(--bg2); border-radius: 10px;
+            border: 1px dashed var(--border);
+        }
+        .empty-sponsors-icon { font-size: 36px; margin-bottom: 10px; }
+        .empty-sponsors-text { font-size: 14px; font-style: italic; color: var(--text-dim); line-height: 1.6; }
+
+        /* ── СКОРО ── */
+        .coming-soon {
+            background: rgba(139,105,20,0.08); border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+            font-size: 13px; font-style: italic; color: var(--text-dim);
+            text-align: center; line-height: 1.6;
+        }
+
+        .fade-in { animation: fadeUp .4s ease both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.2s}
+    </style>
+</head>
+<body>
+
+<div class="header fade-in">
+    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+    <span class="page-title">Зал Меценатов</span>
+</div>
+
+<div class="hero fade-in d1">
+    <span class="hero-icon">💎</span>
+    <div class="hero-title">МЕЦЕНАТЫ ГАРАНТА</div>
+    <div class="hero-desc">
+        Люди которые верят в честную торговлю и поддерживают развитие платформы
+    </div>
+</div>
+
+<!-- Кнопка поддержать -->
+<button class="btn-support fade-in d1" onclick="support()">
+    💝 Поддержать проект
+</button>
+<div class="btn-support-sub fade-in d1">Любая сумма — огромная помощь</div>
+
+<!-- Скоро -->
+<div class="coming-soon fade-in d2">
+    🔧 Оплата появится совсем скоро — платёжная система в разработке.<br>
+    Спасибо за терпение!
+</div>
+
+<!-- Топ меценат -->
+<div class="section-title fade-in d2">👑 Главный меценат месяца</div>
+<div id="top-sponsor" class="fade-in d2"></div>
+
+<!-- Список -->
+<div class="section-title fade-in d3">💎 Все меценаты</div>
+<div id="sponsors-list" class="fade-in d3"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+function support() {
+    tg.showAlert('💝 Спасибо за желание поддержать!\n\nПлатёжная система скоро будет подключена. Следите за обновлениями!');
+}
+
+// Пока список меценатов пустой — заглушка
+// После подключения ЮКассы здесь будут реальные данные из базы
+const sponsors = [];
+
+function render() {
+    const topEl  = document.getElementById('top-sponsor');
+    const listEl = document.getElementById('sponsors-list');
+
+    if (!sponsors.length) {
+        topEl.innerHTML = `
+            <div class="empty-sponsors">
+                <div class="empty-sponsors-icon">🕯️</div>
+                <div class="empty-sponsors-text">
+                    Первый меценат получит особое место в истории платформы.<br>
+                    Будь первым!
+                </div>
+            </div>`;
+        listEl.innerHTML = `
+            <div class="empty-sponsors">
+                <div class="empty-sponsors-icon">📜</div>
+                <div class="empty-sponsors-text">
+                    Список меценатов пока пуст.<br>
+                    Поддержи проект и твоё имя появится здесь навсегда.
+                </div>
+            </div>`;
+        return;
+    }
+
+    // Топ 1
+    const top = sponsors[0];
+    topEl.innerHTML = `
+        <div class="top-sponsor">
+            <div class="top-crown">👑</div>
+            <div class="top-name">${top.name}</div>
+            <div class="top-amount">поддержал на ${top.amount.toLocaleString('ru')} ₽</div>
+            <div class="top-badge">💎 ГЛАВНЫЙ МЕЦЕНАТ</div>
+        </div>`;
+
+    // Остальные
+    listEl.innerHTML = sponsors.map((s, i) => `
+        <div class="sponsor-row">
+            <div class="sponsor-num">${i + 1}</div>
+            <div class="sponsor-icon">${i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '💎'}</div>
+            <div class="sponsor-info">
+                <div class="sponsor-name">${s.name}</div>
+                <div class="sponsor-date">${s.date}</div>
+            </div>
+            <div class="sponsor-amount">${s.amount.toLocaleString('ru')} ₽</div>
+        </div>
+    `).join('');
+}
+
+render();
+</script>
+</body>
+</html>
