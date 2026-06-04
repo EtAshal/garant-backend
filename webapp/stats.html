@@ -190,19 +190,22 @@ function fmtFull(n) {
 
 async function load() {
     if (!userId) {
-        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Откройте через Telegram бота</div>';
+        document.getElementById('content').innerHTML = '<div class="empty">⚠️ userId = ' + userId + '</div>';
         return;
     }
 
-    // Таймаут 5 секунд
     const timeout = setTimeout(() => {
-        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Ошибка загрузки — попробуйте позже</div>';
+        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Таймаут — сервер не отвечает</div>';
     }, 5000);
 
     try {
         const res  = await fetch(`${BACKEND}/users/${userId}/deals`);
         clearTimeout(timeout);
         const data = await res.json();
+        if (!data.success) {
+            document.getElementById('content').innerHTML = '<div class="empty">⚠️ ' + JSON.stringify(data) + '</div>';
+            return;
+        }
         if (!data.success) throw new Error();
 
         const deals     = data.deals || [];
