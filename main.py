@@ -471,6 +471,53 @@ async def deal_action(deal_id: str, data: dict):
         return {"success": False, "error": str(e)}
 
 
+@app.post("/deals/{deal_id}/resolve")
+async def resolve_dispute(deal_id: str, body: dict):
+    """Арбитр решает спор — winner: 'seller' или 'buyer'."""
+    try:
+        admin_id = body.get("admin_id")
+        winner   = body.get("winner")  # 'seller' или 'buyer'
+
+        if admin_id != 1291887879:
+            return {"success": False, "error": "Доступ запрещён"}
+
+        if winner not in ["seller", "buyer"]:
+            return {"success": False, "error": "Неверный winner"}
+
+        deal = supabase.table("deals").select("*").eq("id", deal_id).execute()
+        if not deal.data:
+            return {"success": False, "error": "Сделка не найдена"}
+
+        deal = deal.data[0]
+
+        if winner == "seller":
+            # Деньги продавцу — завершаем сделку
+            now_iso = datetime.now(timezone.utc).isoformat()
+            supabase.table("deals").update({
+                "status": "completed",
+                "completed_at": now_iso
+            }).eq("id", deal_id).execute()
+            try:
+                await bot_instance.send_message(deal["seller_id"], "⚖️ Спор решён в вашу пользу. Деньги будут переведены вам.")
+                if deal.get("buyer_id"):
+                    await bot_instance.send_message(deal["buyer_id"], "⚖️ Спор решён в пользу продавца. Деньги переведены ему.\n−10 очков репутации.")
+            except: pass
+        else:
+            # Деньги покупателю — отменяем сделку
+            supabase.table("deals").update({
+                "status": "cancelled"
+            }).eq("id", deal_id).execute()
+            try:
+                if deal.get("buyer_id"):
+                    await bot_instance.send_message(deal["buyer_id"], "⚖️ Спор решён в вашу пользу. Деньги возвращены на ваш счёт.")
+                await bot_instance.send_message(deal["seller_id"], "⚖️ Спор решён в пользу покупателя. Деньги возвращены ему.\n−10 очков репутации.")
+            except: pass
+
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/leaderboard")
 async def get_leaderboard():
     """Топ 25 самых крупных завершённых сделок."""

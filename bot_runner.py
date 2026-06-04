@@ -158,7 +158,24 @@ async def start(message: Message):
     )
 
 
-# ── /deals ────────────────────────────────────────────────────────────────────
+ADMIN_ID = 1291887879
+
+@dp.message(Command("admin"))
+async def cmd_admin(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return  # Молча игнорируем
+    admin_url = f"{WEBAPP_URL.rstrip('/')}/admin.html"
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="⚖️ Открыть панель арбитража",
+            web_app=WebAppInfo(url=admin_url)
+        )]
+    ])
+    await message.answer(
+        "🔐 <b>Панель арбитража</b>\n\nДобро пожаловать, арбитр.",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
 
 @dp.message(Command("deals"))
 async def cmd_deals(message: Message):
