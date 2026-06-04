@@ -344,11 +344,13 @@ async function load() {
                             <div class="party-role">📦 Продавец</div>
                             <div class="party-id">#${String(deal.seller_id).slice(-6)}</div>
                             ${actionLabel(deal.seller_action)}
+                            <a href="tg://user?id=${deal.seller_id}" style="display:block;margin-top:6px;text-align:center;padding:5px;background:rgba(201,168,76,0.1);border:1px solid var(--gold-dim);border-radius:4px;font-family:'Cinzel',serif;font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:0.5px;">✉️ Написать</a>
                         </div>
                         <div class="party-card">
                             <div class="party-role">🛒 Покупатель</div>
                             <div class="party-id">${deal.buyer_id ? '#' + String(deal.buyer_id).slice(-6) : '—'}</div>
                             ${actionLabel(deal.buyer_action)}
+                            ${deal.buyer_id ? `<a href="tg://user?id=${deal.buyer_id}" style="display:block;margin-top:6px;text-align:center;padding:5px;background:rgba(201,168,76,0.1);border:1px solid var(--gold-dim);border-radius:4px;font-family:'Cinzel',serif;font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:0.5px;">✉️ Написать</a>` : ''}
                         </div>
                     </div>
                     <div class="decision-btns">
