@@ -27,7 +27,6 @@
             pointer-events: none; z-index: 0;
         }
         * { position: relative; z-index: 1; }
-
         .header {
             display: flex; align-items: center; gap: 12px;
             padding: 24px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px;
@@ -40,128 +39,50 @@
         }
         .back-btn:active { background: var(--bg3); }
         .page-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
-
-        /* ── КАРТОЧКИ ИТОГОВ ── */
-        .summary-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-            margin-bottom: 20px;
-        }
-        .summary-card {
-            background: var(--bg2); border-radius: 10px; padding: 14px 12px;
-            border: 1px solid var(--border); text-align: center;
-        }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .summary-card { background: var(--bg2); border-radius: 10px; padding: 14px 12px; border: 1px solid var(--border); text-align: center; }
         .summary-card.gold { border-color: var(--gold-dim); }
         .summary-card.green { border-color: var(--green); }
         .summary-icon { font-size: 22px; margin-bottom: 6px; }
-        .summary-num {
-            font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
-            color: var(--gold); margin-bottom: 3px;
-        }
+        .summary-num { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: var(--gold); margin-bottom: 3px; }
         .summary-num.green-val { color: var(--green-lt); }
         .summary-label { font-size: 11px; font-style: italic; color: var(--text-dim); }
-
-        /* ── СЕКЦИЯ ── */
-        .section-title {
-            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
-            letter-spacing: 2px; text-transform: uppercase;
-            color: var(--gold-dim); margin: 20px 0 12px;
-        }
-
-        /* ── ГРАФИК ── */
-        .chart-wrap {
-            background: var(--bg2); border-radius: 12px; padding: 16px;
-            border: 1px solid var(--border); margin-bottom: 16px;
-        }
-        .chart-title {
-            font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600;
-            color: var(--text-dim); margin-bottom: 14px; letter-spacing: 0.5px;
-        }
-        .bar-chart {
-            display: flex; align-items: flex-end; gap: 6px;
-            height: 120px; padding-bottom: 24px; position: relative;
-        }
-        .bar-chart::after {
-            content: ''; position: absolute; bottom: 24px; left: 0; right: 0;
-            height: 1px; background: var(--border);
-        }
+        .section-title { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dim); margin: 20px 0 12px; }
+        .chart-wrap { background: var(--bg2); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; }
+        .chart-title { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 14px; letter-spacing: 0.5px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-bottom: 24px; position: relative; }
+        .bar-chart::after { content: ''; position: absolute; bottom: 24px; left: 0; right: 0; height: 1px; background: var(--border); }
         .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .bar-fill {
-            width: 100%; border-radius: 4px 4px 0 0;
-            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
-            min-height: 2px; transition: height 1s cubic-bezier(.4,0,.2,1);
-            position: relative;
-        }
-        .bar-fill.green-bar {
-            background: linear-gradient(180deg, var(--green-lt) 0%, var(--green) 100%);
-        }
-        .bar-fill:hover::after {
-            content: attr(data-val);
-            position: absolute; top: -24px; left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg3); border: 1px solid var(--border);
-            border-radius: 4px; padding: 2px 6px;
-            font-size: 10px; color: var(--gold); white-space: nowrap;
-        }
-        .bar-label {
-            font-size: 9px; color: var(--text-dim); text-align: center;
-            position: absolute; bottom: 4px; white-space: nowrap;
-        }
-
-        /* ── РОЛИ ── */
+        .bar-fill { width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%); min-height: 2px; transition: height 1s cubic-bezier(.4,0,.2,1); position: relative; }
+        .bar-fill.green-bar { background: linear-gradient(180deg, var(--green-lt) 0%, var(--green) 100%); }
+        .bar-label { font-size: 9px; color: var(--text-dim); text-align: center; position: absolute; bottom: 4px; white-space: nowrap; }
         .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .role-card {
-            background: var(--bg2); border-radius: 10px; padding: 14px;
-            border: 1px solid var(--border);
-        }
-        .role-title {
-            font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600;
-            letter-spacing: 1px; text-transform: uppercase;
-            color: var(--text-dim); margin-bottom: 10px;
-        }
+        .role-card { background: var(--bg2); border-radius: 10px; padding: 14px; border: 1px solid var(--border); }
+        .role-title { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
         .role-stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
         .role-stat-label { font-style: italic; color: var(--text-dim); }
         .role-stat-val { font-family: 'Cinzel', serif; font-weight: 600; color: var(--gold); }
-
-        /* ── СРЕДНЯЯ СДЕЛКА ── */
-        .avg-card {
-            background: var(--bg2); border-radius: 10px; padding: 16px;
-            border: 1px solid var(--border); margin-bottom: 16px;
-            display: flex; align-items: center; gap: 14px;
-        }
+        .avg-card { background: var(--bg2); border-radius: 10px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
         .avg-icon { font-size: 32px; flex-shrink: 0; }
         .avg-title { font-family: 'Cinzel', serif; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
         .avg-num { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700; color: var(--gold); }
-
-        /* ── ЛУЧШИЙ МЕСЯЦ ── */
-        .best-card {
-            background: linear-gradient(135deg, rgba(139,105,20,0.15), rgba(26,18,8,0.5));
-            border: 1px solid var(--gold-dim); border-radius: 10px; padding: 14px;
-            display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-        }
+        .best-card { background: linear-gradient(135deg, rgba(139,105,20,0.15), rgba(26,18,8,0.5)); border: 1px solid var(--gold-dim); border-radius: 10px; padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
         .best-icon { font-size: 28px; flex-shrink: 0; }
         .best-title { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold-dim); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
         .best-val { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
-
         .empty { text-align: center; padding: 40px 0; color: var(--text-dim); font-style: italic; }
-
         .fade-in { animation: fadeUp .4s ease both; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.2s}
-
-        .skel {
-            background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
-            background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px;
-        }
+        .skel { background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     </style>
 </head>
 <body>
-
 <div class="header fade-in">
     <button class="back-btn" onclick="window.location.href='index.html'">←</button>
     <span class="page-title">📊 Моя статистика</span>
 </div>
-
 <div id="content">
     <div class="summary-grid">
         <div class="summary-card"><div class="skel" style="height:60px"></div></div>
@@ -170,172 +91,107 @@
         <div class="summary-card"><div class="skel" style="height:60px"></div></div>
     </div>
 </div>
-
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 const BACKEND = 'https://garant-backend-production.up.railway.app';
-const userId  = tg.initDataUnsafe?.user?.id;
+const userId = tg.initDataUnsafe?.user?.id;
 
-const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MONTHS = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
-const MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
-    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M ₽';
-    if (n >= 1000)    return (n/1000).toFixed(1).replace('.0','') + 'к ₽';
-    return String(n) + ' ₽';
-}
-function fmtFull(n) {
-    return parseInt(n).toLocaleString('ru') + ' ₽';
+function fmt(n) {
+    n = parseInt(n);
+    return n.toLocaleString('ru') + ' ₽';
 }
 
 async function load() {
-    if (!userId) {
-        document.getElementById('content').innerHTML = '<div class="empty">⚠️ userId = ' + userId + '</div>';
-        return;
-    }
-
-    const timeout = setTimeout(() => {
-        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Таймаут — сервер не отвечает</div>';
-    }, 5000);
-
     try {
-        const res  = await fetch(`${BACKEND}/users/${userId}/deals`);
-        clearTimeout(timeout);
+        const res = await fetch(BACKEND + '/users/' + userId + '/deals');
         const data = await res.json();
-        if (!data.success) {
-            document.getElementById('content').innerHTML = '<div class="empty">⚠️ ' + JSON.stringify(data) + '</div>';
-            return;
-        }
         if (!data.success) throw new Error();
 
-        const deals     = data.deals || [];
-        const completed = deals.filter(d => d.status === 'completed');
-        const asSeller  = completed.filter(d => d.seller_id == userId);
-        const asBuyer   = completed.filter(d => d.buyer_id  == userId);
-        const disputes  = deals.filter(d => d.status === 'dispute' || d.status === 'cancelled');
-        const active    = deals.filter(d => d.status === 'active' || d.status === 'pending');
+        const deals = data.deals || [];
+        const completed = deals.filter(function(d) { return d.status === 'completed'; });
+        const asSeller = completed.filter(function(d) { return d.seller_id == userId; });
+        const asBuyer = completed.filter(function(d) { return d.buyer_id == userId; });
+        const disputes = deals.filter(function(d) { return d.status === 'dispute' || d.status === 'cancelled'; });
+        const active = deals.filter(function(d) { return d.status === 'active' || d.status === 'pending'; });
 
-        const totalVol   = completed.reduce((s, d) => s + parseFloat(d.amount), 0);
-        const sellerVol  = asSeller.reduce((s, d) => s + parseFloat(d.amount), 0);
-        const buyerVol   = asBuyer.reduce((s, d)  => s + parseFloat(d.amount), 0);
-        const avgDeal    = completed.length ? Math.round(totalVol / completed.length) : 0;
+        var totalVol = 0;
+        completed.forEach(function(d) { totalVol += parseFloat(d.amount); });
+        var sellerVol = 0;
+        asSeller.forEach(function(d) { sellerVol += parseFloat(d.amount); });
+        var buyerVol = 0;
+        asBuyer.forEach(function(d) { buyerVol += parseFloat(d.amount); });
+        var avgDeal = completed.length ? Math.round(totalVol / completed.length) : 0;
 
-        // По месяцам (последние 6)
-        const now = new Date();
-        const monthData = [];
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const m = d.getMonth(); const y = d.getFullYear();
-            const monthDeals = completed.filter(deal => {
-                const dd = new Date(deal.created_at);
+        var now = new Date();
+        var monthData = [];
+        for (var i = 5; i >= 0; i--) {
+            var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            var m = d.getMonth();
+            var y = d.getFullYear();
+            var monthDeals = completed.filter(function(deal) {
+                var dd = new Date(deal.created_at);
                 return dd.getMonth() === m && dd.getFullYear() === y;
             });
-            monthData.push({
-                label: MONTHS_SHORT[m],
-                fullLabel: MONTHS[m],
-                count: monthDeals.length,
-                vol:   monthDeals.reduce((s, d) => s + parseFloat(d.amount), 0)
-            });
+            var vol = 0;
+            monthDeals.forEach(function(d) { vol += parseFloat(d.amount); });
+            monthData.push({ label: MONTHS[m], fullLabel: MONTHS_FULL[m], count: monthDeals.length, vol: vol });
         }
 
-        const maxVol   = Math.max(...monthData.map(m => m.vol), 1);
-        const maxCount = Math.max(...monthData.map(m => m.count), 1);
+        var maxVol = 1;
+        monthData.forEach(function(m) { if (m.vol > maxVol) maxVol = m.vol; });
+        var maxCount = 1;
+        monthData.forEach(function(m) { if (m.count > maxCount) maxCount = m.count; });
 
-        // Лучший месяц
-        const bestMonth = monthData.reduce((a, b) => b.vol > a.vol ? b : a, monthData[0]);
+        var bestMonth = monthData[0];
+        monthData.forEach(function(m) { if (m.vol > bestMonth.vol) bestMonth = m; });
 
-        const html = `
-        <!-- Итоги -->
-        <div class="summary-grid fade-in">
-            <div class="summary-card gold">
-                <div class="summary-icon">📜</div>
-                <div class="summary-num">${completed.length}</div>
-                <div class="summary-label">завершено</div>
-            </div>
-            <div class="summary-card green">
-                <div class="summary-icon">🪙</div>
-                <div class="summary-num green-val">${fmt(totalVol)} ₽</div>
-                <div class="summary-label">общий оборот</div>
-            </div>
-            <div class="summary-card">
-                <div class="summary-icon">⚔️</div>
-                <div class="summary-num" style="color:var(--sealing-lt)">${disputes.length}</div>
-                <div class="summary-label">споров</div>
-            </div>
-            <div class="summary-card">
-                <div class="summary-icon">⚙️</div>
-                <div class="summary-num" style="color:var(--text-dim)">${active.length}</div>
-                <div class="summary-label">активных</div>
-            </div>
-        </div>
+        var html = '<div class="summary-grid fade-in">';
+        html += '<div class="summary-card gold"><div class="summary-icon">📜</div><div class="summary-num">' + completed.length + '</div><div class="summary-label">завершено</div></div>';
+        html += '<div class="summary-card green"><div class="summary-icon">🪙</div><div class="summary-num green-val">' + fmt(totalVol) + '</div><div class="summary-label">общий оборот</div></div>';
+        html += '<div class="summary-card"><div class="summary-icon">⚔️</div><div class="summary-num" style="color:var(--sealing-lt)">' + disputes.length + '</div><div class="summary-label">споров</div></div>';
+        html += '<div class="summary-card"><div class="summary-icon">⚙️</div><div class="summary-num" style="color:var(--text-dim)">' + active.length + '</div><div class="summary-label">активных</div></div>';
+        html += '</div>';
 
-        <!-- Средняя сделка -->
-        ${avgDeal > 0 ? `
-        <div class="avg-card fade-in d1">
-            <div class="avg-icon">📐</div>
-            <div>
-                <div class="avg-title">Средняя сумма сделки</div>
-                <div class="avg-num">${fmtFull(avgDeal)}</div>
-            </div>
-        </div>` : ''}
+        if (avgDeal > 0) {
+            html += '<div class="avg-card fade-in d1"><div class="avg-icon">📐</div><div><div class="avg-title">Средняя сумма сделки</div><div class="avg-num">' + fmt(avgDeal) + '</div></div></div>';
+        }
 
-        <!-- Лучший месяц -->
-        ${bestMonth && bestMonth.vol > 0 ? `
-        <div class="best-card fade-in d1">
-            <div class="best-icon">🏆</div>
-            <div>
-                <div class="best-title">Лучший месяц</div>
-                <div class="best-val">${bestMonth.fullLabel} — ${fmtFull(bestMonth.vol)}</div>
-            </div>
-        </div>` : ''}
+        if (bestMonth && bestMonth.vol > 0) {
+            html += '<div class="best-card fade-in d1"><div class="best-icon">🏆</div><div><div class="best-title">Лучший месяц</div><div class="best-val">' + bestMonth.fullLabel + ' — ' + fmt(bestMonth.vol) + '</div></div></div>';
+        }
 
-        <!-- График оборота -->
-        <div class="section-title fade-in d1">Оборот по месяцам</div>
-        <div class="chart-wrap fade-in d2">
-            <div class="chart-title">₽ Объём сделок</div>
-            <div class="bar-chart" id="vol-chart">
-                ${monthData.map(m => `
-                <div class="bar-col" style="position:relative">
-                    <div class="bar-fill" style="height:${Math.round(m.vol/maxVol*100)}px" data-val="${fmtFull(m.vol)}"></div>
-                    <span class="bar-label">${m.label}</span>
-                </div>`).join('')}
-            </div>
-        </div>
+        html += '<div class="section-title fade-in d1">Оборот по месяцам</div>';
+        html += '<div class="chart-wrap fade-in d2"><div class="chart-title">₽ Объём сделок</div><div class="bar-chart">';
+        monthData.forEach(function(m) {
+            var h = maxVol > 0 ? Math.round(m.vol / maxVol * 100) : 2;
+            html += '<div class="bar-col" style="position:relative"><div class="bar-fill" style="height:' + h + 'px"></div><span class="bar-label">' + m.label + '</span></div>';
+        });
+        html += '</div></div>';
 
-        <!-- График количества -->
-        <div class="chart-wrap fade-in d2">
-            <div class="chart-title">📜 Количество сделок</div>
-            <div class="bar-chart">
-                ${monthData.map(m => `
-                <div class="bar-col" style="position:relative">
-                    <div class="bar-fill green-bar" style="height:${Math.round(m.count/maxCount*100)}px" data-val="${m.count} сд."></div>
-                    <span class="bar-label">${m.label}</span>
-                </div>`).join('')}
-            </div>
-        </div>
+        html += '<div class="chart-wrap fade-in d2"><div class="chart-title">📜 Количество сделок</div><div class="bar-chart">';
+        monthData.forEach(function(m) {
+            var h = maxCount > 0 ? Math.round(m.count / maxCount * 100) : 2;
+            html += '<div class="bar-col" style="position:relative"><div class="bar-fill green-bar" style="height:' + h + 'px"></div><span class="bar-label">' + m.label + '</span></div>';
+        });
+        html += '</div></div>';
 
-        <!-- По ролям -->
-        <div class="section-title fade-in d2">По ролям</div>
-        <div class="role-grid fade-in d3">
-            <div class="role-card">
-                <div class="role-title">📦 Продавец</div>
-                <div class="role-stat"><span class="role-stat-label">Сделок</span><span class="role-stat-val">${asSeller.length}</span></div>
-                <div class="role-stat"><span class="role-stat-label">Оборот</span><span class="role-stat-val">${fmt(sellerVol)} ₽</span></div>
-            </div>
-            <div class="role-card">
-                <div class="role-title">🛒 Покупатель</div>
-                <div class="role-stat"><span class="role-stat-label">Сделок</span><span class="role-stat-val">${asBuyer.length}</span></div>
-                <div class="role-stat"><span class="role-stat-label">Потрачено</span><span class="role-stat-val">${fmt(buyerVol)} ₽</span></div>
-            </div>
-        </div>
+        html += '<div class="section-title fade-in d2">По ролям</div>';
+        html += '<div class="role-grid fade-in d3">';
+        html += '<div class="role-card"><div class="role-title">📦 Продавец</div><div class="role-stat"><span class="role-stat-label">Сделок</span><span class="role-stat-val">' + asSeller.length + '</span></div><div class="role-stat"><span class="role-stat-label">Оборот</span><span class="role-stat-val">' + fmt(sellerVol) + '</span></div></div>';
+        html += '<div class="role-card"><div class="role-title">🛒 Покупатель</div><div class="role-stat"><span class="role-stat-label">Сделок</span><span class="role-stat-val">' + asBuyer.length + '</span></div><div class="role-stat"><span class="role-stat-label">Потрачено</span><span class="role-stat-val">' + fmt(buyerVol) + '</span></div></div>';
+        html += '</div>';
 
-        ${completed.length === 0 ? '<div class="empty">Завершите первую сделку чтобы увидеть статистику</div>' : ''}
-        `;
+        if (completed.length === 0) {
+            html += '<div class="empty">Завершите первую сделку чтобы увидеть статистику</div>';
+        }
 
         document.getElementById('content').innerHTML = html;
 
     } catch(e) {
-        clearTimeout(timeout);
         document.getElementById('content').innerHTML = '<div class="empty">⚠️ Ошибка загрузки</div>';
     }
 }
