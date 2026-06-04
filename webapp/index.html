@@ -1007,8 +1007,13 @@
     </div>
 
     <div style="display:flex;gap:8px;margin-bottom:12px" class="fade-in d1">
-        <button class="btn-create" onclick="window.location.href='stats.html'"
-            style="flex-shrink:0;width:52px;padding:0;font-size:22px;margin-bottom:0;background:var(--bg2);border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow);">
+        <button onclick="if(typeof GARANT_SOUNDS!=='undefined')GARANT_SOUNDS.click(); window.location.href='stats.html'"
+            style="flex-shrink:0;width:52px;padding:0;font-size:22px;margin-bottom:0;
+                background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+                box-shadow:0 2px 8px var(--shadow);cursor:pointer;
+                display:flex;align-items:center;justify-content:center;
+                animation:profilePulse 3s ease-in-out infinite;animation-delay:-0.5s;
+                -webkit-tap-highlight-color:transparent;">
             📊
         </button>
         <button class="btn-create" onclick="createDeal()" style="flex:1;margin-bottom:0">
