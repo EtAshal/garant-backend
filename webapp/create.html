@@ -453,5 +453,28 @@
             }
         }
     </script>
+    <script>
+    window.addEventListener('load', () => {
+        let ready = false;
+        const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.25 }).toDestination();
+        async function init() { if (ready) return; await Tone.start(); ready = true; }
+        window.GARANT_SOUNDS = {
+            seal: () => { init().then(() => {
+                const d = new Tone.MembraneSynth({ pitchDecay: 0.12, octaves: 5, envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.1 }, volume: -10 }).connect(reverb);
+                d.triggerAttackRelease("A1", "8n"); setTimeout(() => d.dispose(), 1500);
+            }); },
+            fanfare: () => { init().then(() => {
+                const s = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.6, release: 0.3 }, volume: -12 }).connect(reverb);
+                const now = Tone.now();
+                ["C4","E4","G4","C5","E5"].forEach((n, i) => s.triggerAttackRelease(n, "8n", now + i * 0.12));
+                const d = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 4, volume: -15 }).connect(reverb);
+                d.triggerAttackRelease("C2", "8n", now + 0.48);
+                setTimeout(() => { s.dispose(); d.dispose(); }, 3000);
+            }); }
+        };
+        document.addEventListener('touchstart', init);
+        document.addEventListener('click', init);
+    });
+    </script>
 </body>
 </html>
