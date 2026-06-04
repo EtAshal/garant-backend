@@ -228,7 +228,37 @@
         }
 
         /* ── GEAR ── */
-        /* ── СВАЙП ПАНЕЛИ ── */
+        /* ── ЕЖЕДНЕВНЫЙ БОНУС ── */
+        @keyframes dailyPulse {
+            0%,100% { box-shadow: 0 2px 8px var(--shadow), 0 0 0 0 rgba(74,122,80,0); transform: scale(1); }
+            50%      { box-shadow: 0 2px 8px var(--shadow), 0 0 0 4px rgba(74,122,80,0.2); transform: scale(1.04); }
+        }
+        .daily-btn {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg2); border: 1px solid var(--green);
+            border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
+            cursor: pointer; transition: all .2s;
+            animation: dailyPulse 3s ease-in-out infinite;
+        }
+        .daily-btn.claimed {
+            border-color: var(--border); opacity: 0.6;
+            animation: none;
+        }
+        .daily-btn:active { transform: scale(0.97) !important; }
+        .daily-left { display: flex; align-items: center; gap: 10px; }
+        .daily-icon { font-size: 24px; }
+        .daily-title {
+            font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600;
+            color: var(--text); letter-spacing: 0.3px;
+        }
+        .daily-sub { font-size: 11px; font-style: italic; color: var(--text-dim); margin-top: 2px; }
+        .daily-badge {
+            font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+            color: #7acc84; background: rgba(74,122,80,0.15);
+            border: 1px solid var(--green); border-radius: 6px;
+            padding: 4px 10px;
+        }
+        .daily-badge.claimed { color: var(--text-dim); background: transparent; border-color: var(--border); }
         .swipe-wrap {
             position: relative; overflow: hidden;
         }
@@ -894,6 +924,18 @@
         + Составить грамоту о сделке
     </button>
 
+    <!-- Ежедневный бонус -->
+    <div class="daily-btn fade-in d2" id="daily-btn" onclick="claimDaily()">
+        <div class="daily-left">
+            <div class="daily-icon">🎁</div>
+            <div>
+                <div class="daily-title">Ежедневный бонус</div>
+                <div class="daily-sub" id="daily-sub">Войдите каждый день — +2 очка</div>
+            </div>
+        </div>
+        <div class="daily-badge" id="daily-badge">+2 ⭐</div>
+    </div>
+
     <!-- Вкладки -->
     <div class="tabs fade-in d2">
         <button class="tab active" id="tab-my" onclick="switchTab('my')">📋 Мои сделки</button>
@@ -1179,6 +1221,59 @@
             } catch(e) {}
         }
 
+        // ── ЕЖЕДНЕВНЫЙ БОНУС ──────────────────────────────────
+        async function checkDaily() {
+            if (!currentUserId) return;
+            try {
+                const res  = await fetch(`${BACKEND}/users/${currentUserId}/public`);
+                const data = await res.json();
+                if (!data.success) return;
+
+                const last = data.user.last_daily_bonus;
+                if (last) {
+                    const lastDt = new Date(last);
+                    const now    = new Date();
+                    const diff   = (now - lastDt) / 1000;
+                    if (diff < 86400) {
+                        // Уже получили сегодня
+                        const hoursLeft = Math.ceil((86400 - diff) / 3600);
+                        document.getElementById('daily-btn').classList.add('claimed');
+                        document.getElementById('daily-sub').textContent = `Следующий бонус через ${hoursLeft} ч.`;
+                        document.getElementById('daily-badge').textContent = '✓';
+                        document.getElementById('daily-badge').classList.add('claimed');
+                    }
+                }
+            } catch(e) {}
+        }
+
+        async function claimDaily() {
+            const btn = document.getElementById('daily-btn');
+            if (btn.classList.contains('claimed')) {
+                const sub = document.getElementById('daily-sub').textContent;
+                tg.showAlert(`⏳ ${sub}`);
+                return;
+            }
+            if (!currentUserId) return;
+            try {
+                const res  = await fetch(`${BACKEND}/users/${currentUserId}/daily`, { method: 'POST' });
+                const data = await res.json();
+
+                if (data.success) {
+                    if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.confirm();
+                    btn.classList.add('claimed');
+                    document.getElementById('daily-sub').textContent = 'Следующий бонус через 24 ч.';
+                    document.getElementById('daily-badge').textContent = '✓';
+                    document.getElementById('daily-badge').classList.add('claimed');
+                    tg.showAlert('🎁 +2 очка получены!\n\nВозвращайтесь завтра за новым бонусом.');
+                } else if (data.already_claimed) {
+                    btn.classList.add('claimed');
+                    document.getElementById('daily-sub').textContent = `Следующий бонус через ${data.hours_left} ч.`;
+                    document.getElementById('daily-badge').textContent = '✓';
+                    document.getElementById('daily-badge').classList.add('claimed');
+                }
+            } catch(e) {}
+        }
+
         loadQuote();
 
         // ── TABS ──────────────────────────────────────────────
@@ -1438,6 +1533,7 @@
         // ── INIT ──────────────────────────────────────────────
         loadMyDeals();
         initSwipe();
+        checkDaily();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script>

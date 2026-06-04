@@ -520,6 +520,38 @@ async def deal_action(deal_id: str, data: dict):
         return {"success": False, "error": str(e)}
 
 
+@app.post("/users/{user_id}/daily")
+async def daily_bonus(user_id: int):
+    """Ежедневный бонус +2 очка за вход."""
+    try:
+        user = supabase.table("users").select("last_daily_bonus, referral_points").eq("id", user_id).execute()
+        if not user.data:
+            return {"success": False, "error": "Пользователь не найден"}
+
+        now = datetime.now(timezone.utc)
+        last = user.data[0].get("last_daily_bonus")
+
+        if last:
+            last_dt = datetime.fromisoformat(last.replace("Z", "+00:00"))
+            # Проверяем что прошли сутки
+            if (now - last_dt).total_seconds() < 86400:
+                next_bonus = last_dt.replace(hour=0, minute=0, second=0) + timedelta(days=1)
+                hours_left = max(0, int((next_bonus - now).total_seconds() / 3600))
+                return {"success": False, "already_claimed": True, "hours_left": hours_left}
+
+        # Начисляем +2 очка
+        current_pts = user.data[0].get("referral_points", 0) or 0
+        supabase.table("users").update({
+            "referral_points": current_pts + 2,
+            "last_daily_bonus": now.isoformat()
+        }).eq("id", user_id).execute()
+
+        return {"success": True, "bonus": 2}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.post("/users/{user_id}/ban")
 async def ban_user(user_id: int, body: dict):
     """Вечная блокировка пользователя."""
