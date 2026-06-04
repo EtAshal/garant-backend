@@ -466,9 +466,15 @@ function getSeasonInfo() {
 // ── ЗАГРУЗКА ──────────────────────────────────────────────────
 async function load() {
     try {
-        const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
-        const data = await res.json();
-        const deals = data.success ? data.deals : [];
+        const [dealsRes, userRes] = await Promise.all([
+            fetch(`${BACKEND}/users/${currentUserId}/deals`),
+            fetch(`${BACKEND}/users/${currentUserId}/public`)
+        ]);
+        const dealsData = await dealsRes.json();
+        const userData  = await userRes.json();
+
+        const deals = dealsData.success ? dealsData.deals : [];
+        const refPoints = userData.success ? (userData.user.referral_points || 0) : 0;
 
         const completed = deals.filter(d => d.status === 'completed');
         const bad       = deals.filter(d => d.status === 'cancelled' || d.status === 'dispute');
@@ -477,7 +483,7 @@ async function load() {
 
         const sellerPts = asSeller.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
         const buyerPts  = asBuyer.reduce((s, d)  => s + Math.floor(parseFloat(d.amount) / 100), 0);
-        const totalPts  = sellerPts + buyerPts;
+        const totalPts  = sellerPts + buyerPts + refPoints;
 
         const status = getStatus(totalPts);
         const prog   = getProgress(totalPts);
