@@ -1006,9 +1006,15 @@
         <button class="profile-btn" onclick="openProfile()">👤</button>
     </div>
 
-    <button class="btn-create fade-in d1" onclick="createDeal()">
-        + Составить грамоту о сделке
-    </button>
+    <div style="display:flex;gap:8px;margin-bottom:0" class="fade-in d1">
+        <button class="btn-create" onclick="window.location.href='stats.html'"
+            style="flex-shrink:0;width:52px;padding:0;font-size:22px;margin-bottom:0">
+            📊
+        </button>
+        <button class="btn-create" onclick="createDeal()" style="flex:1;margin-bottom:0">
+            + Составить грамоту о сделке
+        </button>
+    </div>
 
     <!-- Ежедневный бонус -->
     <div class="daily-btn fade-in d2" id="daily-btn"
@@ -1027,18 +1033,6 @@
             </div>
         </div>
         <div class="daily-badge" id="daily-badge">+2 ⭐</div>
-    </div>
-
-    <!-- Статистика -->
-    <div class="daily-btn fade-in d2" onclick="window.location.href='stats.html'" style="border-color:var(--gold-dim);animation:none;">
-        <div class="daily-left">
-            <div class="daily-icon">📊</div>
-            <div>
-                <div class="daily-title">Моя статистика</div>
-                <div class="daily-sub">Графики и аналитика сделок</div>
-            </div>
-        </div>
-        <div class="daily-badge" style="color:var(--gold);background:rgba(201,168,76,0.1);border-color:var(--gold-dim)">→</div>
     </div>
 
     <!-- Вкладки -->
