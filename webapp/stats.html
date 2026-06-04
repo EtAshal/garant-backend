@@ -177,13 +177,13 @@ tg.expand();
 const BACKEND = 'https://garant-backend-production.up.railway.app';
 const userId  = tg.initDataUnsafe?.user?.id;
 
-const MONTHS = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
-function fmt(n) {
-    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
-    if (n >= 1000)    return (n/1000).toFixed(0) + 'к';
-    return String(n);
-}
+const MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M ₽';
+    if (n >= 1000)    return (n/1000).toFixed(1).replace('.0','') + 'к ₽';
+    return String(n) + ' ₽';
+
 function fmtFull(n) {
     return parseInt(n).toLocaleString('ru') + ' ₽';
 }
@@ -219,7 +219,8 @@ async function load() {
                 return dd.getMonth() === m && dd.getFullYear() === y;
             });
             monthData.push({
-                label: MONTHS[m],
+                label: MONTHS_SHORT[m],
+                fullLabel: MONTHS[m],
                 count: monthDeals.length,
                 vol:   monthDeals.reduce((s, d) => s + parseFloat(d.amount), 0)
             });
@@ -272,7 +273,7 @@ async function load() {
             <div class="best-icon">🏆</div>
             <div>
                 <div class="best-title">Лучший месяц</div>
-                <div class="best-val">${bestMonth.label} — ${fmtFull(bestMonth.vol)}</div>
+                <div class="best-val">${bestMonth.fullLabel} — ${fmtFull(bestMonth.vol)}</div>
             </div>
         </div>` : ''}
 
