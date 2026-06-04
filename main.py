@@ -201,11 +201,56 @@ async def process_payouts():
         print(f"[Выплата] Ошибка: {e}")
 
 
+# ── УВЕДОМЛЕНИЕ О ЗАТУХАНИИ ОЧКОВ ────────────────────────────────────────────
+async def notify_season_decay():
+    """Раз в день проверяет — осталось ли 7 дней до сезона."""
+    try:
+        now = datetime.now(timezone.utc)
+        seasons = [
+            datetime(now.year, 1,  1, tzinfo=timezone.utc),
+            datetime(now.year, 4,  1, tzinfo=timezone.utc),
+            datetime(now.year, 7,  1, tzinfo=timezone.utc),
+            datetime(now.year, 10, 1, tzinfo=timezone.utc),
+        ]
+        next_season = min((s for s in seasons if s > now), default=None)
+        if not next_season:
+            next_season = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+
+        days_left = (next_season - now).days
+        if days_left != 7:
+            return
+
+        users = supabase.table("users").select("id").execute()
+        season_names = {1: "Зима ❄️", 4: "Весна 🌸", 7: "Лето ☀️", 10: "Осень 🍂"}
+        name = season_names.get(next_season.month, "Новый сезон")
+        date_str = next_season.strftime("%d.%m.%Y")
+
+        for user in users.data:
+            try:
+                await bot_instance.send_message(
+                    user["id"],
+                    f"⏳ <b>Через 7 дней наступает новый сезон!</b>\n\n"
+                    f"{name} — {date_str}\n\n"
+                    f"Все очки репутации уменьшатся на <b>30%</b>.\n"
+                    f"Успейте провести сделки до затухания!\n\n"
+                    f"💡 Чем больше сделок — тем выше статус после пересчёта.",
+                    parse_mode="HTML"
+                )
+            except:
+                pass
+
+        print(f"[Затухание] Уведомления отправлены — {days_left} дней до сезона")
+
+    except Exception as e:
+        print(f"[Затухание] Ошибка: {e}")
+
+
 @app.on_event("startup")
 async def startup():
-    scheduler.add_job(auto_complete_deals, "interval", hours=1,   id="auto_complete")
-    scheduler.add_job(send_reminders,      "interval", hours=1,   id="reminders")
+    scheduler.add_job(auto_complete_deals, "interval", hours=1,    id="auto_complete")
+    scheduler.add_job(send_reminders,      "interval", hours=1,    id="reminders")
     scheduler.add_job(process_payouts,     "interval", minutes=30, id="payouts")
+    scheduler.add_job(notify_season_decay, "interval", hours=24,   id="season_decay")
     scheduler.start()
     print("Планировщик запущен")
 
