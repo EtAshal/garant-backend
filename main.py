@@ -524,31 +524,52 @@ async def deal_action(deal_id: str, data: dict):
 async def daily_bonus(user_id: int):
     """Ежедневный бонус +2 очка за вход — раз в календарный день."""
     try:
-        user = supabase.table("users").select("last_daily_bonus, referral_points").eq("id", user_id).execute()
+        user = supabase.table("users").select(
+            "last_daily_bonus, referral_points, daily_streak, daily_history"
+        ).eq("id", user_id).execute()
         if not user.data:
             return {"success": False, "error": "Пользователь не найден"}
 
-        now = datetime.now(timezone.utc)
-        last = user.data[0].get("last_daily_bonus")
+        now   = datetime.now(timezone.utc)
+        data  = user.data[0]
+        last  = data.get("last_daily_bonus")
+        streak = data.get("daily_streak") or 0
+        history = data.get("daily_history") or []
+
+        today_str = now.date().isoformat()
 
         if last:
             last_dt = datetime.fromisoformat(last.replace("Z", "+00:00"))
-            # Сравниваем только даты (день/месяц/год)
             if last_dt.date() >= now.date():
-                # Считаем сколько осталось до полуночи
                 from datetime import time as dtime
                 midnight = datetime.combine(now.date() + timedelta(days=1), dtime.min, tzinfo=timezone.utc)
                 hours_left = max(0, int((midnight - now).total_seconds() / 3600))
-                return {"success": False, "already_claimed": True, "hours_left": hours_left}
+                return {"success": False, "already_claimed": True, "hours_left": hours_left, "streak": streak, "history": history}
 
-        # Начисляем +2 очка к referral_points
-        current_pts = user.data[0].get("referral_points", 0) or 0
+            # Проверяем серию — если вчера был бонус, увеличиваем streak
+            yesterday = (now.date() - timedelta(days=1)).isoformat()
+            if last_dt.date().isoformat() == yesterday:
+                streak += 1
+            else:
+                streak = 1  # серия прервалась
+        else:
+            streak = 1
+
+        # Добавляем сегодня в историю
+        if today_str not in history:
+            history.append(today_str)
+        # Оставляем только последние 30 дней
+        history = sorted(history)[-30:]
+
+        current_pts = data.get("referral_points", 0) or 0
         supabase.table("users").update({
             "referral_points": current_pts + 2,
-            "last_daily_bonus": now.isoformat()
+            "last_daily_bonus": now.isoformat(),
+            "daily_streak": streak,
+            "daily_history": history
         }).eq("id", user_id).execute()
 
-        return {"success": True, "bonus": 2}
+        return {"success": True, "bonus": 2, "streak": streak, "history": history}
 
     except Exception as e:
         return {"success": False, "error": str(e)}

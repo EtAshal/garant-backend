@@ -259,7 +259,40 @@
             padding: 4px 10px;
         }
         .daily-badge.claimed { color: var(--text-dim); background: transparent; border-color: var(--border); }
-        .swipe-wrap {
+        /* ── КАЛЕНДАРЬ БОНУСОВ ── */
+        .cal-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none; transition: opacity .25s;
+        }
+        .cal-overlay.open { opacity: 1; pointer-events: all; }
+        @keyframes calPop {
+            0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 0; }
+            70%  { transform: translate(-50%,-50%) scale(1.03); }
+            100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+        }
+        .cal-popup {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0.8);
+            background: var(--bg2); border: 1px solid var(--gold-dim);
+            border-radius: 16px; padding: 20px; width: 300px; z-index: 201;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            opacity: 0; pointer-events: none;
+        }
+        .cal-popup.open { animation: calPop .35s cubic-bezier(.34,1.56,.64,1) forwards; pointer-events: all; }
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .cal-title { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold); }
+        .cal-streak { font-family: 'Cinzel', serif; font-size: 11px; color: var(--green-lt); background: rgba(74,122,80,0.2); border: 1px solid var(--green); border-radius: 12px; padding: 2px 8px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
+        .cal-day-name { font-family: 'Cinzel', serif; font-size: 9px; color: var(--text-dim); text-align: center; padding: 2px 0; }
+        .cal-day { aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-dim); background: var(--bg3); }
+        .cal-day.claimed { background: rgba(74,122,80,0.25); color: var(--green-lt); border: 1px solid rgba(74,122,80,0.4); font-weight: 600; }
+        .cal-day.today { border: 1px solid var(--gold); color: var(--gold); font-weight: 700; }
+        .cal-day.today.claimed { background: rgba(201,168,76,0.2); border-color: var(--gold); color: var(--gold); }
+        .cal-day.empty { background: transparent; }
+        .cal-hint { font-size: 12px; font-style: italic; color: var(--text-dim); text-align: center; }
+
+        /* ── СВАЙП ПАНЕЛИ ── */
             position: relative; overflow: hidden;
         }
         .swipe-track {
@@ -724,6 +757,17 @@
 <!-- Затемнение -->
 <div class="scroll-overlay" id="scroll-overlay" onclick="closeScroll()"></div>
 
+<!-- Календарь бонусов -->
+<div class="cal-overlay" id="cal-overlay" onclick="closeCal()"></div>
+<div class="cal-popup" id="cal-popup">
+    <div class="cal-header">
+        <div class="cal-title">🎁 Ежедневный бонус</div>
+        <div class="cal-streak" id="cal-streak">🔥 0 дней</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-hint">Заходи каждый день — получай +2 очка</div>
+</div>
+
 <!-- Свиток -->
 <div class="scroll-panel" id="scroll-panel">
     <button class="scroll-close" onclick="closeScroll()">✕</button>
@@ -966,12 +1010,19 @@
     </button>
 
     <!-- Ежедневный бонус -->
-    <div class="daily-btn fade-in d2" id="daily-btn" onclick="claimDaily()">
+    <div class="daily-btn fade-in d2" id="daily-btn"
+        onclick="claimDaily()"
+        onmousedown="startDailyPress()"
+        onmouseup="endDailyPress()"
+        onmouseleave="endDailyPress()"
+        ontouchstart="startDailyPress()"
+        ontouchend="endDailyPress()"
+        ontouchcancel="endDailyPress()">
         <div class="daily-left">
             <div class="daily-icon">🎁</div>
             <div>
                 <div class="daily-title">Ежедневный бонус</div>
-                <div class="daily-sub" id="daily-sub">Войдите каждый день — +2 очка</div>
+                <div class="daily-sub" id="daily-sub">Зажмите чтобы увидеть календарь</div>
             </div>
         </div>
         <div class="daily-badge" id="daily-badge">+2 ⭐</div>
@@ -1314,7 +1365,63 @@
             } catch(e) {}
         }
 
-        // ── ЕЖЕДНЕВНЫЙ БОНУС ──────────────────────────────────
+        // ── ЕЖЕДНЕВНЫЙ БОНУС И КАЛЕНДАРЬ ──────────────────────
+        let dailyPressTimer = null;
+        let dailyHistory = [];
+        let dailyStreak  = 0;
+
+        function startDailyPress() {
+            dailyPressTimer = setTimeout(() => {
+                openCal();
+            }, 600);
+        }
+        function endDailyPress() {
+            clearTimeout(dailyPressTimer);
+        }
+
+        function openCal() {
+            if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.scroll();
+            renderCal();
+            document.getElementById('cal-overlay').classList.add('open');
+            document.getElementById('cal-popup').classList.add('open');
+        }
+        function closeCal() {
+            document.getElementById('cal-overlay').classList.remove('open');
+            document.getElementById('cal-popup').classList.remove('open');
+        }
+
+        function renderCal() {
+            const now    = new Date();
+            const year   = now.getFullYear();
+            const month  = now.getMonth();
+            const today  = now.getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const todayStr = now.toISOString().slice(0, 10);
+
+            document.getElementById('cal-streak').textContent = `🔥 ${dailyStreak} дней`;
+
+            const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+            let html = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+            // Сдвиг — в JS воскресенье = 0, нам нужен понедельник = 0
+            const offset = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isClaimed = dailyHistory.includes(dateStr);
+                const isToday   = d === today;
+                let cls = 'cal-day';
+                if (isClaimed) cls += ' claimed';
+                if (isToday)   cls += ' today';
+                const inner = isClaimed ? '✓' : d;
+                html += `<div class="${cls}">${inner}</div>`;
+            }
+
+            document.getElementById('cal-grid').innerHTML = html;
+        }
+
         async function checkDaily() {
             if (!currentUserId) return;
             try {
@@ -1322,14 +1429,18 @@
                 const data = await res.json();
                 if (!data.success) return;
 
-                const last = data.user.last_daily_bonus;
+                const user = data.user;
+                dailyHistory = user.daily_history || [];
+                dailyStreak  = user.daily_streak  || 0;
+
+                const last = user.last_daily_bonus;
                 if (last) {
                     const lastDt = new Date(last);
                     const now    = new Date();
-                    const diff   = (now - lastDt) / 1000;
-                    if (diff < 86400) {
-                        // Уже получили сегодня
-                        const hoursLeft = Math.ceil((86400 - diff) / 3600);
+                    if (lastDt.toDateString() === now.toDateString()) {
+                        const midnight = new Date(now);
+                        midnight.setHours(24, 0, 0, 0);
+                        const hoursLeft = Math.ceil((midnight - now) / 3600000);
                         document.getElementById('daily-btn').classList.add('claimed');
                         document.getElementById('daily-sub').textContent = `Следующий бонус через ${hoursLeft} ч.`;
                         document.getElementById('daily-badge').textContent = '✓';
@@ -1341,11 +1452,7 @@
 
         async function claimDaily() {
             const btn = document.getElementById('daily-btn');
-            if (btn.classList.contains('claimed')) {
-                const sub = document.getElementById('daily-sub').textContent;
-                tg.showAlert(`⏳ ${sub}`);
-                return;
-            }
+            if (btn.classList.contains('claimed')) return;
             if (!currentUserId) return;
             try {
                 const res  = await fetch(`${BACKEND}/users/${currentUserId}/daily`, { method: 'POST' });
@@ -1353,12 +1460,19 @@
 
                 if (data.success) {
                     if (typeof GARANT_SOUNDS !== 'undefined') GARANT_SOUNDS.confirm();
+                    dailyHistory = data.history || dailyHistory;
+                    dailyStreak  = data.streak  || dailyStreak;
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    if (!dailyHistory.includes(todayStr)) dailyHistory.push(todayStr);
+
                     btn.classList.add('claimed');
-                    document.getElementById('daily-sub').textContent = 'Следующий бонус через 24 ч.';
+                    document.getElementById('daily-sub').textContent = 'Следующий бонус завтра';
                     document.getElementById('daily-badge').textContent = '✓';
                     document.getElementById('daily-badge').classList.add('claimed');
-                    tg.showAlert('🎁 +2 очка получены!\n\nВозвращайтесь завтра за новым бонусом.');
+                    tg.showAlert(`🎁 +2 очка получены!\n🔥 Серия: ${data.streak} ${data.streak === 1 ? 'день' : 'дней'}\n\nВозвращайтесь завтра!`);
                 } else if (data.already_claimed) {
+                    dailyHistory = data.history || dailyHistory;
+                    dailyStreak  = data.streak  || dailyStreak;
                     btn.classList.add('claimed');
                     document.getElementById('daily-sub').textContent = `Следующий бонус через ${data.hours_left} ч.`;
                     document.getElementById('daily-badge').textContent = '✓';
