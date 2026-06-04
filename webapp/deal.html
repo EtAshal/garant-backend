@@ -167,6 +167,22 @@
         .btn-copy:active { background: var(--bg3); }
         .btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
+        /* ── ТОСТ ── */
+        .toast {
+            position: fixed; bottom: 100px; left: 50%; z-index: 999;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg2); border: 1px solid var(--sealing);
+            border-radius: 10px; padding: 12px 20px;
+            font-size: 14px; font-style: italic; color: var(--text);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            opacity: 0; pointer-events: none;
+            transition: all .3s cubic-bezier(.34,1.56,.64,1);
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1; transform: translateX(-50%) translateY(0);
+        }
+
         .loading { text-align: center; padding: 50px 0; color: var(--text-dim); font-style: italic; font-size: 16px; }
 
         .fade-in { animation: fadeUp .35s ease both; }
@@ -180,6 +196,7 @@
         <h1>Грамота о сделке</h1>
     </div>
 
+    <div class="toast" id="toast"></div>
     <div id="loading" class="loading">Разворачиваем свиток...</div>
     <div id="content" style="display:none"></div>
 
@@ -293,7 +310,8 @@
 
             let buttonsHtml = '';
             if (deal.status === 'pending' && !isSeller) {
-                buttonsHtml = `<button class="btn btn-accept" onclick="acceptDeal()">📜 Принять сделку — внести ${amount.toLocaleString()} ₽</button>`;
+                // Кнопка всегда активна — при нехватке денег показываем тост
+                buttonsHtml = `<button class="btn btn-accept" onclick="handleAccept(${amount})">📜 Принять сделку — внести ${amount.toLocaleString()} ₽</button>`;
             }
             if (deal.status === 'active') {
                 if (isSeller && !deal.seller_action) {
@@ -346,6 +364,21 @@
         }
 
         // ── ЗВУКИ ─────────────────────────────────────────────
+        let toastTimer = null;
+        function showToast(msg, duration = 2500) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+        }
+
+        function handleAccept(amount) {
+            // Пока нет реального баланса — показываем тост
+            // После подключения ЮКассы сюда добавим проверку реального баланса
+            showToast('💰 Недостаточно средств — пополните кошелёк');
+        }
+
         async function acceptDeal() {
             GARANT_SOUNDS.coins();
             try {
