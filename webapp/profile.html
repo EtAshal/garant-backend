@@ -956,6 +956,7 @@ async function load() {
         </div>`.repeat(3);
 
     let refPoints = 0;
+    let isPremium = false;
 
     try {
         if (!currentUserId) throw new Error('no user');
@@ -969,19 +970,21 @@ async function load() {
         const userData  = await userRes.json();
 
         allDeals  = dealsData.success ? (dealsData.deals || []) : [];
-        refPoints = userData.success   ? (userData.user.referral_points || 0) : 0;
-
-        const refCount  = userData.success ? (userData.user.referral_count  || 0) : 0;
-        const isPremium = userData.success && userData.user.premium_until &&
+        refPoints = userData.success  ? (userData.user.referral_points || 0) : 0;
+        isPremium = userData.success && userData.user.premium_until &&
             new Date(userData.user.premium_until) > new Date();
 
+        const refCount = userData.success ? (userData.user.referral_count || 0) : 0;
         document.getElementById('ref-count').textContent  = `${refCount}/5`;
         document.getElementById('ref-points').textContent = `+${refPoints} очков`;
         requestAnimationFrame(() => setTimeout(() => {
             document.getElementById('ref-bar').style.width = (refCount / 5 * 100) + '%';
         }, 300));
 
-    } catch(e) { allDeals = []; isPremium = false; }
+    } catch(e) {
+        console.error('load error:', e);
+        allDeals = [];
+    }
 
     hideLoader();
     renderProfile(allDeals, refPoints, isPremium);

@@ -522,7 +522,7 @@ async def deal_action(deal_id: str, data: dict):
 
 @app.post("/users/{user_id}/daily")
 async def daily_bonus(user_id: int):
-    """Ежедневный бонус +2 очка за вход."""
+    """Ежедневный бонус +2 очка за вход — раз в календарный день."""
     try:
         user = supabase.table("users").select("last_daily_bonus, referral_points").eq("id", user_id).execute()
         if not user.data:
@@ -533,13 +533,15 @@ async def daily_bonus(user_id: int):
 
         if last:
             last_dt = datetime.fromisoformat(last.replace("Z", "+00:00"))
-            # Проверяем что прошли сутки
-            if (now - last_dt).total_seconds() < 86400:
-                next_bonus = last_dt.replace(hour=0, minute=0, second=0) + timedelta(days=1)
-                hours_left = max(0, int((next_bonus - now).total_seconds() / 3600))
+            # Сравниваем только даты (день/месяц/год)
+            if last_dt.date() >= now.date():
+                # Считаем сколько осталось до полуночи
+                from datetime import time as dtime
+                midnight = datetime.combine(now.date() + timedelta(days=1), dtime.min, tzinfo=timezone.utc)
+                hours_left = max(0, int((midnight - now).total_seconds() / 3600))
                 return {"success": False, "already_claimed": True, "hours_left": hours_left}
 
-        # Начисляем +2 очка
+        # Начисляем +2 очка к referral_points
         current_pts = user.data[0].get("referral_points", 0) or 0
         supabase.table("users").update({
             "referral_points": current_pts + 2,
