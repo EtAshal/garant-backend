@@ -230,6 +230,10 @@ async def root():
 @app.post("/deals/create")
 async def create_deal(deal: DealCreate):
     try:
+        # Глобальный лимит платформы
+        if deal.amount > 250000:
+            return {"success": False, "error": "Максимальная сумма сделки — 250 000 ₽"}
+
         # Считаем очки продавца
         seller_deals = supabase.table("deals").select("amount, seller_id, buyer_id, status").or_(
             f"seller_id.eq.{deal.seller_id},buyer_id.eq.{deal.seller_id}"
