@@ -183,16 +183,25 @@ const MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','И�
     if (n >= 1000000) return (n/1000000).toFixed(1) + 'M ₽';
     if (n >= 1000)    return (n/1000).toFixed(1).replace('.0','') + 'к ₽';
     return String(n) + ' ₽';
-
+}
 function fmtFull(n) {
     return parseInt(n).toLocaleString('ru') + ' ₽';
 }
 
 async function load() {
-    if (!userId) { document.getElementById('content').innerHTML = '<div class="empty">Войдите через Telegram</div>'; return; }
+    if (!userId) {
+        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Откройте через Telegram бота</div>';
+        return;
+    }
+
+    // Таймаут 5 секунд
+    const timeout = setTimeout(() => {
+        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Ошибка загрузки — попробуйте позже</div>';
+    }, 5000);
 
     try {
         const res  = await fetch(`${BACKEND}/users/${userId}/deals`);
+        clearTimeout(timeout);
         const data = await res.json();
         if (!data.success) throw new Error();
 
@@ -323,7 +332,8 @@ async function load() {
         document.getElementById('content').innerHTML = html;
 
     } catch(e) {
-        document.getElementById('content').innerHTML = '<div class="empty">Ошибка загрузки</div>';
+        clearTimeout(timeout);
+        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Ошибка загрузки</div>';
     }
 }
 
