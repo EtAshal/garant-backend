@@ -585,9 +585,69 @@
             animation: shimmer 1.5s infinite; border-radius: 4px; height: 14px; margin-bottom: 6px;
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        /* ── ЛОАДЕР ── */
+        .loader-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity .5s ease, visibility .5s ease;
+        }
+        .loader-overlay.hidden {
+            opacity: 0; visibility: hidden; pointer-events: none;
+        }
+        @keyframes scalesSway {
+            0%   { transform: rotate(-8deg); }
+            50%  { transform: rotate(8deg); }
+            100% { transform: rotate(-8deg); }
+        }
+        @keyframes loaderGlow {
+            0%,100% { text-shadow: 0 0 10px rgba(201,168,76,0.3); }
+            50%      { text-shadow: 0 0 30px rgba(201,168,76,0.8); }
+        }
+        .loader-icon {
+            font-size: 56px; margin-bottom: 20px;
+            animation: scalesSway 1.5s ease-in-out infinite, loaderGlow 1.5s ease-in-out infinite;
+        }
+        .loader-title {
+            font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+            color: var(--gold); letter-spacing: 3px; margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(201,168,76,0.3);
+        }
+        .loader-sub {
+            font-size: 13px; font-style: italic; color: var(--text-dim);
+            margin-bottom: 24px;
+        }
+        .loader-dots {
+            display: flex; gap: 6px;
+        }
+        .loader-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--gold-dim);
+            animation: dotPulse 1.2s ease-in-out infinite;
+        }
+        .loader-dot:nth-child(2) { animation-delay: .2s; }
+        .loader-dot:nth-child(3) { animation-delay: .4s; }
+        @keyframes dotPulse {
+            0%,100% { transform: scale(1); opacity: 0.4; }
+            50%      { transform: scale(1.4); opacity: 1; background: var(--gold); }
+        }
+
 </style>
 </head>
 <body>
+
+<!-- Лоадер -->
+<div class="loader-overlay" id="loader">
+    <div class="loader-icon">⚖️</div>
+    <div class="loader-title">ГАРАНТЪ</div>
+    <div class="loader-sub">Загружаем платформу…</div>
+    <div class="loader-dots">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+    </div>
+</div>
 
 <!-- Затемнение кошелька -->
 <div class="wallet-overlay" id="wallet-overlay" onclick="closeWallet()"></div>
@@ -894,6 +954,13 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        // Скрываем лоадер когда страница готова
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+        }
+        // Скрываем после загрузки данных или максимум через 2 сек
+        setTimeout(hideLoader, 2000);
 
         // Показываем онбординг новым пользователям
         if (!localStorage.getItem('garant_onboarding_done')) {
@@ -1206,10 +1273,11 @@
         }
 
         async function loadMyDeals() {
-            if (!currentUserId) return;
+            if (!currentUserId) { hideLoader(); return; }
             try {
                 const res  = await fetch(`${BACKEND}/users/${currentUserId}/deals`);
                 const data = await res.json();
+                hideLoader();
                 if (!data.success || !data.deals.length) return;
 
                 allMyDeals = data.deals;

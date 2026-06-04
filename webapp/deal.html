@@ -188,9 +188,29 @@
         .fade-in { animation: fadeUp .35s ease both; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s}
-    </style>
+    
+        /* ── ЛОАДЕР ── */
+        .loader-overlay { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .5s ease, visibility .5s ease; }
+        .loader-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        @keyframes scalesSway { 0%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} 100%{transform:rotate(-8deg)} }
+        @keyframes loaderGlow { 0%,100%{text-shadow:0 0 10px rgba(201,168,76,0.3)} 50%{text-shadow:0 0 30px rgba(201,168,76,0.8)} }
+        .loader-icon { font-size: 56px; margin-bottom: 20px; animation: scalesSway 1.5s ease-in-out infinite, loaderGlow 1.5s ease-in-out infinite; }
+        .loader-title { font-family: "Cinzel", serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 3px; margin-bottom: 8px; }
+        .loader-sub { font-size: 13px; font-style: italic; color: var(--text-dim); margin-bottom: 24px; }
+        .loader-dots { display: flex; gap: 6px; }
+        .loader-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-dim); animation: dotPulse 1.2s ease-in-out infinite; }
+        .loader-dot:nth-child(2){animation-delay:.2s} .loader-dot:nth-child(3){animation-delay:.4s}
+        @keyframes dotPulse { 0%,100%{transform:scale(1);opacity:0.4} 50%{transform:scale(1.4);opacity:1;background:var(--gold)} }
+</style>
 </head>
 <body>
+<!-- Лоадер -->
+<div class="loader-overlay" id="loader">
+    <div class="loader-icon">⚖️</div>
+    <div class="loader-title">ГАРАНТЪ</div>
+    <div class="loader-sub">Загружаем…</div>
+    <div class="loader-dots"><div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div></div>
+</div>
     <div class="header fade-in">
         <button class="back-btn" onclick="goBack()">←</button>
         <h1>Грамота о сделке</h1>
@@ -203,6 +223,11 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+
+        // Лоадер
+        function hideLoader() { const l = document.getElementById("loader"); if(l) l.classList.add("hidden"); }
+        setTimeout(hideLoader, 2500);
+
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const params = new URLSearchParams(window.location.search);
         const dealId = params.get('id');
@@ -213,8 +238,9 @@
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}`);
                 const data = await res.json();
-                if (!data.success) { document.getElementById('loading').textContent = 'Грамота не найдена'; return; }
+                if (!data.success) { document.getElementById('loading').textContent = 'Грамота не найдена'; hideLoader(); return; }
                 renderDeal(data.deal, data.days_since_accepted);
+                hideLoader();
             } catch(e) { document.getElementById('loading').textContent = 'Ошибка загрузки'; }
         }
 
