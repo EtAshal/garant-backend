@@ -553,6 +553,23 @@
     </div>
 </div>
 
+<div class="section-title fade-in d4" style="margin-top:18px">Гарантъ Премиум</div>
+<div class="points-card fade-in d4" onclick="window.location.href='premium.html'" style="cursor:pointer;border-color:var(--gold-dim);background:linear-gradient(135deg,rgba(139,105,20,0.15),rgba(26,18,8,0.5))">
+    <div class="points-row">
+        <div>
+            <div class="points-label" id="premium-label">💎 Премиум подписка</div>
+            <div class="points-value" id="premium-value" style="font-size:22px;color:var(--gold)">199 ₽/мес</div>
+        </div>
+        <div class="points-next">
+            <div class="points-next-label">мгновенная</div>
+            <div class="points-next-value">выплата</div>
+        </div>
+    </div>
+    <div style="font-size:12px;font-style:italic;color:var(--text-dim);margin-top:8px">
+        Нажмите чтобы узнать подробнее →
+    </div>
+</div>
+
 <div class="section-title fade-in d4" style="margin-top:18px">Реферальная программа</div>
 <div class="points-card fade-in d4" id="referral-card" style="cursor:default;animation:none;border-color:var(--border)">
     <div class="points-row">
@@ -752,7 +769,7 @@ function renderAchievements(deals, sellerCount, buyerCount, totalPts) {
     }).join('');
 }
 
-function renderProfile(deals, refPoints = 0) {
+function renderProfile(deals, refPoints = 0, isPremium = false) {
     const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
     const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     document.getElementById('user-name').textContent = name;
@@ -780,6 +797,7 @@ function renderProfile(deals, refPoints = 0) {
     // Золотое имя для Гаранта
     const nameEl = document.getElementById('user-name');
     nameEl.className = rankIdx === 3 ? 'user-name rank-3' : 'user-name';
+    nameEl.innerHTML = name + (isPremium ? ' <span style="font-size:14px" title="Премиум подписка">💎</span>' : '');
 
     // Загружаем фото
     avatarEl.textContent = initials;
@@ -928,16 +946,19 @@ async function load() {
         allDeals  = dealsData.success ? (dealsData.deals || []) : [];
         refPoints = userData.success   ? (userData.user.referral_points || 0) : 0;
 
-        const refCount = userData.success ? (userData.user.referral_count || 0) : 0;
+        const refCount  = userData.success ? (userData.user.referral_count  || 0) : 0;
+        const isPremium = userData.success && userData.user.premium_until &&
+            new Date(userData.user.premium_until) > new Date();
+
         document.getElementById('ref-count').textContent  = `${refCount}/5`;
         document.getElementById('ref-points').textContent = `+${refPoints} очков`;
         requestAnimationFrame(() => setTimeout(() => {
             document.getElementById('ref-bar').style.width = (refCount / 5 * 100) + '%';
         }, 300));
 
-    } catch(e) { allDeals = []; }
+    } catch(e) { allDeals = []; isPremium = false; }
 
-    renderProfile(allDeals, refPoints);
+    renderProfile(allDeals, refPoints, isPremium);
     renderHistory();
 }
 load();
