@@ -271,7 +271,7 @@
         // ── ЛИМИТЫ ПО СТАТУСУ ─────────────────────────────────
         const LIMITS = [
             { min: 1500, limit: 250000, name: '⭐ Гарант',      label: '250 000 ₽' },
-            { min: 500,  limit: 200000, name: '🛡️ Надёжный',   label: '200 000 ₽' },
+            { min: 500,  limit: 150000, name: '🛡️ Надёжный',   label: '150 000 ₽' },
             { min: 100,  limit: 50000,  name: '📜 Проверенный', label: '50 000 ₽' },
             { min: 0,    limit: 10000,  name: '🆕 Новичок',     label: '10 000 ₽' },
         ];
@@ -283,31 +283,29 @@
             const userId = tg.initDataUnsafe?.user?.id;
             if (!userId) return;
             try {
-                const res  = await fetch(`https://garant-backend-production.up.railway.app/users/${userId}/deals`);
-                const data = await res.json();
-                if (!data.success) return;
+                const [dealsRes, userRes] = await Promise.all([
+                    fetch(`https://garant-backend-production.up.railway.app/users/${userId}/deals`),
+                    fetch(`https://garant-backend-production.up.railway.app/users/${userId}/public`)
+                ]);
+                const dealsData = await dealsRes.json();
+                const userData  = await userRes.json();
 
-                const completed = data.deals.filter(d => d.status === 'completed');
-                const asSeller  = completed.filter(d => d.seller_id == userId);
-                const asBuyer   = completed.filter(d => d.buyer_id  == userId);
-                userPts = [...asSeller, ...asBuyer].reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
+                const deals = dealsData.success ? (dealsData.deals || []) : [];
+                const refPoints = userData.success ? (userData.user.referral_points || 0) : 0;
+
+                const completed = deals.filter(d => d.status === 'completed');
+                const dealPts = completed.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
+                userPts = dealPts + refPoints;
 
                 const lvl = LIMITS.find(l => userPts >= l.min);
                 userLimit = lvl.limit;
 
-                // Показываем лимит под полем суммы
                 const hintEl = document.getElementById('limit-hint');
-                if (lvl.limit) {
-                    hintEl.innerHTML = `${lvl.name} · Лимит: <b>${lvl.limit.toLocaleString('ru')} ₽</b>`;
-                } else {
-                    hintEl.innerHTML = `${lvl.name} · <b>Без лимита</b> 🎉`;
-                    hintEl.style.color = 'var(--green, #4a7a50)';
-                }
+                hintEl.innerHTML = `${lvl.name} · Лимит: <b>${lvl.limit.toLocaleString('ru')} ₽</b>`;
 
-                // Обновляем placeholder и max
                 const input = document.getElementById('amount');
-                input.max = lvl.limit || 99999999;
-                input.placeholder = lvl.limit ? `до ${lvl.limit.toLocaleString('ru')}` : '0';
+                input.max = lvl.limit;
+                input.placeholder = `до ${lvl.limit.toLocaleString('ru')}`;
 
             } catch(e) {}
         }

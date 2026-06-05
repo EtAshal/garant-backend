@@ -291,9 +291,9 @@ async def create_deal(deal: DealCreate):
 
         # Лимит по статусу
         if seller_pts >= 1500:
-            limit = None  # без лимита
+            limit = 250000
         elif seller_pts >= 500:
-            limit = 200000
+            limit = 150000
         elif seller_pts >= 100:
             limit = 50000
         else:
