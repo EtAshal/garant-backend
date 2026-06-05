@@ -106,6 +106,40 @@ function fmt(n) {
 }
 
 async function load() {
+    if (!userId) {
+        document.getElementById('content').innerHTML = '<div class="empty">⚠️ Откройте через Telegram бота</div>';
+        return;
+    }
+
+    // Проверяем премиум
+    try {
+        const userRes = await fetch(BACKEND + '/users/' + userId + '/public');
+        const userData = await userRes.json();
+        const isPremium = userData.success && userData.user.premium_until &&
+            new Date(userData.user.premium_until) > new Date();
+
+        if (!isPremium) {
+            document.getElementById('content').innerHTML = `
+                <div style="text-align:center;padding:60px 20px">
+                    <div style="font-size:52px;margin-bottom:16px">💎</div>
+                    <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:#c9a84c;margin-bottom:10px">
+                        Только для Премиум
+                    </div>
+                    <div style="font-size:14px;font-style:italic;color:#a08060;line-height:1.7;margin-bottom:24px">
+                        Расширенная статистика доступна<br>только подписчикам Гарантъ Премиум
+                    </div>
+                    <button onclick="window.location.href='premium.html'" style="
+                        background:linear-gradient(135deg,#8b6914,#a07820);
+                        border:none;border-radius:8px;padding:14px 28px;
+                        font-family:'Cinzel',serif;font-size:14px;font-weight:700;
+                        color:#1a1208;cursor:pointer;letter-spacing:0.5px;">
+                        Оформить Премиум — 199 ₽/мес
+                    </button>
+                </div>`;
+            return;
+        }
+    } catch(e) {}
+
     try {
         const res = await fetch(BACKEND + '/users/' + userId + '/deals');
         const data = await res.json();
@@ -189,24 +223,26 @@ async function load() {
             html += '<div class="empty">Завершите первую сделку чтобы увидеть статистику</div>';
         }
 
-        // История затухания
+        // История затухания — всегда показываем блок
         var userRes2 = await fetch(BACKEND + '/users/' + userId + '/public');
         var userData2 = await userRes2.json();
         var decayHistory = userData2.success ? (userData2.user.decay_history || []) : [];
 
-        if (decayHistory.length > 0) {
-            html += '<div class="section-title fade-in d3">🍂 История затухания очков</div>';
-            html += '<div class="chart-wrap fade-in d3"><div class="chart-title">Очки до и после каждого сезона</div>';
+        html += '<div class="section-title fade-in d3">🍂 История затухания очков</div>';
+        html += '<div class="chart-wrap fade-in d3"><div class="chart-title">Очки до и после каждого сезона</div>';
+
+        if (decayHistory.length === 0) {
+            html += '<div style="text-align:center;padding:20px 0;font-size:13px;font-style:italic;color:var(--text-dim)">📅 Данных пока нет.<br>История появится в день первого затухания очков — 1 июля 2026.</div>';
+        } else {
             decayHistory.slice(-6).forEach(function(entry) {
-                var pct = Math.round((entry.after / Math.max(entry.before, 1)) * 100);
                 html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(74,53,32,0.4);font-size:13px">';
-                html += '<div><div style="color:var(--text)">' + entry.season + '</div><div style="font-size:11px;font-style:italic;color:var(--text-dim)">' + entry.date + '</div></div>';
+                html += '<div><div style="font-weight:600;color:var(--text)">' + entry.season + '</div><div style="font-size:11px;font-style:italic;color:var(--text-dim)">' + entry.date + '</div></div>';
                 html += '<div style="text-align:right"><div style="color:var(--text-dim)">' + entry.before + ' → <span style="color:#7acc84">' + entry.after + '</span></div>';
                 html += '<div style="font-size:11px;color:var(--sealing-lt)">−' + (entry.before - entry.after) + ' очков (−30%)</div></div>';
                 html += '</div>';
             });
-            html += '</div>';
         }
+        html += '</div>';
 
         document.getElementById('content').innerHTML = html;
 
