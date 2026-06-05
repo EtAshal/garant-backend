@@ -374,6 +374,35 @@
                     <div class="card-label">Номер грамоты</div>
                     <div style="font-size:11px;color:var(--text-dim);word-break:break-all;font-family:monospace">${deal.id}</div>
                 </div>
+                <div class="card fade-in d1" style="border-left:3px solid var(--gold-dim)">
+                    <div class="card-label" style="margin-bottom:10px">📊 Детали сделки</div>
+                    <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
+                        <div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-dim);font-style:italic">Создана</span>
+                            <span style="color:var(--text)">${deal.created_at ? new Date(deal.created_at).toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'}) : '—'}</span>
+                        </div>
+                        ${deal.accepted_at ? `<div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-dim);font-style:italic">Принята</span>
+                            <span style="color:var(--text)">${new Date(deal.accepted_at).toLocaleDateString('ru', {day:'numeric',month:'long'})}</span>
+                        </div>` : ''}
+                        ${deal.completed_at ? `<div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-dim);font-style:italic">Завершена</span>
+                            <span style="color:#7acc84">${new Date(deal.completed_at).toLocaleDateString('ru', {day:'numeric',month:'long'})}</span>
+                        </div>` : ''}
+                        <div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-dim);font-style:italic">Комиссия платформы</span>
+                            <span style="color:var(--gold)">${commission.toLocaleString()} ₽ (${(getCommission(amount)*100)}%)</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-dim);font-style:italic">Роль</span>
+                            <span style="color:var(--text)">${deal.seller_id == currentUserId ? '📦 Продавец' : '🛒 Покупатель'}</span>
+                        </div>
+                        ${deal.buyer_id && deal.buyer_id != currentUserId ? `<div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-dim);font-style:italic">Партнёр ID</span>
+                            <span style="color:var(--text);font-family:monospace;font-size:11px">#${String(deal.seller_id == currentUserId ? deal.buyer_id : deal.seller_id).slice(-6)}</span>
+                        </div>` : ''}
+                    </div>
+                </div>
                 <div class="divider fade-in d2">⚖️</div>
                 <button class="btn btn-copy fade-in d2" onclick="copyLink()">🔗 Скопировать ссылку на сделку</button>
                 ${buttonsHtml}`;

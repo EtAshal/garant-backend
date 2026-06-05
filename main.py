@@ -202,6 +202,56 @@ async def process_payouts():
 
 
 # ── УВЕДОМЛЕНИЕ О ЗАТУХАНИИ ОЧКОВ ────────────────────────────────────────────
+async def apply_season_decay():
+    """Применяет затухание очков в день начала сезона (-30%)."""
+    try:
+        now = datetime.now(timezone.utc)
+        seasons = [
+            datetime(now.year, 1,  1, tzinfo=timezone.utc),
+            datetime(now.year, 4,  1, tzinfo=timezone.utc),
+            datetime(now.year, 7,  1, tzinfo=timezone.utc),
+            datetime(now.year, 10, 1, tzinfo=timezone.utc),
+        ]
+        season_names = {1: "Зима ❄️", 4: "Весна 🌸", 7: "Лето ☀️", 10: "Осень 🍂"}
+
+        # Проверяем что сегодня первый день сезона
+        today_season = next((s for s in seasons if s.date() == now.date()), None)
+        if not today_season:
+            return
+
+        season_name = season_names.get(today_season.month, "Сезон")
+        users = supabase.table("users").select("id, referral_points, decay_history").execute()
+
+        for user in users.data:
+            try:
+                current_pts = user.get("referral_points", 0) or 0
+                if current_pts == 0:
+                    continue
+
+                new_pts = round(current_pts * 0.7)
+                decay_history = user.get("decay_history") or []
+                decay_history.append({
+                    "season": season_name,
+                    "date": now.strftime("%d.%m.%Y"),
+                    "before": current_pts,
+                    "after": new_pts
+                })
+                decay_history = decay_history[-10:]  # храним последние 10
+
+                supabase.table("users").update({
+                    "referral_points": new_pts,
+                    "decay_history": decay_history
+                }).eq("id", user["id"]).execute()
+
+            except:
+                pass
+
+        print(f"[Затухание] Применено — {season_name}")
+
+    except Exception as e:
+        print(f"[Затухание] Ошибка применения: {e}")
+
+
 async def notify_season_decay():
     """Раз в день проверяет — осталось ли 7 дней до сезона."""
     try:
@@ -220,7 +270,7 @@ async def notify_season_decay():
         if days_left != 7:
             return
 
-        users = supabase.table("users").select("id").execute()
+        users = supabase.table("users").select("id, referral_points, daily_streak, decay_history").execute()
         season_names = {1: "Зима ❄️", 4: "Весна 🌸", 7: "Лето ☀️", 10: "Осень 🍂"}
         name = season_names.get(next_season.month, "Новый сезон")
         date_str = next_season.strftime("%d.%m.%Y")
@@ -250,7 +300,8 @@ async def startup():
     scheduler.add_job(auto_complete_deals, "interval", hours=1,    id="auto_complete")
     scheduler.add_job(send_reminders,      "interval", hours=1,    id="reminders")
     scheduler.add_job(process_payouts,     "interval", minutes=30, id="payouts")
-    scheduler.add_job(notify_season_decay, "interval", hours=24,   id="season_decay")
+    scheduler.add_job(notify_season_decay, "interval", hours=24,   id="season_notify")
+    scheduler.add_job(apply_season_decay,  "interval", hours=24,   id="season_decay")
     scheduler.start()
     print("Планировщик запущен")
 
@@ -276,8 +327,8 @@ async def root():
 async def create_deal(deal: DealCreate):
     try:
         # Глобальный лимит платформы
-        if deal.amount > 250000:
-            return {"success": False, "error": "Максимальная сумма сделки — 250 000 ₽"}
+        if deal.amount > 500000:
+            return {"success": False, "error": "Максимальная сумма сделки — 500 000 ₽"}
 
         # Считаем очки продавца
         seller_deals = supabase.table("deals").select("amount, seller_id, buyer_id, status").or_(
@@ -289,8 +340,21 @@ async def create_deal(deal: DealCreate):
             for d in seller_deals.data
         )
 
+        # Проверяем премиум
+        seller_user = supabase.table("users").select("premium_until, referral_points").eq("id", deal.seller_id).execute()
+        is_premium = False
+        if seller_user.data and seller_user.data[0].get("premium_until"):
+            from datetime import timezone as tz
+            premium_until = datetime.fromisoformat(seller_user.data[0]["premium_until"].replace("Z", "+00:00"))
+            is_premium = premium_until > datetime.now(tz.utc)
+
+        ref_pts = seller_user.data[0].get("referral_points", 0) if seller_user.data else 0
+        seller_pts += ref_pts
+
         # Лимит по статусу
-        if seller_pts >= 1500:
+        if is_premium:
+            limit = 500000
+        elif seller_pts >= 1500:
             limit = 250000
         elif seller_pts >= 500:
             limit = 150000
@@ -299,8 +363,12 @@ async def create_deal(deal: DealCreate):
         else:
             limit = 10000
 
-        if limit and deal.amount > limit:
-            status_name = "Новичок" if seller_pts < 100 else "Проверенный" if seller_pts < 500 else "Надёжный"
+        if deal.amount > limit:
+            status_name = "💎 Премиум" if is_premium else (
+                "⭐ Гарант" if seller_pts >= 1500 else
+                "🛡️ Надёжный" if seller_pts >= 500 else
+                "📜 Проверенный" if seller_pts >= 100 else "🆕 Новичок"
+            )
             return {
                 "success": False,
                 "error": f"Лимит для статуса «{status_name}» — {limit:,} ₽. Ваша сумма: {int(deal.amount):,} ₽",

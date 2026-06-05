@@ -189,6 +189,25 @@ async function load() {
             html += '<div class="empty">Завершите первую сделку чтобы увидеть статистику</div>';
         }
 
+        // История затухания
+        var userRes2 = await fetch(BACKEND + '/users/' + userId + '/public');
+        var userData2 = await userRes2.json();
+        var decayHistory = userData2.success ? (userData2.user.decay_history || []) : [];
+
+        if (decayHistory.length > 0) {
+            html += '<div class="section-title fade-in d3">🍂 История затухания очков</div>';
+            html += '<div class="chart-wrap fade-in d3"><div class="chart-title">Очки до и после каждого сезона</div>';
+            decayHistory.slice(-6).forEach(function(entry) {
+                var pct = Math.round((entry.after / Math.max(entry.before, 1)) * 100);
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(74,53,32,0.4);font-size:13px">';
+                html += '<div><div style="color:var(--text)">' + entry.season + '</div><div style="font-size:11px;font-style:italic;color:var(--text-dim)">' + entry.date + '</div></div>';
+                html += '<div style="text-align:right"><div style="color:var(--text-dim)">' + entry.before + ' → <span style="color:#7acc84">' + entry.after + '</span></div>';
+                html += '<div style="font-size:11px;color:var(--sealing-lt)">−' + (entry.before - entry.after) + ' очков (−30%)</div></div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+
         document.getElementById('content').innerHTML = html;
 
     } catch(e) {
