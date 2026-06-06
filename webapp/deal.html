@@ -465,22 +465,10 @@
                 }
             } catch(e) {
                 tg.showAlert('Ошибка соединения с сервером');
-        async function acceptDeal() {
-            if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.coins();
-            try {
-                const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ buyer_id: currentUserId })
-                });
-                const data = await res.json();
-                if (data.success) { tg.showAlert('Сделка принята! Средства надёжно заблокированы.'); loadDeal(); }
-                else tg.showAlert('Ошибка: ' + data.error);
-            } catch(e) { tg.showAlert('Ошибка соединения'); }
+            }
         }
 
         async function takeAction(action) {
-            if (action === 'confirm') if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.confirm();
-            else if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.cancel();
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/action`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -496,7 +484,6 @@
             tg.showConfirm('⚔️ Открыть спор?\n\nДело будет передано арбитру. Деньги заморозятся до его решения.',
                 async (confirmed) => {
                     if (!confirmed) return;
-                    if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.dispute();
                     try {
                         const res = await fetch(`${BACKEND}/deals/${dealId}/dispute`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
