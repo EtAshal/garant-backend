@@ -439,8 +439,23 @@
         }
 
         async function acceptDeal() {
-            tg.showAlert('Debug: userId=' + currentUserId + ' dealId=' + dealId);
-            return;
+            try {
+                const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ buyer_id: currentUserId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    tg.showAlert('✅ Сделка принята! Средства надёжно заблокированы.');
+                    loadDeal();
+                } else {
+                    tg.showAlert('Ошибка: ' + (data.error || 'неизвестная ошибка'));
+                }
+            } catch(e) {
+                tg.showAlert('Ошибка соединения с сервером');
+            }
+        }
             GARANT_SOUNDS.coins();
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
