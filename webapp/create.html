@@ -339,8 +339,9 @@
             const info = document.getElementById('commission-info');
             const desc = document.getElementById('description').value;
 
-            // Глобальный лимит платформы
-            const overGlobal = amount > 250000;
+            // Глобальный лимит с учётом премиума
+            const globalLimit = userIsPremium ? 500000 : 250000;
+            const overGlobal = amount > globalLimit;
             // Проверяем лимит по статусу
             const overLimit = userLimit && amount > userLimit;
 
