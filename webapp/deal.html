@@ -225,10 +225,11 @@
 
         // Лоадер
         function hideLoader() {
-            const l = document.getElementById("loader");
-            if(l) { l.style.transition = 'opacity 0.3s'; l.style.opacity = '0'; setTimeout(() => { l.style.display = 'none'; }, 350); }
+            try {
+                document.getElementById("loader").style.display = 'none';
+            } catch(e) {}
         }
-        setTimeout(hideLoader, 3000);
+        window.onload = function() { setTimeout(hideLoader, 1500); };
 
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const params = new URLSearchParams(window.location.search);
@@ -236,14 +237,21 @@
         const currentUserId = tg.initDataUnsafe?.user?.id || 0;
 
         async function loadDeal() {
-            if (!dealId) { document.getElementById('loading').textContent = 'Грамота не найдена'; return; }
+            if (!dealId) { 
+                document.getElementById('loading').textContent = 'Грамота не найдена'; 
+                hideLoader();
+                return; 
+            }
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}`);
                 const data = await res.json();
                 if (!data.success) { document.getElementById('loading').textContent = 'Грамота не найдена'; hideLoader(); return; }
                 renderDeal(data.deal, data.days_since_accepted);
                 hideLoader();
-            } catch(e) { document.getElementById('loading').textContent = 'Ошибка загрузки'; }
+            } catch(e) { 
+                document.getElementById('loading').textContent = 'Ошибка загрузки';
+                hideLoader();
+            }
         }
 
         function getCommission(amount, isPremium) {
