@@ -225,8 +225,11 @@
         tg.expand();
 
         // Лоадер
-        function hideLoader() { const l = document.getElementById("loader"); if(l) l.classList.add("hidden"); }
-        setTimeout(hideLoader, 2500);
+        function hideLoader() {
+            const l = document.getElementById("loader");
+            if(l) { l.style.transition = 'opacity 0.3s'; l.style.opacity = '0'; setTimeout(() => { l.style.display = 'none'; }, 350); }
+        }
+        setTimeout(hideLoader, 3000);
 
         const BACKEND = 'https://garant-backend-production.up.railway.app';
         const params = new URLSearchParams(window.location.search);
