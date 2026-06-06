@@ -467,7 +467,7 @@
                 tg.showAlert('Ошибка соединения с сервером');
             }
         }
-            GARANT_SOUNDS.coins();
+            if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.coins();
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -480,8 +480,8 @@
         }
 
         async function takeAction(action) {
-            if (action === 'confirm') GARANT_SOUNDS.confirm();
-            else GARANT_SOUNDS.cancel();
+            if (action === 'confirm') if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.confirm();
+            else if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.cancel();
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/action`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -497,7 +497,7 @@
             tg.showConfirm('⚔️ Открыть спор?\n\nДело будет передано арбитру. Деньги заморозятся до его решения.',
                 async (confirmed) => {
                     if (!confirmed) return;
-                    GARANT_SOUNDS.dispute();
+                    if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.dispute();
                     try {
                         const res = await fetch(`${BACKEND}/deals/${dealId}/dispute`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
