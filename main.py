@@ -138,9 +138,7 @@ scheduler = AsyncIOScheduler(timezone="UTC")
 
 # ── ФОНОВАЯ ЗАДАЧА: задержка выплаты продавцу ────────────────────────────────
 def get_commission(amount):
-    if amount <= 10000: return 0.01
-    if amount <= 25000: return 0.02
-    if amount <= 50000: return 0.03
+    if amount <= 25000:  return 0.03
     if amount <= 100000: return 0.04
     return 0.05
 
