@@ -439,6 +439,8 @@
         }
 
         async function acceptDeal() {
+            tg.showAlert('Debug: userId=' + currentUserId + ' dealId=' + dealId);
+            return;
             GARANT_SOUNDS.coins();
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
