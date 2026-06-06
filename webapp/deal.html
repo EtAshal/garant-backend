@@ -465,8 +465,7 @@
                 }
             } catch(e) {
                 tg.showAlert('Ошибка соединения с сервером');
-            }
-        }
+        async function acceptDeal() {
             if(typeof GARANT_SOUNDS!=="undefined")GARANT_SOUNDS.coins();
             try {
                 const res = await fetch(`${BACKEND}/deals/${dealId}/accept`, {
