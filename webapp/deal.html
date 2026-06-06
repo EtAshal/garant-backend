@@ -244,7 +244,14 @@
             } catch(e) { document.getElementById('loading').textContent = 'Ошибка загрузки'; }
         }
 
-        function getCommission(amount) {
+        function getCommission(amount, isPremium) {
+            if (isPremium) {
+                if (amount <= 10000)  return 0.01;
+                if (amount <= 25000)  return 0.02;
+                if (amount <= 50000)  return 0.03;
+                if (amount <= 100000) return 0.04;
+                return 0.05;
+            }
             if (amount <= 25000)  return 0.03;
             if (amount <= 100000) return 0.04;
             return 0.05;

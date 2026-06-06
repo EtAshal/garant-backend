@@ -279,6 +279,7 @@
 
         let userPts = 0;
         let userLimit = 10000;
+        let userIsPremium = false;
 
         async function loadUserLimit() {
             const userId = tg.initDataUnsafe?.user?.id;
@@ -295,6 +296,7 @@
                 const refPoints = userData.success ? (userData.user.referral_points || 0) : 0;
                 const isPremium = userData.success && userData.user.premium_until &&
                     new Date(userData.user.premium_until) > new Date();
+                userIsPremium = isPremium;
 
                 const completed = deals.filter(d => d.status === 'completed');
                 const dealPts = completed.reduce((s, d) => s + Math.floor(parseFloat(d.amount) / 100), 0);
@@ -318,7 +320,14 @@
             } catch(e) {}
         }
 
-        function getCommission(amount) {
+        function getCommission(amount, isPremium) {
+            if (isPremium) {
+                if (amount <= 10000)  return 0.01;
+                if (amount <= 25000)  return 0.02;
+                if (amount <= 50000)  return 0.03;
+                if (amount <= 100000) return 0.04;
+                return 0.05;
+            }
             if (amount <= 25000)  return 0.03;
             if (amount <= 100000) return 0.04;
             return 0.05;
@@ -356,12 +365,13 @@
             info.style.borderLeftColor = 'var(--gold-dim, #8b6914)';
 
             if (amount >= 100) {
-                const rate = getCommission(amount);
+                const rate = getCommission(amount, userIsPremium);
                 const commission = Math.round(amount * rate);
                 const sellerGets = amount - commission;
+                const premiumNote = userIsPremium ? ' 💎' : '';
                 info.innerHTML = `
                     💰 Покупатель вносит: <b>${amount.toLocaleString()} ₽</b><br>
-                    📜 Мзда Гаранту: <b>${commission.toLocaleString()} ₽</b> (${rate * 100}%)<br>
+                    📜 Мзда Гаранту: <b>${commission.toLocaleString()} ₽</b> (${rate * 100}%${premiumNote})<br>
                     ✅ Продавец получит: <b>${sellerGets.toLocaleString()} ₽</b>
                 `;
             } else {

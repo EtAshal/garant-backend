@@ -137,7 +137,13 @@ import math
 scheduler = AsyncIOScheduler(timezone="UTC")
 
 # ── ФОНОВАЯ ЗАДАЧА: задержка выплаты продавцу ────────────────────────────────
-def get_commission(amount):
+def get_commission(amount, is_premium=False):
+    if is_premium:
+        if amount <= 10000:  return 0.01
+        if amount <= 25000:  return 0.02
+        if amount <= 50000:  return 0.03
+        if amount <= 100000: return 0.04
+        return 0.05
     if amount <= 25000:  return 0.03
     if amount <= 100000: return 0.04
     return 0.05
@@ -177,7 +183,15 @@ async def process_payouts():
                 supabase.table("deals").update({"payout_sent": True}).eq("id", deal["id"]).execute()
 
                 amount = int(float(deal["amount"]))
-                commission = round(amount * get_commission(amount))
+
+                # Проверяем премиум продавца
+                seller_info = supabase.table("users").select("premium_until").eq("id", deal["seller_id"]).execute()
+                seller_premium = False
+                if seller_info.data and seller_info.data[0].get("premium_until"):
+                    premium_dt = datetime.fromisoformat(seller_info.data[0]["premium_until"].replace("Z", "+00:00"))
+                    seller_premium = premium_dt > datetime.now(timezone.utc)
+
+                commission  = round(amount * get_commission(amount, is_premium=seller_premium))
                 seller_gets = amount - commission
 
                 try:
