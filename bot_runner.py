@@ -349,106 +349,38 @@ async def notify_status_upgrade(bot_instance, user_id: int, old_pts: int, new_pt
             break
 
 
-# ── АРБИТРАЖНАЯ ГРУППА ────────────────────────────────────────────────────────
+# ── АРБИТРАЖНАЯ ГРУППА ────────────────────────────────────────────
 
 async def create_dispute_group(deal_id: str, seller_id: int, buyer_id: int, description: str, amount: float):
-    """Создаёт группу для разбора спора и отправляет инвайт-ссылки сторонам."""
+    """Уведомляет стороны о споре и предлагает написать арбитру напрямую."""
     try:
-        # Создаём группу
-        group = await bot.create_chat(
-            title=f"⚖️ Спор #{str(deal_id)[-6:]} — Гарантъ",
-            type="group"
-        )
-        group_id = group.id
+        ADMIN_USERNAME = "ramway"  # твой username без @
 
-        # Делаем бота администратором
-        await bot.promote_chat_member(
-            chat_id=group_id,
-            user_id=(await bot.get_me()).id,
-            can_invite_users=True,
-            can_delete_messages=True,
-            can_restrict_members=True
+        msg = (
+            "<b>По вашей сделке открыт спор</b>\n\n"
+            f"Товар: {description}\n"
+            f"Сумма: {int(amount):,} ₽\n\n"
+            "Арбитр рассмотрит ситуацию. Напишите ему напрямую и изложите свою позицию."
         )
 
-        # Добавляем арбитра (тебя)
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✉️ Написать арбитру", url=f"https://t.me/{ADMIN_USERNAME}")]
+        ])
+
         try:
-            await bot.add_chat_members(group_id, [ADMIN_ID])
-        except: pass
+            await bot.send_message(seller_id, msg, parse_mode="HTML", reply_markup=keyboard)
+        except Exception as e:
+            print(f"[Арбитраж] Не смог написать продавцу: {e}")
 
-        # Создаём инвайт-ссылку
-        invite = await bot.create_chat_invite_link(group_id, member_limit=2)
-        invite_url = invite.invite_link
-
-        # Сохраняем group_id в базе
         try:
-            supabase.table("deals").update({"dispute_group_id": str(group_id)}).eq("id", deal_id).execute()
-        except: pass
+            await bot.send_message(buyer_id, msg, parse_mode="HTML", reply_markup=keyboard)
+        except Exception as e:
+            print(f"[Арбитраж] Не смог написать покупателю: {e}")
 
-        # Приветственное сообщение в группе
-        await bot.send_message(
-            group_id,
-            f"⚖️ <b>Арбитражный разбор</b>
-
-"
-            f"Сделка: <b>{description}</b>
-"
-            f"Сумма: <b>{int(amount):,} ₽</b>
-
-"
-            f"Арбитр рассмотрит ситуацию и вынесет решение.
-"
-            f"Пожалуйста, изложите свою позицию по очереди.",
-            parse_mode="HTML"
-        )
-
-        # Отправляем ссылку продавцу
-        try:
-            await bot.send_message(
-                seller_id,
-                f"⚖️ <b>По вашей сделке открыт спор</b>
-
-"
-                f"Товар: {description}
-"
-                f"Сумма: {int(amount):,} ₽
-
-"
-                f"Арбитр приглашает вас в чат для разбора ситуации.
-"
-                f"Нажмите кнопку чтобы вступить:",
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="⚖️ Войти в арбитражный чат", url=invite_url)]
-                ])
-            )
-        except: pass
-
-        # Отправляем ссылку покупателю
-        try:
-            await bot.send_message(
-                buyer_id,
-                f"⚖️ <b>По вашей сделке открыт спор</b>
-
-"
-                f"Товар: {description}
-"
-                f"Сумма: {int(amount):,} ₽
-
-"
-                f"Арбитр приглашает вас в чат для разбора ситуации.
-"
-                f"Нажмите кнопку чтобы вступить:",
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="⚖️ Войти в арбитражный чат", url=invite_url)]
-                ])
-            )
-        except: pass
-
-        return {"success": True, "group_id": group_id, "invite_url": invite_url}
+        return {"success": True}
 
     except Exception as e:
-        print(f"[Арбитраж] Ошибка создания группы: {e}")
+        print(f"[Арбитраж] Ошибка: {e}")
         return {"success": False, "error": str(e)}
 
 
