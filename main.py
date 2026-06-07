@@ -9,6 +9,8 @@ from datetime import datetime, timezone, timedelta, time as dtime
 import os
 import sys
 import math
+import asyncio
+import threading
 sys.stdout.reconfigure(encoding='utf-8')
 
 load_dotenv()
@@ -206,6 +208,14 @@ async def notify_season_decay():
     except Exception as e:
         print(f"[Затухание] Ошибка: {e}")
 
+# ── ЗАПУСК БОТА В ОТДЕЛЬНОМ ТРЕДЕ ────────────────────────────────────────────
+def run_bot():
+    """Запускает бота в отдельном event loop."""
+    import bot_runner
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(bot_runner.main())
+
 # ── ПЛАНИРОВЩИК ───────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup():
@@ -216,6 +226,11 @@ async def startup():
     scheduler.add_job(apply_season_decay,  "interval", hours=24,   id="season_decay")
     scheduler.start()
     print("Планировщик запущен")
+
+    # Запускаем бота в отдельном треде
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
+    print("Бот запущен")
 
 @app.on_event("shutdown")
 async def shutdown():

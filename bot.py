@@ -3,6 +3,7 @@ import os
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandObject
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -15,7 +16,7 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SECRET")
 WEBAPP_URL = os.getenv("WEBAPP_URL")
 
 @dp.message(CommandStart())
-async def start(message: Message):
+async def start(message: Message, command: CommandObject):
     user = message.from_user
     try:
         supabase.table("users").upsert({
@@ -27,6 +28,25 @@ async def start(message: Message):
     except Exception as e:
         print(f"Ошибка: {e}")
 
+    # Проверяем параметр ?start=deal_<uuid>
+    args = command.args  # например "deal_837ed8b7-1c85-4848-89d2-cafb6c4a4eac"
+    if args and args.startswith("deal_"):
+        deal_id = args[len("deal_"):]  # убираем префикс "deal_"
+        deal_url = f"{WEBAPP_URL.rstrip('/')}/deal.html?id={deal_id}"
+
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(
+                text="🔒 Открыть сделку",
+                web_app=WebAppInfo(url=deal_url)
+            )]
+        ])
+        await message.answer(
+            "📜 Вас пригласили на сделку!\n\nНажмите кнопку чтобы просмотреть условия и принять сделку.",
+            reply_markup=keyboard
+        )
+        return
+
+    # Обычный /start без параметра
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text="🔒 Открыть Гарант",
