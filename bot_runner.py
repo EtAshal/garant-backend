@@ -354,7 +354,7 @@ async def notify_status_upgrade(bot_instance, user_id: int, old_pts: int, new_pt
 async def create_dispute_group(deal_id: str, seller_id: int, buyer_id: int, description: str, amount: float):
     """Уведомляет стороны о споре и предлагает написать арбитру напрямую."""
     try:
-        ADMIN_USERNAME = "ramway"  # твой username без @
+        ADMIN_USERNAME = "abdaletashal"  # твой username без @
 
         msg = (
             "<b>По вашей сделке открыт спор</b>\n\n"
