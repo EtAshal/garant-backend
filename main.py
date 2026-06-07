@@ -541,6 +541,34 @@ async def resolve_dispute(deal_id: str, body: dict):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@app.post("/disputes/{deal_id}/create-chat")
+async def create_dispute_chat(deal_id: str, body: dict):
+    try:
+        if body.get("admin_id") != 1291887879:
+            return {"success": False, "error": "Доступ запрещён"}
+
+        seller_id   = body.get("seller_id")
+        buyer_id    = body.get("buyer_id")
+        description = body.get("description", "Сделка")
+        amount      = float(body.get("amount", 0))
+
+        if not seller_id or not buyer_id:
+            return {"success": False, "error": "Не указаны стороны сделки"}
+
+        # Вызываем функцию из bot_runner
+        import bot_runner
+        result = await bot_runner.create_dispute_group(
+            deal_id=deal_id,
+            seller_id=seller_id,
+            buyer_id=buyer_id,
+            description=description,
+            amount=amount
+        )
+        return result
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/leaderboard")
 async def get_leaderboard():
     try:
